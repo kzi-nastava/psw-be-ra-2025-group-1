@@ -1,5 +1,4 @@
 ﻿using Explorer.BuildingBlocks.Core.Exceptions;
-using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
@@ -11,9 +10,9 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly ITokenGenerator _tokenGenerator;
     private readonly IUserRepository _userRepository;
-    private readonly ICrudRepository<Person> _personRepository;
+    private readonly IPersonRepository _personRepository;
 
-    public AuthenticationService(IUserRepository userRepository, ICrudRepository<Person> personRepository, ITokenGenerator tokenGenerator)
+    public AuthenticationService(IUserRepository userRepository, IPersonRepository personRepository, ITokenGenerator tokenGenerator)
     {
         _tokenGenerator = tokenGenerator;
         _userRepository = userRepository;
