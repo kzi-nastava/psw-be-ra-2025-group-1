@@ -1,4 +1,5 @@
 ﻿using Explorer.Stakeholders.API.Dtos;
+using Explorer.BuildingBlocks.Core.UseCases;
 
 namespace Explorer.Stakeholders.API.Public;
 

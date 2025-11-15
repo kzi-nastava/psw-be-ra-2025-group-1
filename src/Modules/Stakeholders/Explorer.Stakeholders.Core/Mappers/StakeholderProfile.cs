@@ -9,6 +9,8 @@ public class StakeholderProfile : Profile
     public StakeholderProfile()
     {
         CreateMap<Rating, RatingDto>();     //domain -> dto
+        CreateMap<RatingCreateDto, Rating>();
+        CreateMap<RatingUpdateDto, Rating>();
 
     }
 }
