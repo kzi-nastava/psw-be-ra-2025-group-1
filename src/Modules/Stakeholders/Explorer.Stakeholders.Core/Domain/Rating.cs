@@ -16,7 +16,7 @@ public class Rating : Entity
         UserId = userId;
         Score = score;
         Comment = Normalize(comment);
-        CreatedAt = DateTime.Now;
+        CreatedAt = DateTime.UtcNow;
         Validate();
     }
 
@@ -24,7 +24,7 @@ public class Rating : Entity
     {
         Score = score;
         Comment = Normalize(comment);
-        UpdatedAt = DateTime.Now;
+        UpdatedAt = DateTime.UtcNow;
         Validate();
     }
 

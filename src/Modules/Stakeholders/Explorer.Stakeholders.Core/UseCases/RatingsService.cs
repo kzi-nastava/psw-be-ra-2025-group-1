@@ -4,6 +4,7 @@ using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+using Explorer.BuildingBlocks.Core.UseCases;
 
 namespace Explorer.Stakeholders.Core.UseCases;
 
@@ -53,19 +54,17 @@ public class RatingsService : IRatingsService
 
         _repo.Delete(rating);
     }
-
     public PagedResult<RatingDto> AdminList(int page, int size)
     {
         if (page <= 0) page = 1;
         if (size <= 0) size = 10;
 
         var (items, total) = _repo.GetPaged(page, size);
-        return new PagedResult<RatingDto>
-        {
-            Items = _mapper.Map<IReadOnlyList<RatingDto>>(items),
-            TotalCount = total,
-            Page = page,
-            Size = size
-        };
+
+        // BuildingBlocks PagedResult očekuje List<T> u konstruktoru
+        var mapped = _mapper.Map<List<RatingDto>>(items);
+
+        return new PagedResult<RatingDto>(mapped, total);
     }
+
 }
