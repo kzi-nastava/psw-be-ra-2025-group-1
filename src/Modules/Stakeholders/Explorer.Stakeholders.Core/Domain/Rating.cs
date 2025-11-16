@@ -11,6 +11,9 @@ public class Rating : Entity
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
 
+    // EF Core trazi prazan ctor za materializaciju iz baze
+    protected Rating() { }
+
     public Rating(long userId, int score, string? comment)
     {
         UserId = userId;
@@ -33,7 +36,7 @@ public class Rating : Entity
 
     private void Validate()
     {
-        if (UserId <= 0) throw new ArgumentException("Invalid UserId");
+        if (UserId == 0) throw new ArgumentException("Invalid UserId");
         if (Score < 1 || Score > 5) throw new ArgumentException("Score must be between 1 and 5.");
         if (Comment != null && Comment.Length > 500) throw new ArgumentException("Comment too long (max 500).");
     }

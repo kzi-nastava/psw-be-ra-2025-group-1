@@ -23,7 +23,7 @@ public class StakeholdersContext : DbContext
 
         modelBuilder.Entity<Rating>(cfg =>          //fluent mapiranja za Rating
         {
-            cfg.ToTable("ratings");
+            cfg.ToTable("Ratings");
             cfg.HasKey(r => r.Id);
 
             cfg.Property(r => r.UserId).IsRequired();
