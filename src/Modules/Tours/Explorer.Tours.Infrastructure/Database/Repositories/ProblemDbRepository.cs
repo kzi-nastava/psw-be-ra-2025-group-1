@@ -44,6 +44,14 @@ public class ProblemDbRepository : IProblemRepository
         return problem;
     }
 
+    public PagedResult<Problem> GetByCreatorId(long creatorId, int page, int pageSize)
+    {
+        var query = _dbSet.Where(p => p.CreatorId == creatorId);
+        var task = query.GetPagedById(page, pageSize);
+        task.Wait();
+        return task.Result;
+    }
+
     public PagedResult<Problem> GetPaged(int page, int pageSize)
     {
         var task = _dbSet.GetPagedById(page, pageSize);

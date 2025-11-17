@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Explorer.Tours.Core.UseCases.Administration
 {
-    internal class ProblemService : IProblemService
+    public class ProblemService : IProblemService
     {
         private readonly IProblemRepository _problemRepository;
         private readonly IMapper _mapper;
@@ -31,15 +31,22 @@ namespace Explorer.Tours.Core.UseCases.Administration
             return new PagedResult<ProblemDto>(items, result.TotalCount);
         }
 
-        public EquipmentDto Create(ProblemDto entity)
+        public PagedResult<ProblemDto> GetByCreator(long creatorId, int page, int pageSize)
         {
-            var result = _problemRepository.Create(_mapper.Map<Problem>(entity));
+            var result = _problemRepository.GetByCreatorId(creatorId, page, pageSize);
+            var items = result.Results.Select(_mapper.Map<ProblemDto>).ToList();
+            return new PagedResult<ProblemDto>(items, result.TotalCount);
+        }
+
+        public ProblemDto Create(ProblemDto problem)
+        {
+            var result = _problemRepository.Create(_mapper.Map<Problem>(problem));
             return _mapper.Map<ProblemDto>(result);
         }
 
-        public ProblemDto Update(ProblemDto entity)
+        public ProblemDto Update(ProblemDto problem)
         {
-            var result = _problemRepository.Update(_mapper.Map<Equipment>(entity));
+            var result = _problemRepository.Update(_mapper.Map<Problem>(problem));
             return _mapper.Map<ProblemDto>(result);
         }
 
@@ -47,5 +54,10 @@ namespace Explorer.Tours.Core.UseCases.Administration
         {
             _problemRepository.Delete(id);
         }
+
+        /*ProblemDto IProblemService.Create(ProblemDto problem)
+        {
+            throw new NotImplementedException();
+        }*/
     }
 }
