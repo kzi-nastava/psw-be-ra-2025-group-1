@@ -6,4 +6,7 @@ public interface IAuthenticationService
 {
     AuthenticationTokensDto Login(CredentialsDto credentials);
     AuthenticationTokensDto RegisterTourist(AccountRegistrationDto account);
+    AuthenticationTokensDto RegisterAdmin(AccountRegistrationDto account);
+    AuthenticationTokensDto RegisterAuthor(AccountRegistrationDto account);
+
 }
