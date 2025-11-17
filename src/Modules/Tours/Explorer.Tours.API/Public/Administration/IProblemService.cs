@@ -1,12 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Tours.API.Dtos;
 
-namespace Explorer.Tours.API.Public.Administration
+namespace Explorer.Tours.API.Public.Administration;
+
+public interface IProblemService
 {
-    internal class IProblemService
-    {
-    }
+    PagedResult<ProblemDto> GetPaged(int page, int pageSize);
+    
+    PagedResult<ProblemDto> GetByCreator(long creatorId, int page, int pageSize);
+    ProblemDto Create(ProblemDto problem);
+    ProblemDto Update(ProblemDto problem);
+    void Delete(long id);
 }
+

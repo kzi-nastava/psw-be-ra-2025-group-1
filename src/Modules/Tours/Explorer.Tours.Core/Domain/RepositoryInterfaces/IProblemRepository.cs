@@ -14,4 +14,5 @@ public interface IProblemRepository
     Problem Get(long id);
     void Delete(long id);
     PagedResult<Problem> GetPaged(int page, int pageSize);
+    PagedResult<Problem> GetByCreatorId(long creatorId, int page, int pageSize);
 }
