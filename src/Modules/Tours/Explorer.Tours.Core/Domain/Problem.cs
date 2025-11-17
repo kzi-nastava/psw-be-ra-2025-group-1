@@ -18,10 +18,10 @@ public class Problem : Entity
     public long TourId { get; init; }
     public long CreatorId { get; init; }
     public int Priority { get; init; }
-    public string? Description { get; init; }
+    public string Description { get; init; }
     public DateTime CreationTime { get; init; }
     public ProblemCategory Category { get; init; }
-    public Problem(int priority, string? description, ProblemCategory category, long tourId, long creatorId)
+    public Problem(int priority, string description, ProblemCategory category, long tourId, long creatorId)
     {
         if (priority < 1 || priority > 5) throw new ArgumentException("Priority must be between 1 and 5.");
         Priority = priority;
