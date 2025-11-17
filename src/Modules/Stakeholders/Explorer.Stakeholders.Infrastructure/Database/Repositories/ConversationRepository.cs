@@ -40,18 +40,22 @@ namespace Explorer.Stakeholders.Infrastructure.Repositories
 
         public async Task<Conversation> GetByIdAsync(long conversationId)
         {
-            return await _context.Conversations
-                .Include(c => c.Messages)
-                .FirstOrDefaultAsync(c => c.Id == conversationId);
+            return await _context.Conversations.Include(c => c.Messages).FirstOrDefaultAsync(c => c.Id == conversationId);
         }
 
         public async Task<IEnumerable<Conversation>> GetUserConversationsAsync(long userId)
         {
             return await _context.Conversations
+                .Include(c => c.User1)
+                .Include(c => c.User2)
                 .Include(c => c.Messages)
+                    .ThenInclude(m => m.Sender)
+                .Include(c => c.Messages)
+                    .ThenInclude(m => m.Receiver)
                 .Where(c => c.User1Id == userId || c.User2Id == userId)
                 .OrderByDescending(c => c.LastMessageAt ?? c.StartedAt)
                 .ToListAsync();
         }
+
     }
 }

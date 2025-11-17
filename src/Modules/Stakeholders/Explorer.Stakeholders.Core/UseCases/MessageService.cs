@@ -14,21 +14,24 @@ namespace Explorer.Stakeholders.Core.UseCases
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IConversationRepository _conversationRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
         public MessageService(
-            IMessageRepository messageRepository,
-            IConversationRepository conversationRepository,
-            IMapper mapper)
+    IMessageRepository messageRepository,
+    IConversationRepository conversationRepository,
+    IUserRepository userRepository,
+    IMapper mapper)
         {
             _messageRepository = messageRepository;
             _conversationRepository = conversationRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
 
+
         public async Task<MessageDTO> SendMessageAsync(long senderId, long receiverId, string content)
         {
-            // pronađi ili kreiraj konverzaciju
             var conversation = await _conversationRepository.GetOrCreateConversationAsync(senderId, receiverId);
 
             var message = new Message(senderId, receiverId, conversation.Id, content);
@@ -37,8 +40,11 @@ namespace Explorer.Stakeholders.Core.UseCases
             conversation.UpdateLastMessageTime();
             await _conversationRepository.UpdateAsync(conversation);
 
-            return _mapper.Map<MessageDTO>(message);
+            var loadedMessage = await _messageRepository.GetByIdAsync(message.Id);
+
+            return _mapper.Map<MessageDTO>(loadedMessage);
         }
+
 
         public async Task<IEnumerable<ConversationDTO>> GetUserConversationsAsync(long userId)
         {

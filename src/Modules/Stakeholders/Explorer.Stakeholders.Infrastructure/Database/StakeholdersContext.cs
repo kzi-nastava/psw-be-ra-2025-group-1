@@ -20,6 +20,7 @@ public class StakeholdersContext : DbContext
 
         ConfigureStakeholder(modelBuilder);
         ConfigureMessaging(modelBuilder);
+
     }
 
     private static void ConfigureStakeholder(ModelBuilder modelBuilder)
