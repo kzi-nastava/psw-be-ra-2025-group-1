@@ -15,9 +15,9 @@ public class BlogService : IBlogService
         _mapper = mapper;
     }
 
-    public BlogDto CreateBlog(BlogCreateDto blogDto)
+    public BlogDto CreateBlog(long userId, BlogCreateDto blogDto)
     {
-        var blog = new Domain.Blog(blogDto.Title, blogDto.Description, blogDto.Images);
+        var blog = new Domain.Blog(userId, blogDto.Title, blogDto.Description, blogDto.Images);
         var createdBlog = _blogRepository.Create(blog);
         return _mapper.Map<BlogDto>(createdBlog);
     }
