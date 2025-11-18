@@ -55,9 +55,5 @@ namespace Explorer.Tours.Core.UseCases.Administration
             _problemRepository.Delete(id);
         }
 
-        /*ProblemDto IProblemService.Create(ProblemDto problem)
-        {
-            throw new NotImplementedException();
-        }*/
     }
 }
