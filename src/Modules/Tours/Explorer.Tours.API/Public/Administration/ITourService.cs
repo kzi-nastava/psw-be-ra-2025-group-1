@@ -11,9 +11,11 @@ namespace Explorer.Tours.API.Public.Administration;
 public interface ITourService
 {
     PagedResult<TourDto> GetPaged(int page, int pageSize);
+    TourDto GetById(long id);
+    List<TourDto> GetAll();
 
     PagedResult<TourDto> GetByCreator(long creatorId, int page, int pageSize);
-    TourDto Create(TourDto problem);
-    TourDto Update(TourDto problem);
+    TourDto Create(TourDto tour);
+    TourDto Update(TourDto tour);
     void Delete(long id);
 }

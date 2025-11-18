@@ -15,15 +15,22 @@ public enum TourStatus
 }
 public class Tour : Entity
 {
-    long CreatorId { get; init; }
-    string Title { get; init; }
-    string Description { get; init; }
-    int Difficulty { get; init; }
-    string[] Tags { get; init; }
-    TourStatus Status { get; init; }
-    double Price { get; init; }
+    public long CreatorId { get; init; }
+    public string Title { get; init; }
+    public string Description { get; init; }
+    public int Difficulty { get; init; }
+    public string[] Tags { get; init; }
+    public TourStatus Status { get; init; }
+    public double Price { get; init; }
 
-    public Tour(long creatorId,string title, string description, int difficulty, string[] tags, TourStatus status=TourStatus.Draft, double price=0)
+    public Tour()
+    {
+        Title = "";
+        Description = "";
+        Tags = [];
+        Status = TourStatus.Draft;
+    }
+    public Tour(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status = TourStatus.Draft, double price = 0)
     {
         if (difficulty < 1 || difficulty > 10) throw new ArgumentException("Difficulty must be between 1 and 10.");
         if (price < 0) throw new ArgumentException("Price cannot be negative.");
