@@ -1,20 +1,19 @@
-﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
-namespace Explorer.API.Controllers.Tourist;
+namespace Explorer.API.Controllers.Administrator.Administration;
 
-[Authorize(Policy = "touristPolicy")]
-[Route("api/tourist/problems")]
+[Authorize(Policy = "administratorPolicy")]
+[Route("api/administration/problems")]
 [ApiController]
-public class TouristProblemController : ControllerBase
+public class AdminProblemController : ControllerBase
 {
     private readonly IProblemService _problemService;
 
-    public TouristProblemController(IProblemService problemService)
+    public AdminProblemController(IProblemService problemService)
     {
         _problemService = problemService;
     }
@@ -25,26 +24,21 @@ public class TouristProblemController : ControllerBase
         return Ok(_problemService.GetPaged(page, pageSize));
     }
 
-    [HttpGet("my-problems")]
-    public ActionResult<PagedResult<ProblemDto>> GetMyProblems([FromQuery] int page, [FromQuery] int pageSize)
+    [HttpGet("by-creator/{creatorId:long}")]
+    public ActionResult<PagedResult<ProblemDto>> GetByCreator(long creatorId, [FromQuery] int page, [FromQuery] int pageSize)
     {
-        var creatorId = GetPersonId();
-        var result = _problemService.GetByCreator(creatorId, page, pageSize);
-        return Ok(result);
+        return Ok(_problemService.GetByCreator(creatorId, page, pageSize));
     }
 
     [HttpPost]
     public ActionResult<ProblemDto> Create([FromBody] ProblemDto problem)
     {
-        problem.CreatorId = GetPersonId();
-        problem.CreationTime = DateTime.UtcNow;
         return Ok(_problemService.Create(problem));
     }
 
     [HttpPut("{id:long}")]
     public ActionResult<ProblemDto> Update([FromBody] ProblemDto problem)
     {
-        problem.CreatorId = GetPersonId();
         return Ok(_problemService.Update(problem));
     }
 
@@ -53,11 +47,5 @@ public class TouristProblemController : ControllerBase
     {
         _problemService.Delete(id);
         return Ok();
-    }
-
-    private long GetPersonId()
-    {
-        var personIdClaim = User.FindFirst("personId")?.Value;
-        return long.Parse(personIdClaim ?? "0");
     }
 }
