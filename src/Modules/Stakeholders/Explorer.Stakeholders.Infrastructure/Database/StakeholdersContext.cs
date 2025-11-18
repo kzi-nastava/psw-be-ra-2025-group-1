@@ -5,31 +5,33 @@ namespace Explorer.Stakeholders.Infrastructure.Database;
 
 public class StakeholdersContext : DbContext
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Person> People { get; set; }
+    public StakeholdersContext(DbContextOptions<StakeholdersContext> options)
+        : base(options) { }
+
     public DbSet<Message> Messages { get; set; }
     public DbSet<Conversation> Conversations { get; set; }
-
-    public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
+    public DbSet<Person> People { get; set; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        // Sve tabele u šemi stakeholders
         modelBuilder.HasDefaultSchema("stakeholders");
 
+        modelBuilder.Entity<Message>().ToTable("Messages");
+        modelBuilder.Entity<Conversation>().ToTable("Conversations");
+        modelBuilder.Entity<Person>().ToTable("People");
+        modelBuilder.Entity<User>().ToTable("Users");
+
+        // Dodaj ostale konfiguracije ako su potrebne
         modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
 
-        ConfigureStakeholder(modelBuilder);
+        // Konfiguracija za messaging ako je potrebna
         ConfigureMessaging(modelBuilder);
-
     }
 
-    private static void ConfigureStakeholder(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<Person>()
-            .HasOne<User>()
-            .WithOne()
-            .HasForeignKey<Person>(s => s.UserId);
-    }
     private static void ConfigureMessaging(ModelBuilder modelBuilder)
     {
         // Conversation → Messages
@@ -52,5 +54,11 @@ public class StakeholdersContext : DbContext
             .WithMany()
             .HasForeignKey(m => m.ReceiverId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        // Person → User relacija
+        modelBuilder.Entity<Person>()
+            .HasOne<User>()
+            .WithOne()
+            .HasForeignKey<Person>(s => s.UserId);
     }
 }

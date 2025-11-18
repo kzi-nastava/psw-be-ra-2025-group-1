@@ -44,8 +44,23 @@ namespace Explorer.API.Controllers.User.Messaging
         [HttpDelete("{messageId}")]
         public async Task<IActionResult> DeleteMessage(long messageId)
         {
-            await _messageService.DeleteMessageAsync(messageId);
-            return NoContent();
+            try
+            {
+                await _messageService.DeleteMessageAsync(messageId);
+                return NoContent();
+            }
+            catch (Exception ex) when (ex.Message.Contains("not found") || ex.Message.Contains("already deleted"))
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while deleting the message" });
+            }
         }
     }
 
