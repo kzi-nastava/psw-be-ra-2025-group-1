@@ -175,15 +175,15 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
         storedPerson.Name.ShouldBe(newAuthor.Name);
     }
 
-    // Helper metoda za ClaimsPrincipal
+    // Helper metoda ClaimsPrincipal
     private ClaimsPrincipal CreateAdminClaimsPrincipal(long userId, string username)
     {
         var claims = new List<Claim>
-    {
-        new Claim("id", userId.ToString()),
-        new Claim("username", username),
-        new Claim(ClaimTypes.Role, "Author")
-    };
+        {
+            new Claim("id", userId.ToString()),
+            new Claim("username", username),
+            new Claim(ClaimTypes.Role, "Admin")
+        };
 
         var identity = new ClaimsIdentity(claims, "Test");
         return new ClaimsPrincipal(identity);
