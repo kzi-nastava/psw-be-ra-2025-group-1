@@ -14,6 +14,13 @@ public class PersonDbRepository : IPersonRepository
         DbContext = dbContext;
         _dbSet = DbContext.Set<Person>();
     }
+    public Person GetByUserId(long userId)
+    {
+        var person = _dbSet.FirstOrDefault(p => p.UserId == userId);
+        if (person == null)
+            throw new KeyNotFoundException($"Person with UserId {userId} not found.");
+        return person;
+    }
 
     public Person Create(Person entity)
     {
