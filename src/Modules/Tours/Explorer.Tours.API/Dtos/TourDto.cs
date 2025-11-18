@@ -8,12 +8,12 @@ namespace Explorer.Tours.API.Dtos;
 
 public class TourDto
 {
-    long CreatorId { get; init; }= -1;
-    string Title { get; init; } = "";
-    string Description { get; init; }= "";
-    int Difficulty { get; init; } = -1;
-    string[] Tags { get; init; }= Array.Empty<string>();
-    string Status { get; init; }= "Draft"; // Maybe should convert to TourStatus enum
-    double Price { get; init; } = -1;
+    public long CreatorId { get; init; }= -1;
+    public string Title { get; init; } = "";
+    public string Description { get; init; }= "";
+    public int Difficulty { get; init; } = -1;
+    public string[] Tags { get; init; }= Array.Empty<string>();
+    public string Status { get; init; }= "Draft"; // Maybe should convert to TourStatus enum
+    public double Price { get; init; } = -1;
 
 }
