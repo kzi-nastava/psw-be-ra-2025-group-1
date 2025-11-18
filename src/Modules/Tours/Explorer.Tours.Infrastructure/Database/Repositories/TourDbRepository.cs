@@ -1,12 +1,8 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Explorer.Tours.Infrastructure.Database.Repositories;
 
@@ -23,31 +19,46 @@ public class TourDbRepository : ITourRepository
 
     public Tour Create(Tour tour)
     {
-        throw new NotImplementedException();
+        _dbSet.Add(tour);
+        dbContext.SaveChanges();
+        return tour;
     }
 
     public void Delete(long id)
     {
-        throw new NotImplementedException();
+        var tour = Get(id);
+
+        if (tour == null)
+            return;
+
+        _dbSet.Remove(tour);
+        dbContext.SaveChanges();
     }
 
-    public Tour Get(long id)
+    public Tour? Get(long id)
     {
-        throw new NotImplementedException();
+        return _dbSet.Find(id);
     }
 
     public PagedResult<Tour> GetByCreatorId(long creatorId, int page, int pageSize)
     {
-        throw new NotImplementedException();
+        var query = _dbSet.Where(t => t.CreatorId == creatorId);
+        var task = query.GetPagedById(page, pageSize);
+        task.Wait();
+        return task.Result;
     }
 
     public PagedResult<Tour> GetPaged(int page, int pageSize)
     {
-        throw new NotImplementedException();
+        var task = _dbSet.GetPagedById(page, pageSize);
+        task.Wait();
+        return task.Result;
     }
 
     public Tour Update(Tour tour)
     {
-        throw new NotImplementedException();
+        _dbSet.Update(tour);
+        dbContext.SaveChanges();
+        return tour;
     }
 }
