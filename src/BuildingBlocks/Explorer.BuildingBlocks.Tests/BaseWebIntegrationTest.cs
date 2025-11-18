@@ -10,10 +10,12 @@ namespace Explorer.BuildingBlocks.Tests;
 public class BaseWebIntegrationTest<TTestFactory> : IClassFixture<TTestFactory> where TTestFactory : WebApplicationFactory<Program>
 {
     protected TTestFactory Factory { get; }
-
+    protected HttpClient TestClient { get; }
     public BaseWebIntegrationTest(TTestFactory factory)
     {
+        
         Factory = factory;
+        TestClient = factory.CreateClient();
     }
 
     protected static ControllerContext BuildContext(string id)
