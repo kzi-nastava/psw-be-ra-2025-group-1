@@ -30,14 +30,14 @@ public class ProblemQueryTests : BaseToursIntegrationTest
     }
 
     [Fact]
-    public void Retrieves_my_problems()
+    public void Retrieves_problems_by_creator()
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
         // Act
-        var result = ((ObjectResult)controller.GetMyProblems(0, 0).Result)?.Value as PagedResult<ProblemDto>;
+        var result = ((ObjectResult)controller.GetByCreator(-21, 0, 0).Result)?.Value as PagedResult<ProblemDto>;
 
         // Assert
         result.ShouldNotBeNull();
@@ -45,9 +45,9 @@ public class ProblemQueryTests : BaseToursIntegrationTest
         result.Results.All(p => p.CreatorId == -21).ShouldBeTrue();
     }
 
-    private static ProblemController CreateController(IServiceScope scope)
+    private static AdminProblemController CreateController(IServiceScope scope)
     {
-        return new ProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
+        return new AdminProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
         {
             ControllerContext = BuildContext("-21")
         };
