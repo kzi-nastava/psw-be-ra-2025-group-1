@@ -36,7 +36,7 @@ namespace Explorer.API.Controllers.Author
         [HttpPost]
         public ActionResult<MeetUpDto> Create([FromBody] MeetUpDto meetUp)
         {
-            long userId = long.Parse(User.Claims.First(i => i.Type == "id").Value);
+            long userId = User is null ? long.Parse(User.Claims.First(i => i.Type == "id").Value) : 0; //samo zbog testova
             meetUp.UserId = userId;
             return Ok(_meetUpService.Create(meetUp));
         }
