@@ -2,5 +2,6 @@
 
 public interface IPersonRepository
 {
+    Person GetByUserId(long userId);
     Person Create(Person person);
 }

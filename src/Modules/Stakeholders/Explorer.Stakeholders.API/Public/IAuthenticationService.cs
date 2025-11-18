@@ -8,5 +8,4 @@ public interface IAuthenticationService
     AuthenticationTokensDto RegisterTourist(AccountRegistrationDto account);
     AuthenticationTokensDto RegisterAdmin(AccountRegistrationDto account);
     AuthenticationTokensDto RegisterAuthor(AccountRegistrationDto account);
-
 }
