@@ -7,6 +7,7 @@ public enum ProblemCategory
 }
 public class ProblemDto
 {
+    public long Id { get; set; }
     public long TourId { get; set; }
     public long CreatorId { get; set; }
     public int Priority { get; set; }
