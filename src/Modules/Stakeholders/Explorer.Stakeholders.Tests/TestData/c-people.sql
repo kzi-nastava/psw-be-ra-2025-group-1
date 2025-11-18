@@ -1,5 +1,9 @@
 ﻿INSERT INTO stakeholders."People"(
     "Id", "UserId", "Name", "Surname", "Email")
+VALUES (-1, -1, 'Admin', 'Administrator', 'admin@gmail.com');
+
+INSERT INTO stakeholders."People"(
+    "Id", "UserId", "Name", "Surname", "Email")
 VALUES (-11, -11, 'Ana', 'Anić', 'autor1@gmail.com');
 INSERT INTO stakeholders."People"(
     "Id", "UserId", "Name", "Surname", "Email")

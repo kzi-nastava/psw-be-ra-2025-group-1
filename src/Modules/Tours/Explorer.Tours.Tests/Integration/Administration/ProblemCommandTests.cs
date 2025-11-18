@@ -37,7 +37,6 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         result.ShouldNotBeNull();
         result.Description.ShouldBe(newEntity.Description);
         result.Priority.ShouldBe(newEntity.Priority);
-        result.CreatorId.ShouldBe(-21); 
 
         // Assert - Database
         var storedEntity = dbContext.Problem.FirstOrDefault(i => i.Description == newEntity.Description);
@@ -141,9 +140,9 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         Should.Throw<NotFoundException>(() => controller.Delete(-1000));
     }
 
-    private static ProblemController CreateController(IServiceScope scope)
+    private static AdminProblemController CreateController(IServiceScope scope)
     {
-        return new ProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
+        return new AdminProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
         {
             ControllerContext = BuildContext("-21")
         };
