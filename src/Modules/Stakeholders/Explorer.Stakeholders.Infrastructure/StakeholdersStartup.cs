@@ -25,6 +25,7 @@ public static class StakeholdersStartup
     private static void SetupCore(IServiceCollection services)
     {
         services.AddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IPersonService, PersonService>();
         services.AddScoped<ITokenGenerator, JwtGenerator>();
         services.AddScoped<IUserManagementService, UserManagementService>();
     }
