@@ -110,6 +110,50 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
         }
 
         [Fact]
+        public void Update_fails_unauthorized_user()
+        {
+            // Arrange
+            using var scope = Factory.Services.CreateScope();
+
+            var controller = CreateController(scope);
+
+            // Creating a fake identity because the method requires the user to be logged in
+            var identity = new ClaimsIdentity(new[]
+            {
+                new Claim("id", "-11"),
+                new Claim("personId", "-11"),
+                new Claim(ClaimTypes.Role, "tourist")
+             }, "TestAuthentication");
+            controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
+
+            var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+            var updatedEntity = new PersonDto
+            {
+                Id = -1,
+                UserId = -1,
+                Name = "Perica",
+                Surname = "Peric",
+                Email = "perica@gmail.com",
+                ProfileImagePath = "",
+                Biography = "Volim da pecam",
+                Quote = "Nauci coveka da peca",
+            };
+
+            // Act
+            var result = ((ObjectResult)controller.Update(updatedEntity).Result)?.Value as PersonDto;
+
+            result.ShouldNotBeNull();
+            result.Id.ShouldBe(-11);
+            result.UserId.ShouldBe(-11);
+            result.Name.ShouldBe(updatedEntity.Name);
+            result.Surname.ShouldBe(updatedEntity.Surname);
+            result.Email.ShouldBe(updatedEntity.Email);
+            result.ProfileImagePath.ShouldBe(updatedEntity.ProfileImagePath);
+            result.Biography.ShouldBe(updatedEntity.Biography);
+            result.Quote.ShouldBe(updatedEntity.Quote);
+        }
+
+        [Fact]
         public void Gets()
         {
             // Arrange
