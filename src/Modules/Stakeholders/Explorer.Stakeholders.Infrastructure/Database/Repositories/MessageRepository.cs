@@ -32,10 +32,12 @@ namespace Explorer.Stakeholders.Infrastructure.Repositories
         public async Task<IEnumerable<Message>> GetByConversationIdAsync(long conversationId)
         {
             return await _context.Messages
-                .Where(m => m.ConversationId == conversationId)
+                .Where(m => m.ConversationId == conversationId && !m.IsDeleted)
                 .OrderBy(m => m.Timestamp)
                 .ToListAsync();
         }
+
+
 
         public async Task UpdateAsync(Message message)
         {
