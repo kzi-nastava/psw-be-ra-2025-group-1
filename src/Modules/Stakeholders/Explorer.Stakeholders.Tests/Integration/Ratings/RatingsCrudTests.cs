@@ -87,16 +87,12 @@ public class RatingsCrudTests : BaseStakeholdersIntegrationTest
     [Fact]
     public void Update_someone_else_rating_forbidden()
     {
-        // Arrange: -101 pripada korisniku -22, a prijavljeni je -21
+        // -100 je tudja ocena (pripada -22), prijavljen -21
         using var scope = Factory.Services.CreateScope();
         var controller = CreateAuthorControllerForUser(scope, userId: -21, role: "tourist");
 
-        // Act + Assert
-        Should.Throw<UnauthorizedAccessException>(() =>
-        {
-            // controller.Update vraca ActionResult, ali tvoj servis baca UnauthorizedAccessException
-            _ = controller.Update(-100, new RatingUpdateDto { Score = 1, Comment = "nope" }).Result;
-        });
+        var result = controller.Update(-100, new RatingUpdateDto { Score = 1, Comment = "nope" }).Result!;
+        result.ShouldBeOfType<ForbidResult>();
     }
 
     private static RatingsController CreateAuthorControllerForUser(IServiceScope scope, long userId, string role)
@@ -116,4 +112,89 @@ public class RatingsCrudTests : BaseStakeholdersIntegrationTest
         };
         return controller;
     }
+
+
+
+    [Fact]
+    public void Create_rating_with_invalid_score_returns_400()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateAuthorControllerForUser(scope, userId: -21, role: "tourist");
+
+        var dtoLow = new RatingCreateDto { Score = 0, Comment = "too low" };
+        var badLow = (BadRequestObjectResult)controller.Create(dtoLow).Result!;
+        badLow.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+
+        var dtoHigh = new RatingCreateDto { Score = 6, Comment = "too high" };
+        var badHigh = (BadRequestObjectResult)controller.Create(dtoHigh).Result!;
+        badHigh.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public void Create_rating_with_too_long_comment_returns_400()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateAuthorControllerForUser(scope, userId: -21, role: "tourist");
+
+        var longComment = new string('x', 501);
+        var dto = new RatingCreateDto { Score = 3, Comment = longComment };
+
+        var bad = (BadRequestObjectResult)controller.Create(dto).Result!;
+        bad.StatusCode.ShouldBe(StatusCodes.Status400BadRequest);
+    }
+
+    [Fact]
+    public void Update_nonexistent_rating_returns_404()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateAuthorControllerForUser(scope, userId: -21, role: "tourist");
+
+        var upd = new RatingUpdateDto { Score = 4, Comment = "edit" };
+        var notFound = (NotFoundResult)controller.Update(999999, upd).Result!;
+        notFound.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+    }
+
+    [Fact]
+    public void Delete_nonexistent_rating_returns_404()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateAuthorControllerForUser(scope, userId: -21, role: "tourist");
+
+        var nf = (NotFoundResult)controller.Delete(999999);
+        nf.StatusCode.ShouldBe(StatusCodes.Status404NotFound);
+    }
+
+    [Fact]
+    public void Get_my_ratings_when_empty_returns_empty_list()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        // očisti sve ocene za korisnika -23 (ili koristi nekog bez ocena)
+        var userId = -23;
+        var toRemove = db.Ratings.Where(r => r.UserId == userId).ToList();
+        if (toRemove.Any()) { db.Ratings.RemoveRange(toRemove); db.SaveChanges(); }
+
+        var controller = CreateAuthorControllerForUser(scope, userId, role: "tourist");
+
+        var ok = (OkObjectResult)controller.GetMine().Result!;
+        ok.StatusCode.ShouldBe(StatusCodes.Status200OK);
+
+        var list = ok.Value as IEnumerable<RatingDto>;
+        list.ShouldNotBeNull();
+        list!.Count().ShouldBe(0);
+    }
+
+    [Fact]
+    public void Update_someone_else_rating_forbidden_returns_forbid()
+    {
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateAuthorControllerForUser(scope, userId: -21, role: "tourist");
+
+        var dto = new RatingUpdateDto { Score = 1, Comment = "nope" };
+        var action = controller.Update(-100, dto).Result;
+
+        action.ShouldBeOfType<ForbidResult>();
+    }
+
+
 }
