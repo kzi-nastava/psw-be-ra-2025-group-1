@@ -26,6 +26,7 @@ public static class ToursStartup
     {
         services.AddScoped<IEquipmentService, EquipmentService>();
         services.AddScoped<IProblemService, ProblemService>();
+        services.AddScoped<ITourService, TourService>();
         services.AddScoped<IFacilityService, FacilityService>();
     }
 
@@ -33,6 +34,7 @@ public static class ToursStartup
     {
         services.AddScoped<IEquipmentRepository, EquipmentDbRepository>();
         services.AddScoped<IProblemRepository, ProblemDbRepository>();
+        services.AddScoped<ITourRepository, TourDbRepository>();
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
