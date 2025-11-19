@@ -26,7 +26,7 @@ namespace Explorer.API.Controllers
 
         [HttpPut]
         [Authorize(Policy = "authorOrTouristPolicy")]
-        public ActionResult<PersonDto> UpdateProfile([FromBody] PersonDto personDto)
+        public ActionResult<PersonDto> Update([FromBody] PersonDto personDto)
         {
             personDto.UserId = GetCurrentUserId();
             personDto.Id = GetCurrentPersonId();
