@@ -64,13 +64,11 @@ namespace Explorer.Stakeholders.Infrastructure.Repositories
                 .Include(c => c.User1)
                 .Include(c => c.User2)
                 .Include(c => c.Messages)
-                    .ThenInclude(m => m.Sender)
-                .Include(c => c.Messages)
-                    .ThenInclude(m => m.Receiver)
                 .Where(c => c.User1Id == userId || c.User2Id == userId)
                 .OrderByDescending(c => c.LastMessageAt ?? c.StartedAt)
                 .ToListAsync();
         }
+
 
     }
 }

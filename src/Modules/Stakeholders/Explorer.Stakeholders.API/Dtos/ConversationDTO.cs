@@ -15,6 +15,11 @@ namespace Explorer.Stakeholders.API.Dtos
         public string User2Username { get; set; }
         public DateTime StartedAt { get; set; }
         public DateTime? LastMessageAt { get; set; }
+
+        public string OtherUserName { get; set; }
+        public string LastMessage { get; set; }
+
         public List<MessageDTO> Messages { get; set; } = new();
     }
+
 }

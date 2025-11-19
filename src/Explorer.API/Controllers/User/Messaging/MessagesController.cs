@@ -54,6 +54,13 @@ namespace Explorer.API.Controllers.User.Messaging
             return Ok(conversations);
         }
 
+        [HttpGet("{conversationId}/messages")]
+        public async Task<ActionResult<IEnumerable<MessageDTO>>> GetConversationMessages(long conversationId)
+        {
+            var messages = await _messageService.GetConversationMessagesAsync(conversationId);
+            return Ok(messages);
+        }
+
 
         // --- Brisanje poruke ---
         [HttpDelete("{messageId}")]
