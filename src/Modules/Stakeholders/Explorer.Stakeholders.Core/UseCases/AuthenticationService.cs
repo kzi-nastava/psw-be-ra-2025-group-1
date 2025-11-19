@@ -49,4 +49,26 @@ public class AuthenticationService : IAuthenticationService
 
         return _tokenGenerator.GenerateAccessToken(user, person.Id);
     }
+
+    public AuthenticationTokensDto RegisterAdmin(AccountRegistrationDto account)
+    {
+        if (_userRepository.Exists(account.Username))
+            throw new EntityValidationException("Provided username already exists.");
+
+        var user = _userRepository.Create(new User(account.Username, account.Password, UserRole.Administrator, true));
+        var person = _personRepository.Create(new Person(user.Id, account.Name, account.Surname, account.Email));
+
+        return _tokenGenerator.GenerateAccessToken(user, person.Id);
+    }
+
+    public AuthenticationTokensDto RegisterAuthor(AccountRegistrationDto account)
+    {
+        if (_userRepository.Exists(account.Username))
+            throw new EntityValidationException("Provided username already exists.");
+
+        var user = _userRepository.Create(new User(account.Username, account.Password, UserRole.Author, true));
+        var person = _personRepository.Create(new Person(user.Id, account.Name, account.Surname, account.Email));
+
+        return _tokenGenerator.GenerateAccessToken(user, person.Id);
+    }
 }
