@@ -22,14 +22,29 @@ namespace Explorer.API.Controllers.User.Messaging
         [HttpPost]
         public async Task<ActionResult<MessageDTO>> SendMessage([FromBody] SendMessageRequest request)
         {
-            var message = await _messageService.SendMessageAsync(
-                request.SenderId,
-                request.ReceiverId,
-                request.Content
-            );
+            try
+            {
+                var message = await _messageService.SendMessageAsync(
+                    request.SenderId,
+                    request.ReceiverId,
+                    request.Content
+                );
 
-            return Ok(message);
+                return Ok(message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = ex.Message,
+                    inner = ex.InnerException?.Message,
+                    inner2 = ex.InnerException?.InnerException?.Message,
+                    stack = ex.StackTrace
+                });
+            }
+
         }
+
 
         // --- Dohvatanje svih konverzacija korisnika ---
         [HttpGet("conversations/{userId}")]

@@ -16,17 +16,32 @@ namespace Explorer.Stakeholders.Infrastructure.Repositories
 
         public async Task<Conversation> GetOrCreateConversationAsync(long user1Id, long user2Id)
         {
-            if (user1Id > user2Id) (user1Id, user2Id) = (user2Id, user1Id);
+            if (user1Id == user2Id)
+                throw new Exception("User cannot create conversation with himself.");
+
+            if (user1Id > user2Id)
+                (user1Id, user2Id) = (user2Id, user1Id);
 
             var conversation = await _context.Conversations
+                .Include(c => c.User1)
+                .Include(c => c.User2)
                 .Include(c => c.Messages)
                 .FirstOrDefaultAsync(c => c.User1Id == user1Id && c.User2Id == user2Id);
 
             if (conversation == null)
             {
-                conversation = new Conversation(user1Id, user2Id);
+                conversation = new Conversation(user1Id, user2Id)
+                {
+                    StartedAt = DateTime.UtcNow,
+                    LastMessageAt = DateTime.UtcNow
+                };
+
                 _context.Conversations.Add(conversation);
                 await _context.SaveChangesAsync();
+
+                // Load FK navigation properties
+                await _context.Entry(conversation).Reference(c => c.User1).LoadAsync();
+                await _context.Entry(conversation).Reference(c => c.User2).LoadAsync();
             }
 
             return conversation;
