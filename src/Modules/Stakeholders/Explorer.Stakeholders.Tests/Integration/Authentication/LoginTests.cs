@@ -5,6 +5,7 @@ using Shouldly;
 using Explorer.API.Controllers;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 
 namespace Explorer.Stakeholders.Tests.Integration.Authentication;
 
@@ -59,6 +60,8 @@ public class LoginTests : BaseStakeholdersIntegrationTest
 
     private static AuthenticationController CreateController(IServiceScope scope)
     {
-        return new AuthenticationController(scope.ServiceProvider.GetRequiredService<IAuthenticationService>());
+        return new AuthenticationController(
+            scope.ServiceProvider.GetRequiredService<IAuthenticationService>(),
+            scope.ServiceProvider.GetRequiredService<IUserRepository>());
     }
 }

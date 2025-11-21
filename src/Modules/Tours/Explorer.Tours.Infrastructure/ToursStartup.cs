@@ -27,12 +27,18 @@ public static class ToursStartup
     private static void SetupCore(IServiceCollection services)
     {
         services.AddScoped<IEquipmentService, EquipmentService>();
+        services.AddScoped<IProblemService, ProblemService>();
+        services.AddScoped<ITourService, TourService>();
+        services.AddScoped<IFacilityService, FacilityService>();
         services.AddScoped<IMeetUpService, MeetUpService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
     {
         services.AddScoped<IEquipmentRepository, EquipmentDbRepository>();
+        services.AddScoped<IProblemRepository, ProblemDbRepository>();
+        services.AddScoped<ITourRepository, TourDbRepository>();
+        services.AddScoped<IFacilityRepository, FacilityDbRepository>();
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));

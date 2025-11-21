@@ -1,0 +1,64 @@
+﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.Tours.Core.Domain;
+using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace Explorer.Tours.Infrastructure.Database.Repositories;
+
+public class TourDbRepository : ITourRepository
+{
+    protected readonly ToursContext dbContext;
+    private readonly DbSet<Tour> _dbSet;
+
+    public TourDbRepository(ToursContext dbContext)
+    {
+        this.dbContext = dbContext;
+        _dbSet = dbContext.Set<Tour>();
+    }
+
+    public Tour Create(Tour tour)
+    {
+        _dbSet.Add(tour);
+        dbContext.SaveChanges();
+        return tour;
+    }
+
+    public void Delete(long id)
+    {
+        var tour = Get(id);
+
+        if (tour == null)
+            return;
+
+        _dbSet.Remove(tour);
+        dbContext.SaveChanges();
+    }
+
+    public Tour? Get(long id)
+    {
+        return _dbSet.Find(id);
+    }
+
+    public PagedResult<Tour> GetByCreatorId(long creatorId, int page, int pageSize)
+    {
+        var query = _dbSet.Where(t => t.CreatorId == creatorId);
+        var task = query.GetPagedById(page, pageSize);
+        task.Wait();
+        return task.Result;
+    }
+
+    public PagedResult<Tour> GetPaged(int page, int pageSize)
+    {
+        var task = _dbSet.GetPagedById(page, pageSize);
+        task.Wait();
+        return task.Result;
+    }
+
+    public Tour Update(Tour tour)
+    {
+        _dbSet.Update(tour);
+        dbContext.SaveChanges();
+        return tour;
+    }
+}
