@@ -1,4 +1,7 @@
+using Explorer.Blog.API.Public;
+using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 using Explorer.Blog.Core.Mappers;
+using Explorer.Blog.Core.UseCases;
 using Explorer.Blog.Infrastructure.Database;
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +23,7 @@ public static class BlogStartup
     
     private static void SetupCore(IServiceCollection services)
     {
+        services.AddScoped<IBlogService, BlogService>(); // creates one instance per HTTP request
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -31,5 +35,7 @@ public static class BlogStartup
         services.AddDbContext<BlogContext>(opt =>
             opt.UseNpgsql(dataSource,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "blog")));
+
+        services.AddScoped<IBlogRepository, BlogRepository>(); // ^
     }
 }
