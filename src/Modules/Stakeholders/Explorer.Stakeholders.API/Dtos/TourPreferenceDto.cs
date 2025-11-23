@@ -1,16 +1,15 @@
-﻿using Explorer.BuildingBlocks.Core.Domain;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Formats.Asn1;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Explorer.Stakeholders.Core.Domain
+namespace Explorer.Stakeholders.API.Dtos
 {
-    public class TourPreference : Entity
+    public class TourPreferenceDto
     {
-        public long PersonId { get; init; }
+        public long Id { get; set; }
+        public long PersonId { get; set; }
 
         /// <summary>
         /// Null if no preference
@@ -36,6 +35,7 @@ namespace Explorer.Stakeholders.Core.Domain
         /// <summary>
         /// Empty / null if no preference
         /// </summary>
-        public List<string>? PreferedTags;
+        public List<string>? PreferedTags { get; set; }
+
     }
 }

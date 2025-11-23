@@ -8,7 +8,9 @@ namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces
 {
     public interface ITourPreferenceRepository
     {
-        
-
+        TourPreference Create(TourPreference tourPreference);
+        TourPreference Update(TourPreference tourPreference);
+        TourPreference Get(long id);
+        TourPreference GetByPersonId(long personId);
     }
 }
