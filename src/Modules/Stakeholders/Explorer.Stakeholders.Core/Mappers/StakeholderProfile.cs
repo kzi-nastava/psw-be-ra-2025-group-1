@@ -13,6 +13,7 @@ public class StakeholderProfile : Profile
         CreateMap<Rating, RatingDto>();     //domain -> dto
         CreateMap<RatingCreateDto, Rating>();
         CreateMap<RatingUpdateDto, Rating>();
+        CreateMap<UserLocationDto, UserLocation>().ReverseMap();
 
     }
 }
