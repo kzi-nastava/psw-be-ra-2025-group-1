@@ -8,6 +8,8 @@ public class ToursContext : DbContext
     public DbSet<Equipment> Equipment { get; set; }
     public DbSet<Problem> Problem { get; set; }
 
+    public DbSet<PersonEquipment> PersonEquipment { get; set; } //dodala sam
+
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

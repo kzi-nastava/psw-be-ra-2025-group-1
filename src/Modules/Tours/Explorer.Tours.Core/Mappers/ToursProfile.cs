@@ -10,5 +10,6 @@ public class ToursProfile : Profile
     {
         CreateMap<EquipmentDto, Equipment>().ReverseMap();
         CreateMap<ProblemDto, Problem>().ReverseMap();
+        CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap(); //dodala sam
     }
 }
