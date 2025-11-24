@@ -8,7 +8,7 @@ namespace Explorer.Stakeholders.Core.UseCases
 {
     public class UserLocationService : IUserLocationService
     {
-        private readonly IUserLocationRepository _locationRepository ;
+        private readonly IUserLocationRepository _locationRepository;
         private readonly IMapper _mapper;
 
         public UserLocationService(IUserLocationRepository locationRepository, IMapper mapper)
@@ -19,8 +19,12 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public UserLocationDto Create(UserLocationDto userLocation)
         {
-            var result = _locationRepository.Create(_mapper.Map<UserLocation>(userLocation));
-            return _mapper.Map<UserLocationDto>(result);
+            UserLocation exists = _locationRepository.GetByUserId(userLocation.UserId);
+
+            if (exists == null)
+                return _mapper.Map<UserLocationDto>(_locationRepository.Create(_mapper.Map<UserLocation>(userLocation)));
+            else
+                return _mapper.Map<UserLocationDto>(exists);
         }
 
         public bool Delete(long id)
@@ -28,15 +32,14 @@ namespace Explorer.Stakeholders.Core.UseCases
             return _locationRepository.Delete(id);
         }
 
-        public List<UserLocationDto> Get(long id)
+        public UserLocationDto Get(long id)
         {
-            List<UserLocationDto> locationList = _mapper.Map<List<UserLocationDto>>(_locationRepository.Get(id));
-            return locationList;
+            return _mapper.Map<UserLocationDto>(_locationRepository.Get(id));
         }
 
-        public List<UserLocationDto> GetByUserId(long userId)
+        public UserLocationDto GetByUserId(long userId)
         {
-           return _mapper.Map<List<UserLocationDto>>(_locationRepository.GetByUserId(userId));
+            return _mapper.Map<UserLocationDto>(_locationRepository.GetByUserId(userId));
         }
 
         public UserLocationDto Update(UserLocationDto userLocation)

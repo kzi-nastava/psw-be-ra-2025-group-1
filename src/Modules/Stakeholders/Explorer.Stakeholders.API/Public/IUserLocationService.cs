@@ -10,8 +10,8 @@ namespace Explorer.Stakeholders.API.Public
     public interface IUserLocationService
     {
         UserLocationDto Create(UserLocationDto userLocation);
-        List<UserLocationDto> GetByUserId(long userId);
-        List<UserLocationDto> Get(long id);
+        UserLocationDto GetByUserId(long userId);
+        UserLocationDto Get(long id);
         UserLocationDto Update(UserLocationDto userLocation);
         bool Delete(long id);
     }

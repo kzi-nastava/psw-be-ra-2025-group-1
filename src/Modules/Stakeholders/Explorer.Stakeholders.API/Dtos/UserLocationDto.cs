@@ -8,6 +8,7 @@ namespace Explorer.Stakeholders.API.Dtos
 {
     public class UserLocationDto
     {
+        public long Id { get; set; }
         public long UserId { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; }

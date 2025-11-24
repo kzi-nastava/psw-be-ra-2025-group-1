@@ -25,7 +25,8 @@ namespace Explorer.API.Controllers.Tourist
         public ActionResult<UserLocationDto> Get()
         {
             long userId = long.Parse(User.Claims.First(i => i.Type == "id").Value);
-            return Ok(_locationService.GetByUserId(userId));
+            var result = _locationService.GetByUserId(userId);
+            return Ok(result);
         }
 
         [HttpPost]

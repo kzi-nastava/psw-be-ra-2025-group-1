@@ -44,10 +44,16 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             return entity;
         }
 
-        public List<UserLocation> GetByUserId(long userId)
+        public UserLocation GetByUserId(long userId)
         {
             var entity = _dbSet.Where(ul => ul.UserId == userId).ToList() ?? throw new NotFoundException("Not found: " + userId);
-            return entity;
+
+            if(entity.Count > 1)
+                throw new InvalidDataException("Multiple locations found for user: " + userId);
+
+            var singleEntity = entity.SingleOrDefault() ?? throw new NotFoundException("Not found: " + userId);
+
+            return singleEntity;
         }
 
         public UserLocation Update(UserLocation entity)

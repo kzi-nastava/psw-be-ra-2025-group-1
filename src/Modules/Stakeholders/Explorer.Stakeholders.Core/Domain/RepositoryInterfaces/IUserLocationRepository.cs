@@ -9,7 +9,7 @@ namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces
     public interface IUserLocationRepository
     {
         UserLocation Create(UserLocation entity);
-        List<UserLocation> GetByUserId(long userId);
+        UserLocation GetByUserId(long userId);
         UserLocation Get(long id);
         UserLocation Update(UserLocation entity);
         bool Delete(long id);
