@@ -21,10 +21,21 @@ namespace Explorer.Stakeholders.Core.UseCases
         {
             UserLocation exists = _locationRepository.GetByUserId(userLocation.UserId);
 
+            try
+            {
+                exists.Timestamp = DateTime.UtcNow;
+                exists.Longitude= userLocation.Longitude;
+                exists.Latitude= userLocation.Latitude;
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
             if (exists == null)
                 return _mapper.Map<UserLocationDto>(_locationRepository.Create(_mapper.Map<UserLocation>(userLocation)));
             else
-                return _mapper.Map<UserLocationDto>(exists);
+                return _mapper.Map<UserLocationDto>(_locationRepository.Update(_mapper.Map<UserLocation>(userLocation)));
         }
 
         public bool Delete(long id)

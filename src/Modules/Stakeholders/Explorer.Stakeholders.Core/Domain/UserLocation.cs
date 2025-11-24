@@ -9,10 +9,10 @@ namespace Explorer.Stakeholders.Core.Domain
 {
     public class UserLocation: Entity
     {
-        public long UserId { get; init; }
-        public double Latitude { get; init; }
-        public double Longitude { get; init; }
-        public DateTime Timestamp { get; init; }
+        public long UserId { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public DateTime Timestamp { get; set; }
 
         public UserLocation(long userId, double latitude, double longitude, DateTime timestamp)
         {
@@ -28,5 +28,6 @@ namespace Explorer.Stakeholders.Core.Domain
             Longitude = -1;
             Timestamp = DateTime.MinValue;
         }
+
     }
 }
