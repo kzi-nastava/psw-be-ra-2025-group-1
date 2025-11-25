@@ -117,6 +117,10 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        // Verify the record exists before attempting to delete
+        var existingEntity = dbContext.Problem.FirstOrDefault(i => i.Id == -3);
+        existingEntity.ShouldNotBeNull($"Problem with ID -3 should exist before deletion. Available IDs: {string.Join(", ", dbContext.Problem.Select(p => p.Id))}");
+
         // Act
         var result = (OkResult)controller.Delete(-3);
 

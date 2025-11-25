@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
@@ -14,6 +15,16 @@ public class PersonEquipmentService : IPersonEquipmentService
     private readonly IEquipmentRepository _equipmentRepository;
     private readonly IMapper _mapper;
 
+    /*
+    public PagedResult<PersonEquipmentDto> GetPaged(int page, int pageSize)
+    {
+        var result = _personEquipmentRepository.GetPaged(page, pageSize);
+
+        var items = result.Results.Select(_mapper.Map<PersonEquipmentDto>).ToList();
+        return new PagedResult<PersonEquipmentDto>(items, result.TotalCount);
+    }
+    */
+
     public PersonEquipmentService(IPersonEquipmentRepository personEquipmentRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
     {
         _personEquipmentRepository = personEquipmentRepository;
@@ -21,6 +32,7 @@ public class PersonEquipmentService : IPersonEquipmentService
         _mapper = mapper;
     }
 
+    //uradjeno, gleda spisak postojece opreme
     public PagedResult<EquipmentDto> GetAvailableEquipment(int page, int pageSize)
     {
         var result = _equipmentRepository.GetPaged(page, pageSize);
@@ -35,31 +47,25 @@ public class PersonEquipmentService : IPersonEquipmentService
         return new PagedResult<PersonEquipmentDto>(items, result.TotalCount);
     }
 
-    public PersonEquipmentDto AddEquipmentToPerson(long personId, long equipmentId, int quantity)
+    public PersonEquipmentDto AddEquipmentToPerson(PersonEquipmentDto personEquipment) //dodavanje opreme osobi
     {
-        var existingPersonEquipment = _personEquipmentRepository.GetByPersonAndEquipment(personId, equipmentId);
+        var existingPersonEquipment = _personEquipmentRepository.GetByPersonAndEquipment(personEquipment.PersonId, personEquipment.EquipmentId);
 
         if (existingPersonEquipment != null)
         {
-            // Update existing quantity
-            // Instead of creating a new PersonEquipment and trying to set Id (which is protected),
-            // update the quantity of the existing entity and save it.
-            var updatedPersonEquipment = new PersonEquipment(existingPersonEquipment.PersonId, existingPersonEquipment.EquipmentId, existingPersonEquipment.Quantity + quantity);
-            typeof(Entity).GetProperty("Id")?.SetValue(updatedPersonEquipment, existingPersonEquipment.Id); // Reflection workaround if needed
-
-            var updatedResult = _personEquipmentRepository.Add(updatedPersonEquipment);
-            return _mapper.Map<PersonEquipmentDto>(updatedResult);
+            // Person already has this equipment, return the existing record
+            return _mapper.Map<PersonEquipmentDto>(existingPersonEquipment);
         }
         else
         {
-            // Create new PersonEquipment
-            var personEquipment = new PersonEquipment(personId, equipmentId, quantity);
-            var result = _personEquipmentRepository.Add(personEquipment);
+            // Create new PersonEquipment record
+            var newPersonEquipment = new PersonEquipment(personEquipment.PersonId, personEquipment.EquipmentId);
+            var result = _personEquipmentRepository.Add(newPersonEquipment);
             return _mapper.Map<PersonEquipmentDto>(result);
         }
     }
 
-    public void RemoveEquipmentFromPerson(long personId, long equipmentId)
+    public void RemoveEquipmentFromPerson(long personId, long equipmentId) //uklanjanje opreme od osobe
     {
         _personEquipmentRepository.Remove(personId, equipmentId);
     }

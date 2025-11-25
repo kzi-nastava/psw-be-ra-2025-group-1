@@ -18,6 +18,13 @@ public class PersonEquipmentDbRepository : IPersonEquipmentRepository
         _dbSet = DbContext.Set<PersonEquipment>();
     }
 
+    public PagedResult<PersonEquipment> GetPaged(int page, int pageSize)
+    {
+        var task = _dbSet.GetPagedById(page, pageSize);
+        task.Wait();
+        return task.Result;
+    }
+
     public PagedResult<PersonEquipment> GetByPersonId(long personId, int page, int pageSize)
     {
         var query = _dbSet.Where(pe => pe.PersonId == personId);

@@ -5,7 +5,6 @@
         public long Id { get; set; }
         public long PersonId { get; set; }
         public long EquipmentId { get; set; }
-        public int Quantity { get; set; }
         public EquipmentDto? Equipment { get; set; }
     }
 }
