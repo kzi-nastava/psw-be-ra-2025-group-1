@@ -15,13 +15,13 @@ public enum TourStatus
 }
 public class Tour : Entity
 {
-    public long CreatorId { get; init; }
-    public string Title { get; init; }
-    public string Description { get; init; }
-    public int Difficulty { get; init; }
-    public string[] Tags { get; init; }
-    public TourStatus Status { get; init; }
-    public double Price { get; init; }
+    public long CreatorId { get; private set; }
+    public string Title { get; private set; }
+    public string Description { get; private set; }
+    public int Difficulty { get; private set; }
+    public string[] Tags { get; private set; }
+    public TourStatus Status { get; private set; }
+    public double Price { get; private set; }
 
     public Tour()
     {
@@ -43,4 +43,14 @@ public class Tour : Entity
         CreatorId = creatorId;
     }
 
+    public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
+    {
+        CreatorId = creatorId;
+        Title = title;
+        Description = description;
+        Difficulty = difficulty;
+        Tags = tags;
+        Status = status;
+        Price = price;
+    }
 }

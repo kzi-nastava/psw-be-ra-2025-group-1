@@ -13,7 +13,13 @@ public class TourDto
     public string Description { get; init; }= "";
     public int Difficulty { get; init; } = -1;
     public string[] Tags { get; init; }= Array.Empty<string>();
-    public string Status { get; init; }= "Draft"; // Maybe should convert to TourStatus enum
+    public TourStatusDTO Status { get; init; }= TourStatusDTO.Draft;
     public double Price { get; init; } = -1;
 
+}
+public enum TourStatusDTO
+{
+    Draft,
+    Published,
+    Archived
 }

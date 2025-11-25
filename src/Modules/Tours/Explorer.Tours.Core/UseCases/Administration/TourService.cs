@@ -53,9 +53,13 @@ public class TourService : ITourService
         return new PagedResult<TourDto>(items, result.TotalCount);
     }
 
-    public TourDto Update(TourDto tourdto)
+    public TourDto Update(long id, TourDto tourDto)
     {
-        var result = _tourRepository.Update(_mapper.Map<Tour>(tourdto));
+        var tour = _tourRepository.Get(id);
+        tour.Update(tourDto.CreatorId, tourDto.Title, tourDto.Description, tourDto.Difficulty,
+            tourDto.Tags, (TourStatus)tourDto.Status, tourDto.Price);
+
+        var result = _tourRepository.Update(tour);
         return _mapper.Map<TourDto>(result);
     }
 }
