@@ -35,4 +35,19 @@ public class UserDatabaseRepository : IUserRepository
         if (person == null) throw new KeyNotFoundException("Not found.");
         return person.Id;
     }
+
+    public List<User> GetAll()
+    {
+        throw new NotImplementedException();
+    }
+
+    public User Get(long id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public User Update(User user)
+    {
+        throw new NotImplementedException();
+    }
 }
