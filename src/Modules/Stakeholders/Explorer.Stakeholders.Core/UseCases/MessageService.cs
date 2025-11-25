@@ -49,6 +49,11 @@ namespace Explorer.Stakeholders.Core.UseCases
         public async Task<IEnumerable<ConversationDTO>> GetUserConversationsAsync(long userId)
         {
             var conversations = await _conversationRepository.GetUserConversationsAsync(userId);
+
+            // FIX: ako nema podataka → vrati empty list, nikad null
+            if (conversations == null)
+                return new List<ConversationDTO>();
+
             var dtoList = new List<ConversationDTO>();
 
             foreach (var c in conversations)
@@ -62,13 +67,10 @@ namespace Explorer.Stakeholders.Core.UseCases
                 dtoList.Add(new ConversationDTO
                 {
                     Id = c.Id,
-
-                    // 🔥 Dodato – OVO JE NEDOSTAJALO
                     User1Id = c.User1Id,
                     User1Username = c.User1?.Username,
                     User2Id = c.User2Id,
                     User2Username = c.User2?.Username,
-
                     OtherUserName = otherUser?.Username,
                     LastMessage = lastMsg?.Content ?? "No messages",
                     LastMessageAt = lastMsg?.Timestamp

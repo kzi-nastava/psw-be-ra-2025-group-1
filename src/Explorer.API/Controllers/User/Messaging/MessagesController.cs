@@ -45,6 +45,20 @@ namespace Explorer.API.Controllers.User.Messaging
 
         }
 
+        [HttpPut("{messageId}")]
+        public async Task<IActionResult> EditMessage(long messageId, [FromBody] EditMessageRequest request)
+        {
+            try
+            {
+                await _messageService.EditMessageAsync(messageId, request.NewContent);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
 
         // --- Dohvatanje svih konverzacija korisnika ---
         [HttpGet("conversations/{userId}")]
