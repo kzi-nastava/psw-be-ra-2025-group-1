@@ -19,24 +19,27 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public UserLocationDto Create(UserLocationDto userLocation)
         {
-            UserLocation exists = _locationRepository.GetByUserId(userLocation.UserId);
-
-            try
-            {
-                exists.Timestamp = DateTime.UtcNow;
-                exists.Longitude= userLocation.Longitude;
-                exists.Latitude= userLocation.Latitude;
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            UserLocation? exists = _locationRepository.GetByUserId(userLocation.UserId);
 
             if (exists == null)
+            {
                 return _mapper.Map<UserLocationDto>(_locationRepository.Create(_mapper.Map<UserLocation>(userLocation)));
+            }
             else
-                return _mapper.Map<UserLocationDto>(_locationRepository.Update(_mapper.Map<UserLocation>(userLocation)));
-        }
+            {
+                try
+                {
+                    exists.Timestamp = DateTime.UtcNow;
+                    exists.Longitude = userLocation.Longitude;
+                    exists.Latitude = userLocation.Latitude;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                return _mapper.Map<UserLocationDto>(_locationRepository.Update(exists));
+            }
+            }
 
         public bool Delete(long id)
         {

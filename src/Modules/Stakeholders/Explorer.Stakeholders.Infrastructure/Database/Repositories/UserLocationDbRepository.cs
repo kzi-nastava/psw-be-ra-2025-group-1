@@ -38,20 +38,20 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             return true;
         }
 
-        public UserLocation Get(long id)
+        public UserLocation? Get(long id)
         {
-            var entity = _dbSet.Find(id) ?? throw new NotFoundException("Not found: " + id);
+            var entity = _dbSet.Find(id);
             return entity;
         }
 
-        public UserLocation GetByUserId(long userId)
+        public UserLocation? GetByUserId(long userId)
         {
-            var entity = _dbSet.Where(ul => ul.UserId == userId).ToList() ?? throw new NotFoundException("Not found: " + userId);
+            var entity = _dbSet.Where(ul => ul.UserId == userId).ToList();
 
             if(entity.Count > 1)
                 throw new InvalidDataException("Multiple locations found for user: " + userId);
 
-            var singleEntity = entity.SingleOrDefault() ?? throw new NotFoundException("Not found: " + userId);
+            var singleEntity = entity.SingleOrDefault();
 
             return singleEntity;
         }
