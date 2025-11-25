@@ -1,33 +1,57 @@
-﻿using Explorer.Stakeholders.Core.Domain;
+﻿using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
 {
     public class TourPreferenceDbRepository : ITourPreferenceRepository
     {
-        //protected readonly 
+        protected readonly StakeholdersContext DbContext;
+        private readonly DbSet<TourPreference> _dbSet;
 
-        public TourPreference Create(TourPreference tourPreference)
+        public TourPreferenceDbRepository(StakeholdersContext dbContext)
         {
-            throw new NotImplementedException();
+            DbContext = dbContext;
+            _dbSet = DbContext.Set<TourPreference>();
+        }
+
+        public TourPreference Create(TourPreference entity)
+        {
+            _dbSet.Add(entity);
+            DbContext.SaveChanges();
+            return entity;
         }
         public TourPreference Get(long id)
         {
-            throw new NotImplementedException();
+            var entity = _dbSet.Find(id);
+            if (entity == null)
+            {
+                throw new NotFoundException($"TourPreference with id {id} not found.");
+            }
+            return entity;
         }
 
-        public TourPreference Update(TourPreference tourPreference)
+        public TourPreference Update(TourPreference entity)
         {
-            throw new NotImplementedException();
+            try
+            {
+                DbContext.Update(entity);
+                DbContext.SaveChanges();
+            }
+            catch (DbUpdateException e)
+            {
+                throw new NotFoundException(e.Message);
+            }
+            return entity;
         }
         public TourPreference GetByUser(long userId)
         {
-            throw new NotImplementedException();
+            var entity = _dbSet.FirstOrDefault(p => p.UserId == userId);
+            if (entity == null)
+                throw new NotFoundException($"Person with UserId {userId} not found.");
+            return entity;
         }
     }
 }
