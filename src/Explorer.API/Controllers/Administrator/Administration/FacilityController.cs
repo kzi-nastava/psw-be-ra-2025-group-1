@@ -24,6 +24,24 @@ public class FacilityController : ControllerBase
         return Ok(_facilityService.GetPaged(page, pageSize));
     }
 
+    [HttpGet("all")]
+    public ActionResult<List<FacilityDto>> GetAllFacilities()
+    {
+        return Ok(_facilityService.GetAll());
+    }
+
+    [HttpGet("{id:long}")]
+    public ActionResult<FacilityDto> GetById(long id)
+    {
+        return Ok(_facilityService.GetById(id));
+    }
+
+    [HttpGet("category/{category}")]
+    public ActionResult<List<FacilityDto>> GetByCategory(FacilityCategory category)
+    {
+        return Ok(_facilityService.GetByCategory(category));
+    }
+
     [HttpPost]
     public ActionResult<FacilityDto> Create([FromBody] FacilityDto facility)
     {
