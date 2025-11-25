@@ -40,9 +40,9 @@ namespace Explorer.Stakeholders.Core.UseCases
             return _mapper.Map<TourPreferenceDto>(result);
         }
 
-        public TourPreferenceDto GetByPersonId(long personId)
+        public TourPreferenceDto GetByUser(long userId)
         {
-            var result = _tourPreferenceRepository.GetByPersonId(personId);
+            var result = _tourPreferenceRepository.GetByUser(userId);
             return _mapper.Map<TourPreferenceDto>(result);
         }
     }

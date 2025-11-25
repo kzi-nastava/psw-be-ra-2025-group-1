@@ -10,7 +10,7 @@ namespace Explorer.Stakeholders.Core.Domain
 {
     public class TourPreference : Entity
     {
-        public long PersonId { get; init; }
+        public long UserId { get; init; }
 
         /// <summary>
         /// Null if no preference

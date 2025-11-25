@@ -11,6 +11,7 @@ namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces
         TourPreference Create(TourPreference tourPreference);
         TourPreference Update(TourPreference tourPreference);
         TourPreference Get(long id);
-        TourPreference GetByPersonId(long personId);
+        TourPreference GetByUser(long userId);
+        //TourPreference GetByPersonId(long personId);
     }
 }

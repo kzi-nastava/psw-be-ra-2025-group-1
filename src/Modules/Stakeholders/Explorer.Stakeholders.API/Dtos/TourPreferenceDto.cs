@@ -9,7 +9,7 @@ namespace Explorer.Stakeholders.API.Dtos
     public class TourPreferenceDto
     {
         public long Id { get; set; }
-        public long PersonId { get; set; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// Null if no preference

@@ -12,6 +12,7 @@ namespace Explorer.Stakeholders.API.Public
         public TourPreferenceDto Create(TourPreferenceDto tourPreference);
         public TourPreferenceDto Update(TourPreferenceDto tourPreference);
         public TourPreferenceDto Get(long id);
-        public TourPreferenceDto GetByPersonId(long personId);
+        public TourPreferenceDto GetByUser(long userId);
+        //public TourPreferenceDto GetByPersonId(long personId);
     }
 }
