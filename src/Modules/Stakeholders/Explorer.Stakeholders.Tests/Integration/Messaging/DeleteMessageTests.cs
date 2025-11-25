@@ -21,8 +21,8 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging // DODAJ OVO
             // Prvo pošalji novu poruku da bi je obrisao
             var sendRequest = new SendMessageRequest
             {
-                SenderId = -1,
-                ReceiverId = -2,
+                SenderId = -31,
+                ReceiverId = -32,
                 Content = "Poruka za brisanje"
             };
 

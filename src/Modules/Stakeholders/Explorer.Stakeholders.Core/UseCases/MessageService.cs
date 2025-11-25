@@ -77,7 +77,10 @@ namespace Explorer.Stakeholders.Core.UseCases
                 });
             }
 
-            return dtoList.OrderByDescending(c => c.LastMessageAt ?? DateTime.MinValue);
+            return dtoList
+     .OrderByDescending(c => c.LastMessageAt ?? DateTime.MinValue)
+     .ToList();
+
         }
 
 

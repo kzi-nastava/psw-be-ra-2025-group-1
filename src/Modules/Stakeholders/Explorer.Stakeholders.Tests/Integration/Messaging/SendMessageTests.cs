@@ -18,10 +18,11 @@ namespace Explorer.Stakeholders.Tests.Integration.Messaging
             var controller = CreateController(scope);
             var request = new SendMessageRequest
             {
-                SenderId = -1,
-                ReceiverId = -2,
+                SenderId = -31,
+                ReceiverId = -32,
                 Content = "Test poruka iz testa"
             };
+
 
             // Act
             var result = await controller.SendMessage(request);
