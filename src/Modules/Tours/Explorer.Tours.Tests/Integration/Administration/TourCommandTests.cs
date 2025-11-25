@@ -4,6 +4,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using System;
@@ -35,7 +36,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
-        var newEntity = new TourDto { CreatorId = 1, Title = "New Tour", Description = "A new tour", Difficulty = 3, Tags = new[] { "tag1", "tag2" }, Status = "Draft", Price = 99.99 };
+        var newEntity = new TourDto { CreatorId = 1, Title = "New Tour", Description = "A new tour", Difficulty = 3, Tags = new[] { "tag1", "tag2" }, Status = TourStatusDTO.Draft, Price = 99.99 };
 
         // Act
         var result = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TourDto;
@@ -62,7 +63,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
-        var newEntity = new TourDto { CreatorId = 1, Title = "To Update", Description = "Will be updated", Difficulty = 2, Tags = new[] { "t1" }, Status = "Draft", Price = 50.0 };
+        var newEntity = new TourDto { CreatorId = 1, Title = "To Update", Description = "Will be updated", Difficulty = 2, Tags = new[] { "t1" }, Status = TourStatusDTO.Draft, Price = 50.0 };
 
         var created = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TourDto;
         created.ShouldNotBeNull();
@@ -71,7 +72,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         stored.ShouldNotBeNull();
         var id = stored.Id;
 
-        var updatedDto = new TourDto { CreatorId = created.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = "Published", Price = 150.0 };
+        var updatedDto = new TourDto { CreatorId = created.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDTO.Published, Price = 150.0 };
 
         // Act
         var updateResult = ((ObjectResult)controller.Update(id, updatedDto).Result)?.Value as TourDto;
@@ -84,6 +85,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         updateResult.Price.ShouldBe(150.0);
 
         // Assert - Database
+        dbContext.Entry(stored).State = EntityState.Detached;
         var storedUpdated = dbContext.Tour.FirstOrDefault(i => i.Id == id);
         storedUpdated.ShouldNotBeNull();
         storedUpdated.Title.ShouldBe("Updated Title");
@@ -96,7 +98,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
-        var newEntity = new TourDto { CreatorId = 1, Title = "To Delete", Description = "Will be deleted", Difficulty = 1, Tags = new[] { "del" }, Status = "Draft", Price = 10.0 };
+        var newEntity = new TourDto { CreatorId = 1, Title = "To Delete", Description = "Will be deleted", Difficulty = 1, Tags = new[] { "del" }, Status = TourStatusDTO.Draft, Price = 10.0 };
 
         var created = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TourDto;
         created.ShouldNotBeNull();
