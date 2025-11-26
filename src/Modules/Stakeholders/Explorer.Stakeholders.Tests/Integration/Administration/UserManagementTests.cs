@@ -3,6 +3,7 @@ using Explorer.API.Controllers.Administrator.Administration;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Infrastructure.Database;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -144,7 +145,10 @@ namespace Explorer.Stakeholders.Tests.Integration.Administration
 
         private static AuthenticationController CreateAuthController(IServiceScope scope)
         {
-            return new AuthenticationController(scope.ServiceProvider.GetRequiredService<IAuthenticationService>());
+            return new AuthenticationController(
+                scope.ServiceProvider.GetRequiredService<IAuthenticationService>(),
+                scope.ServiceProvider.GetRequiredService<IUserRepository>()
+                );
         }
     }
 }
