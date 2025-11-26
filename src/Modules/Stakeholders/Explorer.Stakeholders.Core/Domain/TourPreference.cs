@@ -10,32 +10,37 @@ namespace Explorer.Stakeholders.Core.Domain
 {
     public class TourPreference : Entity
     {
-        public long UserId { get; init; }
+        public long UserId { get; set; }
 
         /// <summary>
         /// Null if no preference
         /// </summary>
-        public double? Difficulty { get; init; }
+        public double? Difficulty { get; set; }
         /// <summary>
         /// Values from 0 to 3, null if no preference
         /// </summary>
-        public int? WalkRating { get; init; }
+        public int? WalkRating { get; set; }
         /// <summary>
         /// Values from 0 to 3, null if no preference
         /// </summary>
-        public int? BicycleRating { get; init; }
+        public int? BicycleRating { get; set; }
         /// <summary>
         /// Values from 0 to 3, null if no preference
         /// </summary>
-        public int? CarRating { get; init; }
+        public int? CarRating { get; set; }
         /// <summary>
         /// Values from 0 to 3, null if no preference
         /// </summary>
-        public int? BoatRating { get; init; }
+        public int? BoatRating { get; set; }
 
         /// <summary>
         /// Empty / null if no preference
         /// </summary>
-        public List<string>? PreferedTags;
+        public List<string>? PreferedTags { get; set; }
     }
+
+    // stuff for running migrations from Package Manager Console:
+    //Add-Migration -Name Init -Context StakeholdersContext -Project Explorer.Stakeholders.Infrastructure -StartupProject Explorer.API
+    //Update-Database -Context StakeholdersContext -Project Explorer.Stakeholders.Infrastructure -StartupProject Explorer.API
+
 }
