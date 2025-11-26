@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Explorer.API.Controllers.Tourist
 {
     [Authorize(Policy = "touristPolicy")]
-    [Route("api/tourist/my-equipments")]
+    [Route("api/tourist/person-equipment")]
     [ApiController]
     public class PersonEquipmentController : ControllerBase
     {
@@ -19,17 +19,24 @@ namespace Explorer.API.Controllers.Tourist
             _personEquipmentService = personEquipmentService;
         }
 
-        [HttpGet]
-        public ActionResult<PagedResult<EquipmentDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+        [HttpGet("available-equipment")]
+        public ActionResult<PagedResult<EquipmentDto>> GetAvailableEquipment([FromQuery] int page, [FromQuery] int pageSize)
         {
-            return Ok(_personEquipmentService.GetAvailableEquipment(page, pageSize)); //spisak dostupne opreme
+            var personId = GetPersonId();
+            return Ok(_personEquipmentService.GetAvailableEquipment(personId, page, pageSize));
         }
 
-        [HttpGet("my-equipments")]
-        public ActionResult<PagedResult<PersonEquipmentDto>> GetPersonEquipments([FromQuery] int page, [FromQuery] int pageSize)
+        [HttpGet("person/{personId:long}")]
+        public ActionResult<PagedResult<PersonEquipmentDto>> GetPersonEquipments(long personId, [FromQuery] int page, [FromQuery] int pageSize)
         {
-            var creatorId = GetPersonId();
-            var result = _personEquipmentService.GetPersonEquipment(creatorId, page, pageSize); //paginacija da dobavi opreme od osobe
+            // Verify the user is requesting their own equipment
+            var userPersonId = GetPersonId();
+            if (userPersonId != personId)
+            {
+                return Forbid();
+            }
+            
+            var result = _personEquipmentService.GetPersonEquipment(personId, page, pageSize);
             return Ok(result);
         }
 
@@ -37,13 +44,14 @@ namespace Explorer.API.Controllers.Tourist
         public ActionResult<PersonEquipmentDto> Create([FromBody] PersonEquipmentDto personEquipment)
         {
             personEquipment.PersonId = GetPersonId();
-            return Ok(_personEquipmentService.AddEquipmentToPerson(personEquipment)); //dodavanje opreme osobi
+            return Ok(_personEquipmentService.AddEquipmentToPerson(personEquipment));
         }
 
-        [HttpDelete("{eid:long}")]
-        public ActionResult Delete(long id, long eid)
+        [HttpDelete("{id:long}")]
+        public ActionResult Delete(long id)
         {
-            _personEquipmentService.RemoveEquipmentFromPerson(id, eid);
+            var personId = GetPersonId();
+            _personEquipmentService.RemoveEquipmentFromPerson(personId, id);
             return Ok();
         }
 

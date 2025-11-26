@@ -15,16 +15,6 @@ public class PersonEquipmentService : IPersonEquipmentService
     private readonly IEquipmentRepository _equipmentRepository;
     private readonly IMapper _mapper;
 
-    /*
-    public PagedResult<PersonEquipmentDto> GetPaged(int page, int pageSize)
-    {
-        var result = _personEquipmentRepository.GetPaged(page, pageSize);
-
-        var items = result.Results.Select(_mapper.Map<PersonEquipmentDto>).ToList();
-        return new PagedResult<PersonEquipmentDto>(items, result.TotalCount);
-    }
-    */
-
     public PersonEquipmentService(IPersonEquipmentRepository personEquipmentRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
     {
         _personEquipmentRepository = personEquipmentRepository;
@@ -32,40 +22,100 @@ public class PersonEquipmentService : IPersonEquipmentService
         _mapper = mapper;
     }
 
-    //uradjeno, gleda spisak postojece opreme
-    public PagedResult<EquipmentDto> GetAvailableEquipment(int page, int pageSize)
+    public PagedResult<EquipmentDto> GetAvailableEquipment(long personId, int page, int pageSize)
     {
-        var result = _equipmentRepository.GetPaged(page, pageSize);
-        var items = result.Results.Select(_mapper.Map<EquipmentDto>).ToList();
-        return new PagedResult<EquipmentDto>(items, result.TotalCount);
+        // Get all equipment
+        var allEquipment = _equipmentRepository.GetPaged(page, pageSize);
+        
+        // Get equipment IDs that the person already owns
+        var ownedEquipment = _personEquipmentRepository.GetByPersonId(personId, 0, 0);
+        var ownedEquipmentIds = ownedEquipment.Results.Select(pe => pe.EquipmentId).ToHashSet();
+        
+        // Filter out owned equipment
+        var availableEquipment = allEquipment.Results
+            .Where(e => !ownedEquipmentIds.Contains(e.Id))
+            .ToList();
+        
+        var items = availableEquipment.Select(_mapper.Map<EquipmentDto>).ToList();
+        
+        // Return with adjusted total count
+        var availableTotalCount = allEquipment.TotalCount - ownedEquipmentIds.Count;
+        return new PagedResult<EquipmentDto>(items, availableTotalCount);
     }
 
     public PagedResult<PersonEquipmentDto> GetPersonEquipment(long personId, int page, int pageSize)
     {
         var result = _personEquipmentRepository.GetByPersonId(personId, page, pageSize);
-        var items = result.Results.Select(_mapper.Map<PersonEquipmentDto>).ToList();
+        var items = new List<PersonEquipmentDto>();
+        
+        foreach (var personEquipment in result.Results)
+        {
+            var dto = _mapper.Map<PersonEquipmentDto>(personEquipment);
+            
+            // Load the equipment details
+            try
+            {
+                var equipment = _equipmentRepository.Get(personEquipment.EquipmentId);
+                dto.Equipment = _mapper.Map<EquipmentDto>(equipment);
+            }
+            catch (NotFoundException)
+            {
+                // Equipment not found, skip or handle as needed
+                dto.Equipment = null;
+            }
+            
+            items.Add(dto);
+        }
+        
         return new PagedResult<PersonEquipmentDto>(items, result.TotalCount);
     }
 
-    public PersonEquipmentDto AddEquipmentToPerson(PersonEquipmentDto personEquipment) //dodavanje opreme osobi
+    public PersonEquipmentDto AddEquipmentToPerson(PersonEquipmentDto personEquipment)
     {
         var existingPersonEquipment = _personEquipmentRepository.GetByPersonAndEquipment(personEquipment.PersonId, personEquipment.EquipmentId);
 
         if (existingPersonEquipment != null)
         {
             // Person already has this equipment, return the existing record
-            return _mapper.Map<PersonEquipmentDto>(existingPersonEquipment);
+            var existingDto = _mapper.Map<PersonEquipmentDto>(existingPersonEquipment);
+            
+            // Load equipment details
+            try
+            {
+                var equipment = _equipmentRepository.Get(existingPersonEquipment.EquipmentId);
+                existingDto.Equipment = _mapper.Map<EquipmentDto>(equipment);
+            }
+            catch (NotFoundException)
+            {
+                existingDto.Equipment = null;
+            }
+            
+            return existingDto;
         }
         else
         {
             // Create new PersonEquipment record
             var newPersonEquipment = new PersonEquipment(personEquipment.PersonId, personEquipment.EquipmentId);
             var result = _personEquipmentRepository.Add(newPersonEquipment);
-            return _mapper.Map<PersonEquipmentDto>(result);
+            
+            var resultDto = _mapper.Map<PersonEquipmentDto>(result);
+            
+            // Load equipment details
+            try
+            {
+                var equipment = _equipmentRepository.Get(result.EquipmentId);
+                resultDto.Equipment = _mapper.Map<EquipmentDto>(equipment);
+            }
+            catch (NotFoundException)
+            {
+                resultDto.Equipment = null;
+            }
+            
+            return resultDto;
         }
     }
 
-    public void RemoveEquipmentFromPerson(long personId, long equipmentId) //uklanjanje opreme od osobe
+    public void RemoveEquipmentFromPerson(long personId, long equipmentId)
     {
         _personEquipmentRepository.Remove(personId, equipmentId);
     }

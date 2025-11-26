@@ -48,7 +48,7 @@ public class PersonEquipmentDbRepository : IPersonEquipmentRepository
     public void Remove(long personId, long equipmentId)
     {
         var entity = _dbSet.FirstOrDefault(pe => pe.PersonId == personId && pe.EquipmentId == equipmentId);
-        if (entity == null) throw new NotFoundException($"PersonEquipment not found");
+        if (entity == null) throw new NotFoundException($"PersonEquipment not found for PersonId: {personId} and EquipmentId: {equipmentId}");
 
         _dbSet.Remove(entity);
         DbContext.SaveChanges();

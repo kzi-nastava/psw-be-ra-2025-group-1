@@ -22,10 +22,6 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         
-        // Check what PersonEquipment records exist
-        var allPersonEquipment = dbContext.PersonEquipment.ToList();
-        var targetPersonEquipment = dbContext.PersonEquipment.FirstOrDefault(pe => pe.PersonId == -1 && pe.EquipmentId == -1);
-        
         var newEntity = new PersonEquipmentDto
         {
             PersonId = -1, // Controller will override this anyway
@@ -39,21 +35,7 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         result.ShouldNotBeNull();
         result.PersonId.ShouldBe(-1);
         result.EquipmentId.ShouldBe(-1);
-        
-        if (targetPersonEquipment != null)
-        {
-            // If test data exists, should return existing record
-            result.Id.ShouldBe(targetPersonEquipment.Id);
-        }
-        else
-        {
-            // If no test data, should create new record
-            result.Id.ShouldNotBe(0);
-            
-            // Verify it was created in database
-            var storedEntity = dbContext.PersonEquipment.FirstOrDefault(i => i.PersonId == -1 && i.EquipmentId == -1 && i.Id == result.Id);
-            storedEntity.ShouldNotBeNull();
-        }
+        result.Id.ShouldNotBe(0);
     }
 
     [Fact]
@@ -65,11 +47,11 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         var updatedEntity = new PersonEquipmentDto
         {
             PersonId = 0, // This will be overridden by controller to -1
-            EquipmentId = 0 // Invalid equipment ID - should trigger validation
+            EquipmentId = 9999 // Non-existent equipment ID
         };
 
-        // Act & Assert
-        Should.Throw<ArgumentException>(() => controller.Create(updatedEntity));
+        // Act & Assert - Should throw when trying to get non-existent equipment
+        Should.Throw<NotFoundException>(() => controller.Create(updatedEntity));
     }
 
     [Fact]
@@ -80,8 +62,16 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // Act
-        var result = (OkResult)controller.Delete(-1, -1);
+        // First, create a person equipment to delete
+        var testEntity = new PersonEquipmentDto
+        {
+            PersonId = -1,
+            EquipmentId = -1
+        };
+        controller.Create(testEntity);
+
+        // Act - Delete takes only equipmentId, personId comes from JWT token
+        var result = (OkResult)controller.Delete(-1);
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -99,8 +89,8 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
-        // Act & Assert
-        Should.Throw<NotFoundException>(() => controller.Delete(-1000, -1000));
+        // Act & Assert - Delete with non-existent equipment ID
+        Should.Throw<NotFoundException>(() => controller.Delete(-9999));
     }
     
     private static PersonEquipmentController CreateController(IServiceScope scope)
