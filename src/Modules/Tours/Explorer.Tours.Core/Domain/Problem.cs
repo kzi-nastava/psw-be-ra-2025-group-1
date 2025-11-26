@@ -1,0 +1,34 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Explorer.BuildingBlocks.Core.Domain;
+
+namespace Explorer.Tours.Core.Domain;
+
+public enum ProblemCategory
+{
+    Safety,
+    Maintenance,
+    Other
+}
+public class Problem : Entity
+{
+    public long TourId { get; init; }
+    public long CreatorId { get; init; }
+    public int Priority { get; init; }
+    public string Description { get; init; }
+    public DateTime CreationTime { get; init; }
+    public ProblemCategory Category { get; init; }
+    public Problem(int priority, string description, ProblemCategory category, long tourId, long creatorId)
+    {
+        if (priority < 1 || priority > 5) throw new ArgumentException("Priority must be between 1 and 5.");
+        Priority = priority;
+        Description = description;
+        CreationTime = DateTime.UtcNow;
+        Category = category;
+        TourId = tourId;
+        CreatorId = creatorId;
+    }
+}
