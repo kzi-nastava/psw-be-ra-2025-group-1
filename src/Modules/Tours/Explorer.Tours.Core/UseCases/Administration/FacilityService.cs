@@ -6,6 +6,7 @@ using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using DomainFacilityCategory = Explorer.Tours.Core.Domain.FacilityCategory;
+using DtoFacilityCategory = Explorer.Tours.API.Dtos.FacilityCategory;
 
 namespace Explorer.Tours.Core.UseCases.Administration;
 
@@ -25,6 +26,24 @@ public class FacilityService : IFacilityService
         var result = _facilityRepository.GetPaged(page, pageSize);
         var items = result.Results.Select(_mapper.Map<FacilityDto>).ToList();
         return new PagedResult<FacilityDto>(items, result.TotalCount);
+    }
+
+    public List<FacilityDto> GetAll()
+    {
+        var facilities = _facilityRepository.GetAll();
+        return facilities.Select(_mapper.Map<FacilityDto>).ToList();
+    }
+
+    public FacilityDto GetById(long id)
+    {
+        var facility = _facilityRepository.Get(id);
+        return _mapper.Map<FacilityDto>(facility);
+    }
+
+    public List<FacilityDto> GetByCategory(DtoFacilityCategory category)
+    {
+        var facilities = _facilityRepository.GetByCategory((DomainFacilityCategory)category);
+        return facilities.Select(_mapper.Map<FacilityDto>).ToList();
     }
 
     public FacilityDto Create(FacilityDto facilityDto)
