@@ -30,18 +30,41 @@ public static class AuthConfiguration
                     ValidateLifetime = true,
                     ValidIssuer = issuer,
                     ValidAudience = audience,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                    ClockSkew = TimeSpan.FromMinutes(5) // Allow some clock drift
                 };
 
                 options.Events = new JwtBearerEvents
                 {
                     OnAuthenticationFailed = context =>
                     {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerEvents>>();
+
                         if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
                         {
                             context.Response.Headers.Add("AuthenticationTokens-Expired", "true");
+                            logger.LogWarning("JWT Token expired: {Message}", context.Exception.Message);
+                        }
+                        else
+                        {
+                            logger.LogError("JWT Authentication failed: {ExceptionType} - {Message}",
+                                context.Exception.GetType().Name, context.Exception.Message);
                         }
 
+                        return Task.CompletedTask;
+                    },
+                    OnTokenValidated = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerEvents>>();
+                        logger.LogInformation("JWT Token successfully validated for user: {Username}",
+                            context.Principal.FindFirst("username")?.Value ?? "Unknown");
+                        return Task.CompletedTask;
+                    },
+                    OnChallenge = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<JwtBearerEvents>>();
+                        logger.LogWarning("JWT Authentication challenge: {Error} - {ErrorDescription}",
+                            context.Error, context.ErrorDescription);
                         return Task.CompletedTask;
                     }
                 };
@@ -56,6 +79,7 @@ public static class AuthConfiguration
             options.AddPolicy("authorPolicy", policy => policy.RequireRole("author"));
             options.AddPolicy("touristPolicy", policy => policy.RequireRole("tourist"));
             options.AddPolicy("userPolicy", policy =>policy.RequireRole("administrator", "author", "tourist"));
+            options.AddPolicy("authorOrTouristPolicy", policy => policy.RequireRole("author", "tourist"));
         });
     }
 }
