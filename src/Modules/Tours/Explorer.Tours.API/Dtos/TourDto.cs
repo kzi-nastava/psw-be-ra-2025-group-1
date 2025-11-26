@@ -8,6 +8,7 @@ namespace Explorer.Tours.API.Dtos;
 
 public class TourDto
 {
+    public long Id { get; set; } = -1;
     public long CreatorId { get; init; }= -1;
     public string Title { get; init; } = "";
     public string Description { get; init; }= "";
