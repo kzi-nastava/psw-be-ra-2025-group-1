@@ -31,7 +31,10 @@ namespace Explorer.API.Controllers.Tourist
         [HttpPost]
         public ActionResult<TourPreferenceDto> Create([FromBody] TourPreferenceDto tourPreference)
         {
+            if (!User.Identity?.IsAuthenticated ?? true)
+                throw new UnauthorizedAccessException("User must be logged in.");
             long userId = long.Parse(User.Claims.First(i => i.Type == "id").Value);
+
             tourPreference.UserId = userId;
             return Ok(_tourPreferenceService.Create(tourPreference));
         }
@@ -39,7 +42,12 @@ namespace Explorer.API.Controllers.Tourist
         [HttpPut]
         public ActionResult<TourPreferenceDto> Update([FromBody] TourPreferenceDto tourPreference)
         {
-            // TODO: Verify that the user is the owner of the preference
+            if (!User.Identity?.IsAuthenticated ?? true)
+                throw new UnauthorizedAccessException("User must be logged in.");
+            long userId = long.Parse(User.Claims.First(i => i.Type == "id").Value);
+            if (tourPreference.UserId != userId)
+                throw new UnauthorizedAccessException("Cannot update someone else's preference.");
+
             return Ok(_tourPreferenceService.Update(tourPreference));
         }
     }
