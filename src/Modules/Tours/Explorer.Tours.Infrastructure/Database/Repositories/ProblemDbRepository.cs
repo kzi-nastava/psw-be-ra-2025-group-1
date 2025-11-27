@@ -63,13 +63,14 @@ public class ProblemDbRepository : IProblemRepository
     {
         try
         {
-            DbContext.Update(problem);
+            var existingProblem = Get(problem.Id);
+            existingProblem.Update(problem.Priority, problem.Description, problem.Category);
             DbContext.SaveChanges();
+            return existingProblem;
         }
         catch (DbUpdateException e)
         {
             throw new NotFoundException(e.Message);
         }
-        return problem;
     }
 }
