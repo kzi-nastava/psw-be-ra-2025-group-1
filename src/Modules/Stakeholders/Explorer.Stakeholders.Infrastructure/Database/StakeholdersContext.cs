@@ -22,6 +22,20 @@ public class StakeholdersContext : DbContext
 
         ConfigureStakeholder(modelBuilder);
 
+        modelBuilder.Entity<Journal>(cfg =>
+        {
+            cfg.ToTable("Journals");
+            cfg.HasKey(r => r.Id);
+
+            cfg.Property(r => r.UserId).IsRequired();
+            cfg.Property(r => r.Title).IsRequired();  
+            cfg.Property(r => r.Content);
+            cfg.Property(r => r.CreatedAt).IsRequired();
+            cfg.Property(r => r.Location).IsRequired();
+
+            cfg.HasIndex(r => r.UserId);
+            cfg.HasIndex(r => r.CreatedAt);
+        });
 
         modelBuilder.Entity<Rating>(cfg =>          //fluent mapiranja za Rating
         {
