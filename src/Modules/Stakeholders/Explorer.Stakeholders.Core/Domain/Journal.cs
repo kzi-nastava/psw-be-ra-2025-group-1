@@ -18,7 +18,7 @@ public class Journal : Entity
     public string? Content { get; private set; }
     
     protected Journal(){}
-    public Journal(string content, long userId, string title, string location )
+    public Journal(string? content, long userId, string title, string location )
     {
         UserId = userId;
         Title = title;
@@ -40,10 +40,11 @@ public class Journal : Entity
         Status = Status.Finished;
     }
     
-    public void Update(string content, string title)
+    public void Update(string? content, string title)
     {
         Content = content;
         Title = title;
+        Validate();
     }
 
 }

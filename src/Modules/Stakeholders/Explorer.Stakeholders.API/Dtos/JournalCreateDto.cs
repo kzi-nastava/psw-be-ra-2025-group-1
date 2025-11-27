@@ -2,7 +2,7 @@ namespace Explorer.Stakeholders.API.Dtos;
 
 public class JournalCreateDto
 {
-    public string Title { get; private set; }
-    public string Location { get; private set; }
-    public string? Content { get; private set; }
+    public string Title { get; set; }
+    public string Location { get; set; }
+    public string? Content { get; set; }
 }
