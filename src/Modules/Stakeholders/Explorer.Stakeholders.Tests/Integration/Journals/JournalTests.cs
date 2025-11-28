@@ -8,6 +8,7 @@ using Explorer.Stakeholders.Tests;
 using Explorer.Stakeholders.Infrastructure.Database;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.API.Controllers.Author;
+using Explorer.Stakeholders.Core.Domain;
 
 namespace Explorer.Stakeholders.Tests.Integration.Journals;
 
@@ -21,27 +22,35 @@ public class JournalTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
-        var controller = CreateTouristControllerForUser(scope, userId: -22, role: "tourist"); // turista2
+        var controller = CreateTouristControllerForUser(scope, userId:  22, role: "tourist");
         var dto = new JournalCreateDto
         {
-            Title = "Novi journal",
             Content = "Sadržaj dnevnika",
-            Location = "Novi Sad"
+            Location = "Novi Sad",
+            Title = "Novi journal"
         };
 
         // Act
-        var result = (OkObjectResult)controller.Create(dto).Result!;
-        var created = (JournalDto)result.Value!;
+        var result = controller.Create(dto).Result!;
+        if (result is BadRequestObjectResult badRequest)
+        {
+            var errors = badRequest.Value;
+            throw new Exception($"BadRequest: {errors}");
+        }
+        var okResult = result as OkObjectResult;
+        Assert.NotNull(okResult);
+        var created = (JournalDto)okResult!.Value!;
+
 
         // Assert (response)
-        created.UserId.ShouldBe(-22);
+        created.UserId.ShouldBe(22);
         created.Title.ShouldBe(dto.Title);
 
         // Assert (database)
         db.ChangeTracker.Clear();
         var stored = db.Journals.FirstOrDefault(j => j.Id == created.Id);
         stored.ShouldNotBeNull();
-        stored!.UserId.ShouldBe(-22);
+        stored!.UserId.ShouldBe(22);
         stored.Title.ShouldBe(dto.Title);
     }
 
@@ -50,7 +59,7 @@ public class JournalTests : BaseStakeholdersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateTouristControllerForUser(scope, userId: -22, role: "tourist"); // turista2
+        var controller = CreateTouristControllerForUser(scope, userId: 22, role: "tourist");
 
         // Act
         var result = (OkObjectResult)controller.GetMine().Result!;
@@ -58,7 +67,7 @@ public class JournalTests : BaseStakeholdersIntegrationTest
 
         // Assert
         journals.ShouldNotBeEmpty();
-        journals.All(j => j.UserId == -22).ShouldBeTrue();
+        journals.All(j => j.UserId == 22).ShouldBeTrue();
     }
 
     [Fact]
@@ -67,9 +76,9 @@ public class JournalTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
-        var controller = CreateTouristControllerForUser(scope, userId: -22, role: "tourist"); // turista2
+        var controller = CreateTouristControllerForUser(scope, userId: 22, role: "tourist");
 
-        var existingJournal = db.Journals.First(j => j.UserId == -22);
+        var existingJournal = db.Journals.First(j => j.UserId == 22);
         var updateDto = new JournalUpdateDto
         {
             Title = "Izmenjeni naslov",
@@ -91,23 +100,29 @@ public class JournalTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
-        var controller = CreateTouristControllerForUser(scope, userId: -23, role: "tourist"); // turista3
+        var journal = new Journal(
+            content:"test",
+            userId: 23,
+            title: "Test title",
+            location: "Test location"
+        );
+        db.Journals.Add(journal);
+        db.SaveChanges();
 
-        var journalToDelete = db.Journals.First(j => j.UserId == -23);
-
+        var controller = CreateTouristControllerForUser(scope, userId: 23, role: "tourist");
         // Act
-        var result = controller.Delete(journalToDelete.Id);
+        var result = controller.Delete(journal.Id);
 
         // Assert
         result.ShouldBeOfType<NoContentResult>();
         db.ChangeTracker.Clear();
-        db.Journals.FirstOrDefault(j => j.Id == journalToDelete.Id).ShouldBeNull();
+        db.Journals.FirstOrDefault(j => j.Id == journal.Id).ShouldBeNull();
     }
     
     private static Explorer.API.Controllers.Tourist.JournalController CreateTouristControllerForUser(
         IServiceScope scope, long userId, string role)
     {
-        var service = scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.Core.UseCases.JournalService>();
+        var service = scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.API.Public.IJournalService>();
         var controller = new Explorer.API.Controllers.Tourist.JournalController(service);
         
         var user = new System.Security.Claims.ClaimsPrincipal(
