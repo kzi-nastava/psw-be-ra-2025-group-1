@@ -42,7 +42,7 @@ public class TourController : ControllerBase
     [HttpPut("{id:long}")]
     public ActionResult<TourDto> Update(long id, [FromBody] TourDto tour)
     {
-        return Ok(_tourService.Update(tour));
+        return Ok(_tourService.Update(id, tour));
     }
 
     [HttpDelete("{id:long}")]

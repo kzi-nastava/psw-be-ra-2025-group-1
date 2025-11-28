@@ -1,1 +1,1 @@
-﻿
+﻿DELETE FROM blog."Blogs" WHERE "Id" < 0;

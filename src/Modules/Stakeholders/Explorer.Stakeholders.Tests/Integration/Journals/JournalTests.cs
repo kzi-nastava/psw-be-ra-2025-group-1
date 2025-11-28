@@ -103,15 +103,13 @@ public class JournalTests : BaseStakeholdersIntegrationTest
         db.ChangeTracker.Clear();
         db.Journals.FirstOrDefault(j => j.Id == journalToDelete.Id).ShouldBeNull();
     }
-
-    // Helper: kreira controller sa testnim turistom
+    
     private static Explorer.API.Controllers.Tourist.JournalController CreateTouristControllerForUser(
         IServiceScope scope, long userId, string role)
     {
         var service = scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.Core.UseCases.JournalService>();
         var controller = new Explorer.API.Controllers.Tourist.JournalController(service);
-
-        // Simuliraj ClaimsPrincipal
+        
         var user = new System.Security.Claims.ClaimsPrincipal(
             new System.Security.Claims.ClaimsIdentity(
                 new[]
