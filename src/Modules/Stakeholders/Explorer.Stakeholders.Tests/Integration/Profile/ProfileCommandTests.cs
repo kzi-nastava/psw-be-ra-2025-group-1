@@ -75,7 +75,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             storedEntity.Name.ShouldBe(updatedEntity.Name);
             storedEntity.Surname.ShouldBe(updatedEntity.Surname);
             storedEntity.Email.ShouldBe(updatedEntity.Email);
-            storedEntity.ProfileImagePath.ShouldBe(updatedEntity.ProfileImagePath);
+            storedEntity.ProfileImageUrl.ShouldBe(updatedEntity.ProfileImagePath);
             storedEntity.Biography.ShouldBe(updatedEntity.Biography);
             storedEntity.Quote.ShouldBe(updatedEntity.Quote);
         }

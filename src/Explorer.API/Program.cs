@@ -5,6 +5,11 @@ using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.UseCases;
 using Explorer.Stakeholders.Infrastructure.Repositories;
 
+// Create wwwroot for images
+var wwwroot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (!Directory.Exists(wwwroot))
+    Directory.CreateDirectory(wwwroot);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Set test database environment variables in development - COMMENTED OUT FOR MAIN DB ACCESS
@@ -42,7 +47,9 @@ else
     app.UseHsts();
 }
 
+// Added for UploadController
 app.UseStaticFiles();
+
 app.UseRouting();
 app.UseCors(corsPolicy);
 app.UseHttpsRedirection();
