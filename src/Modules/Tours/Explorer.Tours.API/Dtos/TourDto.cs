@@ -16,7 +16,7 @@ public class TourDto
     public string[] Tags { get; init; }= Array.Empty<string>();
     public TourStatusDTO Status { get; init; }= TourStatusDTO.Draft;
     public double Price { get; init; } = -1;
-
+    public List<KeypointDto> Keypoints { get; init; }
 }
 public enum TourStatusDTO
 {

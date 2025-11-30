@@ -13,7 +13,7 @@ public enum TourStatus
     Published,
     Archived
 }
-public class Tour : Entity
+public class Tour : AggregateRoot
 {
     public long CreatorId { get; private set; }
     public string Title { get; private set; }
@@ -22,6 +22,7 @@ public class Tour : Entity
     public string[] Tags { get; private set; }
     public TourStatus Status { get; private set; }
     public double Price { get; private set; }
+    public List<Keypoint> Keypoints { get; private set; }
 
     public Tour()
     {
@@ -29,6 +30,7 @@ public class Tour : Entity
         Description = "";
         Tags = [];
         Status = TourStatus.Draft;
+        Keypoints = [];
     }
     public Tour(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status = TourStatus.Draft, double price = 0)
     {
@@ -41,6 +43,7 @@ public class Tour : Entity
         Status = status;
         Price = price;
         CreatorId = creatorId;
+        Keypoints = [];
     }
 
     public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
@@ -52,5 +55,19 @@ public class Tour : Entity
         Tags = tags;
         Status = status;
         Price = price;
+    }
+
+    public Keypoint AddKeypoint(Keypoint keypoint)
+    {
+        Keypoints.Add(keypoint);
+        return keypoint;
+    }
+
+    public void DeleteKeypoint(long keypointId)
+    {
+        Keypoint? keypoint = Keypoints.FirstOrDefault(k => k.Id == keypointId);
+        if (keypoint == null)
+            throw new ArgumentException($"Tour has no keypoint with id {keypointId}");
+        Keypoints.Remove(keypoint);
     }
 }
