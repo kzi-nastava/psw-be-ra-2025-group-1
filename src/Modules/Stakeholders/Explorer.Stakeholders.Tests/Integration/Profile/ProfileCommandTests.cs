@@ -46,7 +46,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
                 Name = "Perica",
                 Surname = "Peric",
                 Email = "perica@gmail.com",
-                ProfileImagePath = "",
+                ProfileImageUrl = "",
                 Biography = "Volim da pecam",
                 Quote = "Nauci coveka da peca",        
             };
@@ -61,7 +61,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             result.Name.ShouldBe(updatedEntity.Name);
             result.Surname.ShouldBe(updatedEntity.Surname);
             result.Email.ShouldBe(updatedEntity.Email);
-            result.ProfileImagePath.ShouldBe(updatedEntity.ProfileImagePath);
+            result.ProfileImageUrl.ShouldBe(updatedEntity.ProfileImageUrl);
             result.Biography.ShouldBe(updatedEntity.Biography);
             result.Quote.ShouldBe(updatedEntity.Quote);
 
@@ -75,7 +75,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             storedEntity.Name.ShouldBe(updatedEntity.Name);
             storedEntity.Surname.ShouldBe(updatedEntity.Surname);
             storedEntity.Email.ShouldBe(updatedEntity.Email);
-            storedEntity.ProfileImagePath.ShouldBe(updatedEntity.ProfileImagePath);
+            storedEntity.ProfileImageUrl.ShouldBe(updatedEntity.ProfileImageUrl);
             storedEntity.Biography.ShouldBe(updatedEntity.Biography);
             storedEntity.Quote.ShouldBe(updatedEntity.Quote);
         }
@@ -100,7 +100,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
                 Name = "Lena",
                 Surname = "Lenić",
                 Email = "autor2@gmail.com",
-                ProfileImagePath = null,
+                ProfileImageUrl = null,
                 Biography = null,
                 Quote = null,
             };
@@ -134,7 +134,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
                 Name = "Perica",
                 Surname = "Peric",
                 Email = "perica@gmail.com",
-                ProfileImagePath = "",
+                ProfileImageUrl = "",
                 Biography = "Volim da pecam",
                 Quote = "Nauci coveka da peca",
             };
@@ -148,7 +148,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             result.Name.ShouldBe(updatedEntity.Name);
             result.Surname.ShouldBe(updatedEntity.Surname);
             result.Email.ShouldBe(updatedEntity.Email);
-            result.ProfileImagePath.ShouldBe(updatedEntity.ProfileImagePath);
+            result.ProfileImageUrl.ShouldBe(updatedEntity.ProfileImageUrl);
             result.Biography.ShouldBe(updatedEntity.Biography);
             result.Quote.ShouldBe(updatedEntity.Quote);
         }
@@ -167,7 +167,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
                 Name = "Lena",
                 Surname = "Lenić",
                 Email = "autor2@gmail.com",
-                ProfileImagePath = null,
+                ProfileImageUrl = null,
                 Biography = null,
                 Quote = null,
             };
@@ -182,7 +182,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             result.Name.ShouldBe(existingEntity.Name);
             result.Surname.ShouldBe(existingEntity.Surname);
             result.Email.ShouldBe(existingEntity.Email);
-            result.ProfileImagePath.ShouldBe(existingEntity.ProfileImagePath);
+            result.ProfileImageUrl.ShouldBe(existingEntity.ProfileImageUrl);
             result.Biography.ShouldBe(existingEntity.Biography);
             result.Quote.ShouldBe(existingEntity.Quote);
         }
