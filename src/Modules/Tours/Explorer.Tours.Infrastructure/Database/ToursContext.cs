@@ -19,5 +19,12 @@ public class ToursContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("tours");
+
+        // One-Many relationship between Tour and Keypoint
+        modelBuilder.Entity<Tour>()
+            .HasMany(e => e.Keypoints)
+            .WithOne()
+            .HasForeignKey("TourId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
