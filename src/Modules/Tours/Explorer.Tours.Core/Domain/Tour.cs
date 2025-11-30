@@ -73,7 +73,7 @@ public class Tour : AggregateRoot
 
         var keypoint = Keypoints.FirstOrDefault(k => k.Id == updatedKeypoint.Id) ?? throw new NotFoundException("Keypoint not found");
 
-        return keypoint.Update(updatedKeypoint.Title, updatedKeypoint.Description, updatedKeypoint.ImageUrl, updatedKeypoint.Secret);    
+        return keypoint.Update(updatedKeypoint.Title, updatedKeypoint.Latitude, updatedKeypoint.Longitude, updatedKeypoint.Description, updatedKeypoint.ImageUrl, updatedKeypoint.Secret);    
     }
 
     public void DeleteKeypoint(long keypointId)

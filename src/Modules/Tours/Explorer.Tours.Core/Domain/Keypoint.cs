@@ -15,10 +15,14 @@ namespace Explorer.Tours.Core.Domain
         public string? Description { get; set; }
         public string? ImageUrl { get; set; }
         public string? Secret { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
-        public Keypoint(string title, string description = null, string imageUrl = null, string secret = null)
+        public Keypoint(string title, double latitude, double longitude, string description = null, string imageUrl = null, string secret = null)
         {
             Title = title;
+            Latitude = latitude;
+            Longitude = longitude;
             Description = description;
             ImageUrl = imageUrl;
             Secret = secret;
@@ -26,9 +30,11 @@ namespace Explorer.Tours.Core.Domain
             Validate();
         }
         
-        public Keypoint Update(string title, string description = null, string imageUrl = null, string secret = null)
+        public Keypoint Update(string title, double latitude, double longitude, string description = null, string imageUrl = null, string secret = null)
         {
             Title = title;
+            Latitude = latitude;
+            Longitude = longitude;
             Description = description;
             ImageUrl = imageUrl;
             Secret = secret;
@@ -41,6 +47,11 @@ namespace Explorer.Tours.Core.Domain
         public void Validate()
         {
             if (string.IsNullOrWhiteSpace(Title)) throw new ArgumentException("Invalid title");
+            if (double.IsNaN(Latitude) || Latitude < -90 || Latitude > 90)
+                throw new ArgumentException("Latitude must be between -90 and 90.");
+            if (double.IsNaN(Longitude) || Longitude < -180 || Longitude > 180)
+                throw new ArgumentException("Longitude must be between -180 and 180.");
+
         }
     }
 }
