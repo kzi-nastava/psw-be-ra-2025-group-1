@@ -62,4 +62,29 @@ public class TourService : ITourService
         var result = _tourRepository.Update(tour);
         return _mapper.Map<TourDto>(result);
     }
+
+    public TourDto AddKeypoint(long tourId, KeypointDto keypointDto)
+    {
+        var tour = _tourRepository.Get(tourId);
+        tour.AddKeypoint(_mapper.Map<Keypoint>(keypointDto));
+        var result = _tourRepository.Update(tour);
+
+        return _mapper.Map<TourDto>(result);
+    }
+
+    public TourDto UpdateKeypoint(long tourId, KeypointDto keypointDto)
+    {
+        var tour = _tourRepository.Get(tourId);
+        tour.UpdateKeypoint(_mapper.Map<Keypoint>(keypointDto));
+        var result = _tourRepository.Update(tour);
+
+        return _mapper.Map<TourDto>(result);
+    }
+
+    public void DeleteKeypoint(long tourId, long keypointId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        tour.DeleteKeypoint(keypointId);
+        var result = _tourRepository.Update(tour);
+    }
 }

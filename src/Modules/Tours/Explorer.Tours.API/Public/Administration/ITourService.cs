@@ -18,4 +18,8 @@ public interface ITourService
     TourDto Create(TourDto tour);
     TourDto Update(long id, TourDto tour);
     void Delete(long id);
+
+    TourDto AddKeypoint(long tourId, KeypointDto keypointDto);
+    TourDto UpdateKeypoint(long tourId, KeypointDto keypointDto);
+    void DeleteKeypoint(long tourId, long keypointId);
 }
