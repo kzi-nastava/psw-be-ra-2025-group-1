@@ -11,10 +11,10 @@ namespace Explorer.Tours.Core.Domain
 {
     public class Keypoint : Entity
     {
-        public string Title { get; init; }
-        public string? Description { get; init; }
-        public string? ImageUrl { get; init; }
-        public string? Secret { get; init; }
+        public string Title { get; set; }
+        public string? Description { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? Secret { get; set; }
 
         public Keypoint(string title, string description = null, string imageUrl = null, string secret = null)
         {
@@ -24,6 +24,18 @@ namespace Explorer.Tours.Core.Domain
             Secret = secret;
 
             Validate();
+        }
+        
+        public Keypoint Update(string title, string description = null, string imageUrl = null, string secret = null)
+        {
+            Title = title;
+            Description = description;
+            ImageUrl = imageUrl;
+            Secret = secret;
+
+            Validate();
+
+            return this;
         }
 
         public void Validate()

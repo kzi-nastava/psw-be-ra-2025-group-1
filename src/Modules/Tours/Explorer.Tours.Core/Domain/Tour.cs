@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,15 +60,41 @@ public class Tour : AggregateRoot
 
     public Keypoint AddKeypoint(Keypoint keypoint)
     {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only add keypoints to tour in draft");
         Keypoints.Add(keypoint);
         return keypoint;
     }
 
+    public Keypoint UpdateKeypoint(Keypoint updatedKeypoint)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only update keypoints in tour in draft");
+
+        var keypoint = Keypoints.FirstOrDefault(k => k.Id == updatedKeypoint.Id) ?? throw new NotFoundException("Keypoint not found");
+
+        return keypoint.Update(updatedKeypoint.Title, updatedKeypoint.Description, updatedKeypoint.ImageUrl, updatedKeypoint.Secret);    
+    }
+
     public void DeleteKeypoint(long keypointId)
     {
-        Keypoint? keypoint = Keypoints.FirstOrDefault(k => k.Id == keypointId);
-        if (keypoint == null)
-            throw new ArgumentException($"Tour has no keypoint with id {keypointId}");
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only delete keypoints from tour in draft");
+
+        var keypoint = Keypoints.FirstOrDefault(k => k.Id == keypointId) ?? throw new NotFoundException($"Keypoint with id {keypointId} not found in tour");
+
         Keypoints.Remove(keypoint);
+    }
+
+    public void Publish()
+    {
+        ValidateForPublishing();
+
+        Status = TourStatus.Published;
+    }
+    
+    private void ValidateForPublishing()
+    {
+       // TODO
     }
 }
