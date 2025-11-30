@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Explorer.Tours.API.Dtos.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,13 +15,8 @@ public class TourDto
     public string Description { get; init; }= "";
     public int Difficulty { get; init; } = -1;
     public string[] Tags { get; init; }= Array.Empty<string>();
-    public TourStatusDTO Status { get; init; }= TourStatusDTO.Draft;
+    public TourStatusDto Status { get; init; }= TourStatusDto.Draft;
     public double Price { get; init; } = -1;
     public List<KeypointDto> Keypoints { get; init; }
 }
-public enum TourStatusDTO
-{
-    Draft,
-    Published,
-    Archived
-}
+
