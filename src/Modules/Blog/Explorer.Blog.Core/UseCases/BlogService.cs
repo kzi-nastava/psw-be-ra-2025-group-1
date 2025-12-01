@@ -31,7 +31,23 @@ public class BlogService : IBlogService
     public BlogDto UpdateBlog(long blogId, BlogUpdateDto blogDto)
     {
         var blog = _blogRepository.GetById(blogId);
-        blog.Update(blogDto.Title, blogDto.Description, blogDto.Images);
+        blog.Update(blogDto.Title, blogDto.Description, blogDto.Images); // The Aggregate (Blog.cs) now throws an exception if this is Invalid.
+        var updatedBlog = _blogRepository.Update(blog);
+        return _mapper.Map<BlogDto>(updatedBlog);
+    }
+
+    public BlogDto PublishBlog(long  blogId)
+    {
+        var blog = _blogRepository.GetById(blogId);
+        blog.Publish(); // Changes the status of the blog to Published
+        var updatedBlog = _blogRepository.Update(blog);
+        return _mapper.Map<BlogDto>(updatedBlog);
+    }
+     
+     public BlogDto ArchiveBlog(long blogId)
+    {
+        var blog = _blogRepository.GetById(blogId);
+        blog.Archive(); // Changes the status of the blog to Archived
         var updatedBlog = _blogRepository.Update(blog);
         return _mapper.Map<BlogDto>(updatedBlog);
     }

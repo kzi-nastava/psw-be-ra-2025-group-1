@@ -1,3 +1,5 @@
+using System.IO.Compression;
+using System.Linq.Expressions;
 using Explorer.Blog.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -36,8 +38,46 @@ public class BlogController : ControllerBase
     [HttpPut("{id}")]
     public ActionResult<BlogDto> UpdateBlog(long id, [FromBody] BlogUpdateDto blogDto) // Editovanje bloga
     {
-        var result = _blogService.UpdateBlog(id, blogDto);
-        
-        return Ok(result);
+        try
+        {
+            var result = _blogService.UpdateBlog(id, blogDto);
+            return Ok(result);
+        }
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(e.Message);
+        }
+        catch (ArgumentException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPut("{id}/publish")]
+    public ActionResult<BlogDto> Publish(long id)
+    {
+        try
+        {
+            var result = _blogService.PublishBlog(id);
+            return Ok(result);
+        }
+     catch (InvalidOperationException e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
+
+    [HttpPut("{id}/archive")]
+    public ActionResult<BlogDto> Archive(long id)
+    {
+        try
+        {
+            var result = _blogService.ArchiveBlog(id);
+            return Ok(result);
+        }
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 }
