@@ -15,5 +15,6 @@ namespace Explorer.Tours.API.Dtos
         public string? Secret { get; set; }
         public double Latitude { get; set; }
         public double Longitude { get; set; } 
+        public int SequenceNumber { get; set; }
     }
 }

@@ -62,6 +62,7 @@ public class Tour : AggregateRoot
     {
         if (Status != TourStatus.Draft)
             throw new InvalidOperationException("Can only add keypoints to tour in draft");
+        keypoint.SequenceNumber = GenerateKeypointSequenceNumber();
         Keypoints.Add(keypoint);
         return keypoint;
     }
@@ -73,13 +74,19 @@ public class Tour : AggregateRoot
 
         var keypoint = Keypoints.FirstOrDefault(k => k.Id == updatedKeypoint.Id) ?? throw new NotFoundException("Keypoint not found");
 
-        return keypoint.Update(updatedKeypoint.Title, updatedKeypoint.Latitude, updatedKeypoint.Longitude, updatedKeypoint.Description, updatedKeypoint.ImageUrl, updatedKeypoint.Secret);    
+        updatedKeypoint.SequenceNumber = keypoint.SequenceNumber;
+
+        return keypoint.Update(updatedKeypoint);    
     }
 
     public void DeleteKeypoint(long keypointId)
     {
         if (Status != TourStatus.Draft)
             throw new InvalidOperationException("Can only delete keypoints from tour in draft");
+
+        // Making it so only the last keypoint can be deleted so we don't have to care for other keypoint's SequenceNumbers :)
+        if (keypointId != Keypoints.Last().Id)
+            throw new InvalidOperationException("Can only delete last keypoint in tour");
 
         var keypoint = Keypoints.FirstOrDefault(k => k.Id == keypointId) ?? throw new NotFoundException($"Keypoint with id {keypointId} not found in tour");
 
@@ -96,5 +103,10 @@ public class Tour : AggregateRoot
     private void ValidateForPublishing()
     {
        // TODO
+    }
+
+    private int GenerateKeypointSequenceNumber()
+    {
+        return Keypoints.Count + 1;
     }
 }

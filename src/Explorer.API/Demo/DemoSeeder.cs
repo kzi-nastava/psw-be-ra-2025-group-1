@@ -28,7 +28,7 @@ namespace Explorer.API.Demo
             SeedEquipment();
             SeedFacilities();
             SeedTours();
-            SeedKeypoints();
+            //SeedKeypoints();
         }
 
         private void SeedAdmin()
