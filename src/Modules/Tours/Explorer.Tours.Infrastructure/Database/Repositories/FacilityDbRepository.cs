@@ -25,11 +25,21 @@ public class FacilityDbRepository : IFacilityRepository
         return task.Result;
     }
 
+    public List<Facility> GetAll()
+    {
+        return _dbSet.Where(f => !f.IsDeleted).ToList();
+    }
+
     public Facility Get(long id)
     {
         var entity = _dbSet.Find(id);
         if (entity == null || entity.IsDeleted) throw new NotFoundException("Facility not found: " + id);
         return entity;
+    }
+
+    public List<Facility> GetByCategory(FacilityCategory category)
+    {
+        return _dbSet.Where(f => !f.IsDeleted && f.Category == category).ToList();
     }
 
     public Facility Create(Facility entity)

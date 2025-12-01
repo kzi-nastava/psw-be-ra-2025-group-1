@@ -9,18 +9,30 @@ namespace Explorer.API.Controllers.Tourist;
 [Authorize(Policy = "touristPolicy")]
 [Route("api/tourist/facility")]
 [ApiController]
-public class FacilityController : BaseController
+public class TouristFacilityController : BaseController
 {
     private readonly IFacilityService _facilityService;
 
-    public FacilityController(IFacilityService facilityService)
+    public TouristFacilityController(IFacilityService facilityService)
     {
         _facilityService = facilityService;
     }
 
     [HttpGet]
-    public ActionResult<PagedResult<FacilityDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
+    public ActionResult<List<FacilityDto>> GetAll()
     {
-        return Ok(_facilityService.GetPaged(page, pageSize));
+        return Ok(_facilityService.GetAll());
+    }
+
+    [HttpGet("{id:long}")]
+    public ActionResult<FacilityDto> GetById(long id)
+    {
+        return Ok(_facilityService.GetById(id));
+    }
+
+    [HttpGet("category/{category}")]
+    public ActionResult<List<FacilityDto>> GetByCategory(FacilityCategory category)
+    {
+        return Ok(_facilityService.GetByCategory(category));
     }
 }
