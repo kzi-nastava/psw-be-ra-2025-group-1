@@ -59,5 +59,17 @@ public class Tour : Entity
         Tags = tags;
         Status = status;
         Price = price;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Publish()
+    {
+        Status = TourStatus.Published;
+        PublishedAt = DateTime.UtcNow;
+    }
+    public void Archive()
+    {
+        Status = TourStatus.Archived;
+        ArchivedAt = DateTime.UtcNow;
     }
 }
