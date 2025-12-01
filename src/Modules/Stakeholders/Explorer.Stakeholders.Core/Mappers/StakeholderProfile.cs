@@ -32,5 +32,11 @@ public class StakeholderProfile : Profile
         CreateMap<UserLocationDto, UserLocation>().ReverseMap();
         
         CreateMap<ProblemDto, Problem>().ReverseMap();
+        CreateMap<Core.Domain.ProblemStatus, API.Dtos.ProblemStatus>().ReverseMap();
+        CreateMap<Core.Domain.ProblemCategory, API.Dtos.ProblemCategory>().ReverseMap();
+        
+        
+        CreateMap<Notification, NotificationDto>().ReverseMap();
+        CreateMap<NotificationTypeDto, NotificationType>().ReverseMap();
     }
 }

@@ -11,10 +11,10 @@ public class StakeholdersContext : DbContext
     public DbSet<Person> People { get; set; }
     public DbSet<TourPreference> TourPreferences { get; set; }
     public DbSet<User> Users { get; set; }
-
     public DbSet<Rating> Ratings { get; set; }
     public DbSet<UserLocation> UserLocations { get; set; }
     public DbSet<Problem> Problems { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
@@ -37,8 +37,6 @@ public class StakeholdersContext : DbContext
 
         ConfigureMessaging(modelBuilder);
 
-
-
         modelBuilder.Entity<Rating>(cfg =>          //fluent mapiranja za Rating
         {
             cfg.ToTable("Ratings");
@@ -53,6 +51,9 @@ public class StakeholdersContext : DbContext
             cfg.HasIndex(r => r.UserId);
             cfg.HasIndex(r => r.CreatedAt);
         });
+
+        ConfigureProblems(modelBuilder);
+        ConfigureNotifications(modelBuilder);
     }
 
     private static void ConfigureMessaging(ModelBuilder modelBuilder)
@@ -88,5 +89,52 @@ public class StakeholdersContext : DbContext
             .HasOne<User>()
             .WithOne()
             .HasForeignKey<TourPreference>(s => s.UserId);
+    }
+
+    private static void ConfigureProblems(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Problem>(cfg =>
+        {
+            cfg.ToTable("Problems");
+            cfg.HasKey(p => p.Id);
+
+            cfg.Property(p => p.TourId).IsRequired();
+            cfg.Property(p => p.CreatorId).IsRequired();
+            cfg.Property(p => p.AuthorId).IsRequired();
+            cfg.Property(p => p.Priority).IsRequired();
+            cfg.Property(p => p.Description).IsRequired().HasMaxLength(2000);
+            cfg.Property(p => p.CreationTime).IsRequired();
+            cfg.Property(p => p.Category).IsRequired();
+            cfg.Property(p => p.Status).IsRequired();
+            cfg.Property(p => p.ResolvedAt);
+            cfg.Property(p => p.AdminDeadline);
+            cfg.Property(p => p.TouristComment).HasMaxLength(1000);
+
+            cfg.HasIndex(p => p.TourId);
+            cfg.HasIndex(p => p.CreatorId);
+            cfg.HasIndex(p => p.AuthorId);
+            cfg.HasIndex(p => p.Status);
+            cfg.HasIndex(p => p.CreationTime);
+        });
+    }
+
+    private static void ConfigureNotifications(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Notification>(cfg =>
+        {
+            cfg.ToTable("Notifications");
+            cfg.HasKey(n => n.Id);
+
+            cfg.Property(n => n.UserId).IsRequired();
+            cfg.Property(n => n.Message).IsRequired().HasMaxLength(1000);
+            cfg.Property(n => n.Type).IsRequired();
+            cfg.Property(n => n.LinkId);
+            cfg.Property(n => n.Timestamp).IsRequired();
+            cfg.Property(n => n.IsRead).IsRequired();
+
+            cfg.HasIndex(n => n.UserId);
+            cfg.HasIndex(n => n.IsRead);
+            cfg.HasIndex(n => n.Timestamp);
+        });
     }
 }

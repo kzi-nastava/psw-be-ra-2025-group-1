@@ -1,9 +1,11 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.API.Public.Social;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
+using Explorer.Tours.Core.UseCases.Social;
 using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -30,7 +32,8 @@ public static class ToursStartup
         services.AddScoped<ITourService, TourService>();
         services.AddScoped<IFacilityService, FacilityService>();
         services.AddScoped<IMeetUpService, MeetUpService>();
-        services.AddScoped<IPersonEquipmentService, PersonEquipmentService>(); //dodala sam
+        services.AddScoped<IPersonEquipmentService, PersonEquipmentService>();
+        services.AddScoped<IProblemMessageService, ProblemMessageService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -39,7 +42,8 @@ public static class ToursStartup
         services.AddScoped<ITourRepository, TourDbRepository>();
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
-        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); //dodala sam
+        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>();
+        services.AddScoped<IProblemMessageRepository, ProblemMessageDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
