@@ -42,7 +42,17 @@ public class ProblemDbRepository : IProblemRepository
 
     public PagedResult<Problem> GetByCreatorId(long creatorId, int page, int pageSize)
     {
-        var query = _dbSet.Where(p => p.CreatorId == creatorId);
+        var query = _dbSet.Where(p => p.CreatorId == creatorId)
+            .OrderByDescending(p => p.CreationTime);
+        var task = query.GetPagedById(page, pageSize);
+        task.Wait();
+        return task.Result;
+    }
+
+    public PagedResult<Problem> GetByAuthorId(long authorId, int page, int pageSize)
+    {
+        var query = _dbSet.Where(p => p.AuthorId == authorId)
+            .OrderByDescending(p => p.CreationTime);
         var task = query.GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;
@@ -50,7 +60,8 @@ public class ProblemDbRepository : IProblemRepository
 
     public PagedResult<Problem> GetPaged(int page, int pageSize)
     {
-        var task = _dbSet.GetPagedById(page, pageSize);
+        var query = _dbSet.OrderByDescending(p => p.CreationTime);
+        var task = query.GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;
     }
@@ -59,10 +70,9 @@ public class ProblemDbRepository : IProblemRepository
     {
         try
         {
-            var existingProblem = Get(problem.Id);
-            existingProblem.Update(problem.Priority, problem.Description, problem.Category);
+            DbContext.Update(problem);
             DbContext.SaveChanges();
-            return existingProblem;
+            return problem;
         }
         catch (DbUpdateException e)
         {

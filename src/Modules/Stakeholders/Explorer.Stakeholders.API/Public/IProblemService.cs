@@ -6,9 +6,14 @@ namespace Explorer.Stakeholders.API.Public;
 public interface IProblemService
 {
     PagedResult<ProblemDto> GetPaged(int page, int pageSize);
-    
     PagedResult<ProblemDto> GetByCreator(long creatorId, int page, int pageSize);
+    PagedResult<ProblemDto> GetByAuthor(long authorId, int page, int pageSize);
+    ProblemDto Get(long id, long userId);
     ProblemDto Create(ProblemDto problem);
     ProblemDto Update(ProblemDto problem);
     void Delete(long id);
+    
+    // nove metode za tour issue lifecycle
+    ProblemDto ChangeProblemStatus(long problemId, long touristId, ProblemStatus newStatus, string? comment);
+    ProblemDto SetAdminDeadline(long problemId, DateTime deadline);
 }
