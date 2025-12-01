@@ -11,6 +11,7 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -75,6 +76,15 @@ public class TourCommandTests : BaseToursIntegrationTest
 
         var updatedDto = new TourDto { CreatorId = created.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDto.Published, Price = 150.0 };
 
+        // Logging in fake user
+        var identity = new ClaimsIdentity(new[]
+{
+                new Claim("id", "1"),
+                new Claim("personId", "1"),
+                new Claim(ClaimTypes.Role, "author")
+            }, "TestAuthentication");
+        controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
+
         // Act
         var updateResult = ((ObjectResult)controller.Update(id, updatedDto).Result)?.Value as TourDto;
 
@@ -107,6 +117,15 @@ public class TourCommandTests : BaseToursIntegrationTest
         var stored = dbContext.Tour.FirstOrDefault(i => i.Title == newEntity.Title);
         stored.ShouldNotBeNull();
         var id = stored.Id;
+
+        // Logging in fake user
+        var identity = new ClaimsIdentity(new[]
+{
+                new Claim("id", "1"),
+                new Claim("personId", "1"),
+                new Claim(ClaimTypes.Role, "author")
+            }, "TestAuthentication");
+        controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
 
         // Act
         var deleteAction = controller.Delete(id);
