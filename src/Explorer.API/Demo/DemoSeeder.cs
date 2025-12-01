@@ -10,12 +10,14 @@ namespace Explorer.API.Demo
         private readonly IAuthenticationService _authenticationService;
         private readonly IEquipmentService _equipmentService;
         private readonly IFacilityService _facilityService;
+        private readonly ITourService _tourService;
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService)
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
             _facilityService = facilityService;
+            _tourService = tourService;
         }
 
         public void Seed()
@@ -25,6 +27,8 @@ namespace Explorer.API.Demo
             SeedAuthors();
             SeedEquipment();
             SeedFacilities();
+            SeedTours();
+            SeedKeypoints();
         }
 
         private void SeedAdmin()
@@ -194,5 +198,198 @@ namespace Explorer.API.Demo
             _facilityService.Create(facility5);
             _facilityService.Create(facility6);
         }
+        
+        private void SeedTours()
+        {
+            // Currently hardcoded - would be less error-prone to fetch authors from PersonService/UserService and then get someone's ID
+            long author1Id = 5;
+            long author2Id = 6;
+            long author3Id = 7;
+
+            // Author1 tours
+
+            CreateTourDto t1 = new CreateTourDto()
+            {
+                CreatorId = author1Id,
+                Title = "Šetnja Dorćolom i Gardošom",
+                Description = "Lagano istraživanje starog jezgra Beograda, uključujući Kalemegdan, Donji Dorćol i uspon do Gardoš kule.",
+                Difficulty = 1,
+                Tags = ["grad", "istorija", "šetnja"],
+                Price = 15
+            };
+
+            CreateTourDto t2 = new CreateTourDto()
+            {
+                CreatorId = author1Id,
+                Title = "Avantura u Ovčarsko-kablarskoj klisuri",
+                Description = "Umerena planinarska tura kroz jednu od najlepših klisura Srbije, sa pogledom sa Kablara.",
+                Difficulty = 3,
+                Tags = ["planinarenje", "priroda"],
+                Price = 40
+            };
+
+            CreateTourDto t3 = new CreateTourDto()
+            {
+                CreatorId = author1Id,
+                Title = "Pravoslavne svetinje Šumadije",
+                Description = "Obilazak znamenitih manastira: Blagoveštenje, Kalenić, Ljubostinja. Idealno za ljubitelje istorije i duhovnosti.",
+                Difficulty = 2,
+                Tags = ["kultura", "istorija", "verski_turizam"],
+                Price = 30
+            };
+
+
+            // Author2 tours
+
+            CreateTourDto t4 = new CreateTourDto()
+            {
+                CreatorId = author2Id,
+                Title = "Kajak avantura na jezeru Perućac",
+                Description = "Opusti se na vodi i istraži skrivena mesta jezera Perućac uz kratku obuku i sigurnosnu opremu.",
+                Difficulty = 2,
+                Tags = ["voda", "avantura", "kajak"],
+                Price = 45
+            };
+
+            CreateTourDto t5 = new CreateTourDto()
+            {
+                CreatorId = author2Id,
+                Title = "Zlatibor – Gostilje i Stopića pećina",
+                Description = "Jednodnevna tura na Zlatiboru koja uključuje prelepe Gostiljske vodopade i obilazak Stopića pećine.",
+                Difficulty = 1,
+                Tags = ["priroda", "vodopadi", "porodično"],
+                Price = 25
+            };
+
+            // Author3 tours
+
+            CreateTourDto t6 = new CreateTourDto()
+            {
+                CreatorId = author3Id,
+                Title = "Urbana gastro tura Novog Sada",
+                Description = "Degustacija autentičnih vojvođanskih jela u centru Novog Sada, uz kratku šetnju kroz Zmaj Jovinu.",
+                Difficulty = 1,
+                Tags = ["hrana", "grad", "gastronomija"],
+                Price = 20
+            };
+
+            _tourService.Create(t1);
+            _tourService.Create(t2);
+            _tourService.Create(t3);
+            _tourService.Create(t4);
+            _tourService.Create(t5);
+            _tourService.Create(t6);
+        }
+
+        private void SeedKeypoints()
+        {
+            long tour1Id = 1;
+            long tour2Id = 2;
+            long tour5Id = 5;
+            long tour6Id = 6;
+
+            // Tour1
+
+            KeypointDto t1_kp1 = new KeypointDto()
+            {
+                Title = "Kalemegdan – Veliki Gradski Park",
+                Description = "Start ture kroz istorijski deo Beograda.",
+                Secret = "Ovde se nalazio rimski kastrum pre skoro 2.000 godina.",
+                Latitude = 44.8231,
+                Longitude = 20.4519
+            };
+
+            KeypointDto t1_kp2 = new KeypointDto()
+            {
+                Title = "Donji Dorćol – Ulica Cara Dušana",
+                Description = "Obilazak starog jevrejskog i trgovačkog centra Beograda.",
+                Secret = "Nekada je ovde bilo najveće trgovačko jezgro osmanskog Beograda.",
+                Latitude = 44.8179,
+                Longitude = 20.4564
+            };
+
+            KeypointDto t1_kp3 = new KeypointDto()
+            {
+                Title = "Gardoš Kula",
+                Description = "Najlepši vidikovac u Zemunu i završetak ture.",
+                Secret = "Kula je izgrađena 1896. godine u čast 1000 godina mađarske države.",
+                Latitude = 44.8483,
+                Longitude = 20.4056
+            };
+
+            _tourService.AddKeypoint(tour1Id, t1_kp1);
+            _tourService.AddKeypoint(tour1Id, t1_kp2);
+            _tourService.AddKeypoint(tour1Id, t1_kp3);
+
+            // Tour2
+
+            KeypointDto t2_kp1 = new KeypointDto()
+            {
+                Title = "Pogled sa vrha Kablara",
+                Description = "Spektakularan pogled na meandre Zapadne Morave.",
+                Secret = "Ovaj pogled je među najfotografisanijim prirodnim pejzažima u Srbiji.",
+                Latitude = 43.8992,
+                Longitude = 20.2150
+            };
+
+            KeypointDto t2_kp2 = new KeypointDto()
+            {
+                Title = "Manastir Nikolje",
+                Description = "Jedan od duhovnih centara poznate Svete Gore srpske.",
+                Secret = "Manastir je podignut u 15. veku, ali je nekoliko puta rušen i obnavljan.",
+                Latitude = 43.8940,
+                Longitude = 20.2040
+            };
+
+            _tourService.AddKeypoint(tour2Id, t2_kp1);
+            _tourService.AddKeypoint(tour2Id, t2_kp2);
+
+            // Tour5
+
+            KeypointDto t5_kp1 = new KeypointDto()
+            {
+                Title = "Gostiljski vodopadi",
+                Description = "Prelepi vodopadi visine 22m.",
+                Secret = "Malo ljudi zna da se vodopadi nalaze na privatnom zemljištu, ali su otvoreni za javnost.",
+                Latitude = 43.6582,
+                Longitude = 19.9391
+            };
+
+            KeypointDto t5_kp2 = new KeypointDto()
+            {
+                Title = "Stopića pećina – Ulaz",
+                Description = "Poznata po bigrenim kadama i visokom svodu.",
+                Secret = "Pećina je dugačka oko 1.600 m, ali je turistima dostupno svega 330 m.",
+                Latitude = 43.6387,
+                Longitude = 19.9415
+            };
+
+            KeypointDto t5_kp3 = new KeypointDto()
+            {
+                Title = "Selo Sirogojno",
+                Description = "Etno–selo i muzej na otvorenom.",
+                Secret = "Sirogojno džemperi se ručno pletu još od 19. veka.",
+                Latitude = 43.6309,
+                Longitude = 19.8860
+            };
+
+            _tourService.AddKeypoint(tour5Id, t5_kp1);
+            _tourService.AddKeypoint(tour5Id, t5_kp2);
+            _tourService.AddKeypoint(tour5Id, t5_kp3);
+
+            // Tour6
+
+            KeypointDto t6_kp1 = new KeypointDto()
+            {
+                Title = "Zmaj Jovina Ulica",
+                Description = "Glavna pešačka zona sa restoranima i starim lokalima.",
+                Secret = "Pod ulicom se nalaze ostaci rimskog naselja Cusum.",
+                Latitude = 45.2540,
+                Longitude = 19.8451
+            };
+
+            _tourService.AddKeypoint(tour6Id, t6_kp1);
+        }
+
     }
 }
