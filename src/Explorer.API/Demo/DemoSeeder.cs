@@ -288,6 +288,10 @@ namespace Explorer.API.Demo
             long tour5Id = 5;
             long tour6Id = 6;
 
+            long author1Id = 5;
+            long author2Id = 6;
+            long author3Id = 7;
+
             // Tour1
 
             KeypointDto t1_kp1 = new KeypointDto()
@@ -317,9 +321,9 @@ namespace Explorer.API.Demo
                 Longitude = 20.4056
             };
 
-            _tourService.AddKeypoint(tour1Id, t1_kp1);
-            _tourService.AddKeypoint(tour1Id, t1_kp2);
-            _tourService.AddKeypoint(tour1Id, t1_kp3);
+            _tourService.AddKeypoint(tour1Id, t1_kp1, author1Id);
+            _tourService.AddKeypoint(tour1Id, t1_kp2, author1Id);
+            _tourService.AddKeypoint(tour1Id, t1_kp3, author1Id);
 
             // Tour2
 
@@ -341,8 +345,8 @@ namespace Explorer.API.Demo
                 Longitude = 20.2040
             };
 
-            _tourService.AddKeypoint(tour2Id, t2_kp1);
-            _tourService.AddKeypoint(tour2Id, t2_kp2);
+            _tourService.AddKeypoint(tour2Id, t2_kp1, author1Id);
+            _tourService.AddKeypoint(tour2Id, t2_kp2, author1Id);
 
             // Tour5
 
@@ -373,9 +377,9 @@ namespace Explorer.API.Demo
                 Longitude = 19.8860
             };
 
-            _tourService.AddKeypoint(tour5Id, t5_kp1);
-            _tourService.AddKeypoint(tour5Id, t5_kp2);
-            _tourService.AddKeypoint(tour5Id, t5_kp3);
+            _tourService.AddKeypoint(tour5Id, t5_kp1, author2Id);
+            _tourService.AddKeypoint(tour5Id, t5_kp2, author2Id);
+            _tourService.AddKeypoint(tour5Id, t5_kp3, author2Id);
 
             // Tour6
 
@@ -388,7 +392,7 @@ namespace Explorer.API.Demo
                 Longitude = 19.8451
             };
 
-            _tourService.AddKeypoint(tour6Id, t6_kp1);
+            _tourService.AddKeypoint(tour6Id, t6_kp1, author3Id);
         }
 
     }
