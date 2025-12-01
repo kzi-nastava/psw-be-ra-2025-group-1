@@ -84,11 +84,11 @@ public class Tour : AggregateRoot
         if (Status != TourStatus.Draft)
             throw new InvalidOperationException("Can only delete keypoints from tour in draft");
 
+        var keypoint = Keypoints.FirstOrDefault(k => k.Id == keypointId) ?? throw new NotFoundException($"Keypoint with id {keypointId} not found in tour");
+
         // Making it so only the last keypoint can be deleted so we don't have to care for other keypoint's SequenceNumbers :)
         if (keypointId != Keypoints.Last().Id)
             throw new InvalidOperationException("Can only delete last keypoint in tour");
-
-        var keypoint = Keypoints.FirstOrDefault(k => k.Id == keypointId) ?? throw new NotFoundException($"Keypoint with id {keypointId} not found in tour");
 
         Keypoints.Remove(keypoint);
     }

@@ -1,5 +1,6 @@
 ﻿using Explorer.API.Controllers.Administrator.Administration;
 using Explorer.API.Controllers.Author;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Dtos.Enums;
 using Explorer.Tours.API.Public.Administration;
@@ -14,6 +15,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Explorer.Tours.Tests.Integration.Administration;
 
@@ -23,11 +25,11 @@ public class TourCommandTests : BaseToursIntegrationTest
     public TourCommandTests(ToursTestFactory factory) : base(factory)
     {
     }
-    private static TourController CreateController(IServiceScope scope)
+    private static TourController CreateController(IServiceScope scope, string userId = "-1")
     {
         return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>())
         {
-            ControllerContext = BuildContext("-1")
+            ControllerContext = BuildContext(userId)
         };
     }
 
@@ -135,4 +137,146 @@ public class TourCommandTests : BaseToursIntegrationTest
         afterDelete.ShouldBeNull();
     }
 
+    [Theory]
+    [InlineData("-1", -15, "Title", 200)] // Valid
+    [InlineData("-1", -15, "", 400)] // Invalid, keypoint title not added
+    [InlineData("-1", -19, "Title", 403)] // Invalid, unauthorized
+    [InlineData("-1", -55, "Title", 404)] // Invalid, tour doesn't exist   
+    public void Adds_keypoint(string authorId, long tourId, string keypointTitle, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        var newKeypoint = new KeypointDto
+        {
+            Title = keypointTitle,
+            Description = "Description",
+            Secret = "Hidden",
+            Latitude = 44.8,
+            Longitude = 20.4
+        };
+
+        // Act & Assert
+        if (expectedStatus == 200)
+        {
+            var result = (ObjectResult)controller.AddKeypoint(tourId, newKeypoint).Result;
+            result.ShouldNotBeNull();
+            result.StatusCode.ShouldBe(200);
+
+            var storedTour = dbContext.Tour.First(t => t.Id == tourId);
+            storedTour.Keypoints.ShouldContain(kp => kp.Title == newKeypoint.Title);
+        }
+        else
+        {
+            var ex = Should.Throw<Exception>(() => controller.AddKeypoint(tourId, newKeypoint));
+
+            if (expectedStatus == 400)
+                ex.ShouldBeOfType<ArgumentException>();   // invalid title / invalid lat/lon
+            else if (expectedStatus == 403)
+                ex.ShouldBeOfType<InvalidOperationException>(); // unauthorized
+            else if (expectedStatus == 404)
+                ex.ShouldBeOfType<NotFoundException>();   // tour not found
+        }
+    }
+    
+
+    [Theory] 
+    [InlineData("-1", -1,-1, "Updated OK", 200)] // Valid
+    [InlineData("-1", -1, -1, "", 400)] // Invalid, empty title
+    [InlineData("-1", -19, 1, "Title", 403)] // Invalid, unauthorized
+    [InlineData("-1", -1, 77, "Title", 404)] // Invalid, keypoint not found
+    [InlineData("-1", -77, -1, "Title", 404)] // Invalid, tour not found
+    public void Updates_keypoint(
+        string authorId,
+        long tourId,
+        long keypointId,
+        string newTitle,
+        int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        var updated = new KeypointDto
+        {
+            Id = keypointId,
+            Title = newTitle,
+            Description = "Updated Desc",
+            Secret = "Updated Secret",
+            Latitude = 44.1,
+            Longitude = 21.0
+        };
+
+        if (expectedStatus == 200)
+        {
+            // Act
+            var result = (ObjectResult)controller.UpdateKeypoint(tourId, keypointId, updated).Result;
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.StatusCode.ShouldBe(expectedStatus);
+
+            var storedTour = dbContext.Tour.First(t => t.Id == tourId);
+            var kp = storedTour.Keypoints.FirstOrDefault(k => k.Id == keypointId);
+            kp.ShouldNotBeNull();
+            kp.Title.ShouldBe(newTitle);
+        }
+        else 
+        {
+            var ex = Should.Throw<Exception>(() => controller.UpdateKeypoint(tourId, keypointId, updated));
+
+            if(expectedStatus == 400)
+            {
+                ex.ShouldBeOfType<ArgumentException>();
+            }
+            else if (expectedStatus == 403)
+            {
+                ex.ShouldBeOfType<InvalidOperationException>();
+            }
+            else if(expectedStatus == 404)
+            {
+                ex.ShouldBeOfType<NotFoundException>();
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("-1", -1, -1, 200)] // Valid
+    [InlineData("-2", -15, -1, 403)] // Invalid, unauthorized
+    [InlineData("-1", -1, 77, 404)] // Invalid, keypoint not found
+    [InlineData("-1", -77, -1, 404)] // Invalid, tour not found
+    public void Deletes_keypoint(string authorId, long tourId, long keypointId, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        if (expectedStatus == 200)
+        {
+            // Act
+            controller.DeleteKeypoint(tourId, keypointId);
+
+            // Assert - database
+            var storedTour = dbContext.Tour.First(t => t.Id == tourId);
+            var kp = storedTour.Keypoints.FirstOrDefault(k => k.Id == keypointId);
+            kp.ShouldBeNull();
+        }
+        else
+        {
+            var ex = Should.Throw<Exception>(() => controller.DeleteKeypoint(tourId, keypointId));
+
+            if(expectedStatus == 403)
+            {
+                ex.ShouldBeOfType<InvalidOperationException>();
+            }
+            else if(expectedStatus == 404)
+            {
+                ex.ShouldBeOfType<NotFoundException>();
+            }
+        }
+    }
 }
