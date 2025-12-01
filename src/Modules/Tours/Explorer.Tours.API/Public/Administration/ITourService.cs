@@ -15,7 +15,11 @@ public interface ITourService
     List<TourDto> GetAll();
 
     PagedResult<TourDto> GetByCreator(long creatorId, int page, int pageSize);
-    TourDto Create(TourDto tour);
+    TourDto Create(CreateTourDto tour);
     TourDto Update(long id, TourDto tour);
     void Delete(long id);
+
+    KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto);
+    KeypointDto UpdateKeypoint(long tourId, KeypointDto keypointDto);
+    void DeleteKeypoint(long tourId, long keypointId);
 }
