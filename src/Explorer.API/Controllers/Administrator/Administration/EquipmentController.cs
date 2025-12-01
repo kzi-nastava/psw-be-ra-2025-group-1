@@ -9,7 +9,7 @@ namespace Explorer.API.Controllers.Administrator.Administration;
 [Authorize(Policy = "administratorPolicy")]
 [Route("api/administration/equipment")]
 [ApiController]
-public class EquipmentController : ControllerBase
+public class EquipmentController : BaseController
 {
     private readonly IEquipmentService _equipmentService;
 

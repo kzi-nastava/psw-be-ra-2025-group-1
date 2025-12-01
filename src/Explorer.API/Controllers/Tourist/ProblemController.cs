@@ -10,7 +10,7 @@ namespace Explorer.API.Controllers.Tourist;
 [Authorize(Policy = "touristPolicy")]
 [Route("api/tourist/problems")]
 [ApiController]
-public class TouristProblemController : ControllerBase
+public class TouristProblemController : BaseController
 {
     private readonly IProblemService _problemService;
 

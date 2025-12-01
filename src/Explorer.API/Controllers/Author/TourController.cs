@@ -10,7 +10,7 @@ namespace Explorer.API.Controllers.Author;
 [Authorize(Policy = "authorPolicy")]
 [Route("api/author/tours")]
 [ApiController]
-public class TourController : ControllerBase
+public class TourController : BaseController
 {
     private readonly ITourService _tourService;
 

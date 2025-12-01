@@ -8,7 +8,7 @@ namespace Explorer.API.Controllers
 {
     [Route ("api/users/profile")]
     [ApiController]
-    public class ProfileController : ControllerBase
+    public class ProfileController : BaseController
     {
         private readonly IPersonService _personService;
 
@@ -32,25 +32,5 @@ namespace Explorer.API.Controllers
             personDto.Id = GetCurrentPersonId();
             return Ok(_personService.Update(personDto));
         }
-
-        // TODO: Make BaseController and have controllers inherit it with basic mehtods such as this
-        private long GetCurrentUserId()
-        {
-            var userIdClaim = User.FindFirst("id")?.Value;
-            if (userIdClaim == null)
-                throw new UnauthorizedAccessException("User ID not found in token.");
-
-            return long.Parse(userIdClaim);
-        }
-
-        private long GetCurrentPersonId()
-        {
-            var personIdClaim = User.FindFirst("personId")?.Value;
-            if (personIdClaim == null)
-                throw new UnauthorizedAccessException("Person ID not found in token");
-
-            return long.Parse(personIdClaim);
-        }
-
     }
 }

@@ -12,7 +12,7 @@ namespace Explorer.API.Controllers.Tourist
     [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/meetup")]
     [ApiController]
-    public class MeetUpController : ControllerBase
+    public class MeetUpController : BaseController
     {
         private readonly IMeetUpService _meetUpService;
 

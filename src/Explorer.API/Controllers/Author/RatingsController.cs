@@ -9,7 +9,7 @@ namespace Explorer.API.Controllers.Author;
 [Authorize(Policy = "authorPolicy")]
 [Route("api/author/ratings")]
 [ApiController]
-public class RatingsController : ControllerBase
+public class RatingsController : BaseController
 {
     private readonly IRatingsService _service;
     public RatingsController(IRatingsService service) => _service = service;

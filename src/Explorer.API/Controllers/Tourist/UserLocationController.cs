@@ -12,7 +12,7 @@ namespace Explorer.API.Controllers.Tourist
     [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/location")]
     [ApiController]
-    public class UserLocationController: ControllerBase
+    public class UserLocationController: BaseController
     {
         private readonly IUserLocationService _locationService;
 

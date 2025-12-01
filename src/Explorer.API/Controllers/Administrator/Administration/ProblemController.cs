@@ -9,7 +9,7 @@ namespace Explorer.API.Controllers.Administrator.Administration;
 [Authorize(Policy = "administratorPolicy")]
 [Route("api/administration/problems")]
 [ApiController]
-public class AdminProblemController : ControllerBase
+public class AdminProblemController : BaseController
 {
     private readonly IProblemService _problemService;
 

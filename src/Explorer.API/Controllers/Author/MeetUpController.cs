@@ -11,7 +11,7 @@ namespace Explorer.API.Controllers.Author
     [Authorize(Policy = "authorPolicy")]
     [Route("api/author/meetup")]
     [ApiController]
-    public class MeetUpController : ControllerBase
+    public class MeetUpController : BaseController
     {
         private readonly IMeetUpService _meetUpService;
 

@@ -6,7 +6,7 @@ namespace Explorer.API.Controllers;
 
 [Authorize] // Autentikacija da samo autori/turisti sa validnim JWT tokenima mogu da pristupe
 [Route("api/blog")]
-public class BlogController : ControllerBase
+public class BlogController : BaseController
 {
     private readonly IBlogService _blogService;
 

@@ -11,7 +11,7 @@ namespace Explorer.API.Controllers.Tourist
     [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/preferences")]
     [ApiController]
-    public class TourPreferenceController : ControllerBase
+    public class TourPreferenceController : BaseController
     {
         private readonly ITourPreferenceService _tourPreferenceService;
 

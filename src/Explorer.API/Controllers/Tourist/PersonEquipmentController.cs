@@ -10,7 +10,7 @@ namespace Explorer.API.Controllers.Tourist
     [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/person-equipment")]
     [ApiController]
-    public class PersonEquipmentController : ControllerBase
+    public class PersonEquipmentController : BaseController
     {
         private readonly IPersonEquipmentService _personEquipmentService;
 

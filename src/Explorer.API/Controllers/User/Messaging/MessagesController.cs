@@ -9,7 +9,7 @@ namespace Explorer.API.Controllers.User.Messaging
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Policy = "userPolicy")] // ili neka druga politika za ulogu korisnika
-    public class MessagesController : ControllerBase
+    public class MessagesController : BaseController
     {
         private readonly IMessageService _messageService;
 

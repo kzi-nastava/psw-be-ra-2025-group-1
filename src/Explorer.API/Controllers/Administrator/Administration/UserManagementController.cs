@@ -8,7 +8,7 @@ namespace Explorer.API.Controllers.Administrator.Administration
     [Route("api/administration/users")]
     [ApiController]
     [Authorize(Policy = "administratorPolicy")]
-    public class UserManagementController : ControllerBase
+    public class UserManagementController : BaseController
     {
         private readonly IUserManagementService _userManagementService;
 

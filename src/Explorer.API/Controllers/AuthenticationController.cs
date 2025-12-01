@@ -9,7 +9,7 @@ namespace Explorer.API.Controllers;
 [Authorize]
 [Route("api/users")]
 [ApiController]
-public class AuthenticationController : ControllerBase
+public class AuthenticationController : BaseController
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly IUserRepository _userRepository;

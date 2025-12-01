@@ -9,7 +9,7 @@ namespace Explorer.API.Controllers.Administrator.Administration;
 [Authorize(Policy = "administratorPolicy")]
 [Route("api/administration/ratings")]
 [ApiController]
-public class RatingsController : ControllerBase
+public class RatingsController : BaseController
 {
     private readonly IRatingsService _service;
     public RatingsController(IRatingsService service) => _service = service;

@@ -9,7 +9,7 @@ namespace Explorer.API.Controllers.Tourist;
 [Authorize(Policy = "touristPolicy")]
 [Route("api/tourist/facility")]
 [ApiController]
-public class FacilityController : ControllerBase
+public class FacilityController : BaseController
 {
     private readonly IFacilityService _facilityService;
 
