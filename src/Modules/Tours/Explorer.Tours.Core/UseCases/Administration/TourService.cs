@@ -17,6 +17,11 @@ public class TourService : ITourService
         _mapper = mapper;
     }
 
+    public bool Archive(long id)
+    {
+        throw new NotImplementedException();
+    }
+
     public TourDto Create(TourDto tourdto)
     {
         var result = _tourRepository.Create(_mapper.Map<Tour>(tourdto));
@@ -51,6 +56,11 @@ public class TourService : ITourService
 
         var items = result.Results.Select(_mapper.Map<TourDto>).ToList();
         return new PagedResult<TourDto>(items, result.TotalCount);
+    }
+
+    public bool Publish(long id)
+    {
+        throw new NotImplementedException();
     }
 
     public TourDto Update(long id, TourDto tourDto)
