@@ -46,14 +46,16 @@ public class TourController : BaseController
     [HttpPut("{id:long}")]
     public ActionResult<TourDto> Update(long id, [FromBody] TourDto tour)
     {
-        return Ok(_tourService.Update(id, tour));
+        long authorId = GetCurrentPersonId();
+        return Ok(_tourService.Update(id, tour, authorId));
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpDelete("{id:long}")]
     public ActionResult<TourDto> Delete(long id)
     {
-        _tourService.Delete(id);
+        long authorId = GetCurrentPersonId();
+        _tourService.Delete(id, authorId);
         return Ok();
     }
 
@@ -61,22 +63,25 @@ public class TourController : BaseController
     [HttpPost("{tourId}/keypoints")]
     public ActionResult<KeypointDto> AddKeypoint(long tourId, [FromBody] KeypointDto keypoint)
     {
-        return Ok(_tourService.AddKeypoint(tourId, keypoint));
+        long authorId = GetCurrentPersonId();
+        return Ok(_tourService.AddKeypoint(tourId, keypoint, authorId));
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpPut("{tourId}/keypoints/{keypointId}")]
     public ActionResult<KeypointDto> UpdateKeypoint(long tourId, long keypointId, [FromBody] KeypointDto keypoint)
     {
+        long authorId = GetCurrentPersonId();
         keypoint.Id = keypointId;
-        return Ok(_tourService.UpdateKeypoint(tourId, keypoint));
+        return Ok(_tourService.UpdateKeypoint(tourId, keypoint, authorId));
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpDelete("{tourId}/keypoints/{keypointId}")]
     public ActionResult DeleteKeypoint(long tourId, long keypointId)
     {
-        _tourService.DeleteKeypoint(tourId, keypointId);
+        long authorId = GetCurrentPersonId();
+        _tourService.DeleteKeypoint(tourId, keypointId, authorId);
         return Ok();
     }
 }
