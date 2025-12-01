@@ -7,13 +7,19 @@ using System.Threading.Tasks;
 
 namespace Explorer.Tours.Core.Domain
 {
+
+    /// <summary>
+    /// All types of transport available for a tour
+    /// </summary>
     public enum TransportType
     {
+        Unknown,
         Foot,
         Bike,
         Car,
     }
-    public class TransportTime: Entity
+
+    public class TransportTime : Entity
     {
         public TransportType Type { get; private set; }
 
