@@ -13,10 +13,12 @@ namespace Explorer.API.Controllers.Author;
 public class TourController : ControllerBase
 {
     private readonly ITourService _tourService;
+    private readonly ITransportTimeService _transportTimeService;
 
-    public TourController(ITourService tourService)
+    public TourController(ITourService tourService, ITransportTimeService transportTimeService)
     {
         _tourService = tourService;
+        _transportTimeService = transportTimeService;
     }
 
     [HttpPost]
@@ -45,11 +47,19 @@ public class TourController : ControllerBase
         return Ok(_tourService.Update(id, tour));
     }
 
+
     [HttpDelete("{id:long}")]
     public ActionResult<TourDto> Delete(long id)
     {
         _tourService.Delete(id);
         return Ok();
+    }
+
+    [AllowAnonymous]
+    [HttpGet("{tourId:long}/transport-times")]
+    public ActionResult<List<TransportTimeDto>> GetTransportTimes(long tourId)
+    {
+        return Ok(_transportTimeService.GetByTourId(tourId).ToList());
     }
 
 }
