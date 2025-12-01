@@ -10,8 +10,8 @@ public class ToursContext : DbContext
     public DbSet<Tour> Tour { get; set; }
     public DbSet<Facility> Facility { get; set; }
     public DbSet<MeetUp> MeetUp { get; set; }
-
-    public DbSet<PersonEquipment> PersonEquipment { get; set; } //dodala sam
+    public DbSet<PersonEquipment> PersonEquipment { get; set; }
+    public DbSet<TransportTime> TransportTime { get; set; }
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
