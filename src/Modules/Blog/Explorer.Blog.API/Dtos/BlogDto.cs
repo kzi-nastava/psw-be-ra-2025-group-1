@@ -1,4 +1,4 @@
-namespace Explorer.Blog.API.Public;
+namespace Explorer.Blog.API.Dtos;
 
 public class BlogDto
 {
@@ -10,4 +10,5 @@ public class BlogDto
     public List<string> Images {get; set;}
     public string Status {get; set;}
     public DateTime? LastModifiedDate {get; set;}
+    public List<CommentDto> Comments {get; set;} = new List<CommentDto>();
 }

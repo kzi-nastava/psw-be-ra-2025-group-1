@@ -2,16 +2,16 @@ using Explorer.BuildingBlocks.Core.Domain;
 
 namespace Explorer.Blog.Core.Domain;
 
-public class Blog : Entity
+public class Blog : AggregateRoot
 {
     public long UserId {get; private set; }
     public string Title {get; private set;}
     public string Description {get; private set;}
     public DateTime CreationDate {get; private set;}
     public List<string> Images {get; private set;}
-
     public BlogStatus Status {get; private set;}
     public DateTime? LastModifiedDate {get; private set;}
+    public List<Comment> Comments {get; private set;}
 
     public Blog(long userId, string title, string description, List<string>? images = null)
     {
@@ -21,6 +21,7 @@ public class Blog : Entity
         CreationDate = DateTime.UtcNow;
         Images = images ?? new List<string>();
         Status = BlogStatus.Draft; // Kada korisnik kreira blog, on se nalazi u stanju pripreme.
+        Comments = new List<Comment>();
         Validate();
     }
 
@@ -74,4 +75,36 @@ public class Blog : Entity
         LastModifiedDate = DateTime.UtcNow;
     }
 
+    public Comment AddComment(long userId, string content) // Dodavanje komentara na blog
+    {
+        if (Status != BlogStatus.Published)
+        {
+            throw new InvalidOperationException("Comments can only be added to published blogs.");
+        }
+        var comment = new Comment(userId, content);
+        Comments.Add(comment);
+        return comment;
+    }
+
+    public Comment UpdateComment(Comment updatedComment) // Ažuriranje komentara na blog
+    {
+        var comment = Comments.FirstOrDefault(c => c.Id == updatedComment.Id);
+        if (comment == null)
+        {
+            throw new KeyNotFoundException($"Comment with ID {updatedComment.Id} not found.");
+        }
+
+        comment.UpdateContent(updatedComment.Content);
+        return comment;
+    }
+
+    public void DeleteComment(long commentId)
+    {
+        var comment = Comments.FirstOrDefault(c => c.Id == commentId);
+        if (comment == null)
+        {
+            throw new KeyNotFoundException($"Comment with ID {commentId} not found.");
+        }
+        Comments.Remove(comment);
+    }
 }

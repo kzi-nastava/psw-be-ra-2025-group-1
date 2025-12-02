@@ -1,4 +1,5 @@
 using AutoMapper;
+using Explorer.Blog.API.Dtos;
 using Explorer.Blog.API.Public;
 using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 
@@ -56,5 +57,32 @@ public class BlogService : IBlogService
     {
         var blogs = _blogRepository.GetVisibleForUser(userId);
         return _mapper.Map<List<BlogDto>>(blogs);
+    }
+
+    public CommentDto AddCommentToBlog(long blogId, long userId, CommentDto commentDto)
+    {
+        commentDto.UserId = userId; // Set the userId of the comment to the current user
+        var comment = _blogRepository.AddCommentToBlog(blogId, _mapper.Map<Domain.Comment>(commentDto));
+        return _mapper.Map<CommentDto>(comment);
+    }
+
+    public CommentDto UpdateCommentInBlog(long blogId, long userId, CommentDto commentDto)
+    {
+        if (commentDto.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("User is not authorized to update this comment.");
+        }
+        var comment = _blogRepository.UpdateCommentInBlog(blogId, _mapper.Map<Domain.Comment>(commentDto));
+        return _mapper.Map<CommentDto>(comment);
+    }
+
+    public void DeleteCommentFromBlog(long blogId, long userId, long commentId)
+    {
+        var comment = _blogRepository.GetCommentForBlog(blogId, commentId);
+        if (comment.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("User is not authorized to delete this comment.");
+        }
+        _blogRepository.DeleteComment(blogId, commentId);
     }
 }

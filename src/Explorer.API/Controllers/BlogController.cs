@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Linq.Expressions;
+using Explorer.Blog.API.Dtos;
 using Explorer.Blog.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -89,5 +90,31 @@ public class BlogController : ControllerBase
         {
             return BadRequest(e.Message);
         }
+    }
+
+    [HttpPut("comments/add/blogId={blogId}")]
+    public ActionResult<CommentDto> AddComment(long blogId, [FromBody] CommentDto commentDto) 
+    {
+        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var result = _blogService.AddCommentToBlog(blogId, userId, commentDto);
+
+        return Ok(result);
+    }
+
+    [HttpPut("comments/update/blogId={blogId}")]
+    public ActionResult<CommentDto> UpdateComment(long blogId, [FromBody] CommentDto commentDto)
+    {
+        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var result = _blogService.UpdateCommentInBlog(blogId, userId, commentDto);
+
+        return Ok(result);
+    }
+
+    [HttpDelete("comments/delete/blogId={blogId}/commentId={commentId}")]
+    public ActionResult DeleteComment(long blogId, long commentId)
+    {
+        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        _blogService.DeleteCommentFromBlog(blogId, userId, commentId);
+        return Ok();
     }
 }
