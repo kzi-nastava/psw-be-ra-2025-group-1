@@ -35,6 +35,16 @@ public class BlogController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet]
+    public ActionResult<List<BlogDto>> GetVisibleBlogs()        //pregled svih blogova koje user sme da vidi
+    {
+        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var result = _blogService.GetVisibleBlogs(userId);
+
+        return Ok(result);
+    }
+
+
     [HttpPut("{id}")]
     public ActionResult<BlogDto> UpdateBlog(long id, [FromBody] BlogUpdateDto blogDto) // Editovanje bloga
     {

@@ -36,4 +36,11 @@ public class BlogRepository : IBlogRepository
     {
         return _context.Blogs.Find(id) ?? throw new KeyNotFoundException($"Blog with the ID {id} was not found.");
     }
+
+    public List<BlogEntity> GetVisibleForUser(long userId)          //svi blogovi koji nisu draft + moji draftovi
+    {
+        return _context.Blogs
+            .Where(b => b.Status != BlogStatus.Draft || b.UserId == userId)
+            .ToList();
+    }
 }
