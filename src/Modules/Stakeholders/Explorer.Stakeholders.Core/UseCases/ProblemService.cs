@@ -5,6 +5,7 @@ using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.API.Public.Administration;
 using DomainProblemStatus = Explorer.Stakeholders.Core.Domain.ProblemStatus;
 using DtoProblemStatus = Explorer.Stakeholders.API.Dtos.ProblemStatus;
 using DomainProblemCategory = Explorer.Stakeholders.Core.Domain.ProblemCategory;
@@ -14,11 +15,13 @@ namespace Explorer.Stakeholders.Core.UseCases;
 public class ProblemService : IProblemService
 {
     private readonly IProblemRepository _problemRepository;
+    private readonly ITourService _tourService;
     private readonly IMapper _mapper;
 
-    public ProblemService(IProblemRepository repository, IMapper mapper)
+    public ProblemService(IProblemRepository repository, ITourService tourService, IMapper mapper)
     {
         _problemRepository = repository;
+        _tourService = tourService;
         _mapper = mapper;
     }
 
@@ -38,7 +41,15 @@ public class ProblemService : IProblemService
 
     public PagedResult<ProblemDto> GetByAuthor(long authorId, int page, int pageSize)
     {
+        Console.WriteLine($"🔍 GetByAuthor called with authorId={authorId}");
         var result = _problemRepository.GetByAuthorId(authorId, page, pageSize);
+        Console.WriteLine($"🔍 Found {result.Results.Count} problems for author {authorId}");
+        
+        foreach (var problem in result.Results)
+        {
+            Console.WriteLine($"   - Problem Id={problem.Id}, TourId={problem.TourId}, AuthorId={problem.AuthorId}, CreatorId={problem.CreatorId}");
+        }
+        
         var items = result.Results.Select(_mapper.Map<ProblemDto>).ToList();
         return new PagedResult<ProblemDto>(items, result.TotalCount);
     }
@@ -53,10 +64,25 @@ public class ProblemService : IProblemService
         return _mapper.Map<ProblemDto>(problem);
     }
 
+    public ProblemDto GetByIdForAdmin(long id)
+    {
+        var problem = _problemRepository.Get(id);
+        return _mapper.Map<ProblemDto>(problem);
+    }
+
     public ProblemDto Create(ProblemDto problemDto)
     {
+        var tour = _tourService.GetById(problemDto.TourId);
+        problemDto.AuthorId = tour.CreatorId;
+        
+        Console.WriteLine($"🔍 Creating problem for TourId={problemDto.TourId}, CreatorId={problemDto.CreatorId}, AuthorId={problemDto.AuthorId}");
+        
         var problem = _mapper.Map<Problem>(problemDto);
+        Console.WriteLine($"🔍 Mapped problem - AuthorId in domain: {problem.AuthorId}");
+        
         var result = _problemRepository.Create(problem);
+        Console.WriteLine($"🔍 Saved problem with Id={result.Id}, AuthorId={result.AuthorId}");
+        
         return _mapper.Map<ProblemDto>(result);
     }
 

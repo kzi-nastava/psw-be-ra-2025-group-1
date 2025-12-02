@@ -51,6 +51,7 @@ public class ProblemDbRepository : IProblemRepository
 
     public PagedResult<Problem> GetByAuthorId(long authorId, int page, int pageSize)
     {
+        var allProblems = _dbSet.ToList();
         var query = _dbSet.Where(p => p.AuthorId == authorId)
             .OrderByDescending(p => p.CreationTime);
         var task = query.GetPagedById(page, pageSize);

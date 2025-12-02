@@ -31,7 +31,18 @@ public class StakeholderProfile : Profile
         CreateMap<RatingUpdateDto, Rating>();
         CreateMap<UserLocationDto, UserLocation>().ReverseMap();
         
-        CreateMap<ProblemDto, Problem>().ReverseMap();
+        CreateMap<ProblemDto, Problem>()
+            .ConstructUsing(dto => new Problem(
+                dto.Priority,
+                dto.Description,
+                (Core.Domain.ProblemCategory)dto.Category,
+                dto.TourId,
+                dto.CreatorId,
+                dto.AuthorId
+            ));
+        
+        CreateMap<Problem, ProblemDto>();
+        
         CreateMap<Core.Domain.ProblemStatus, API.Dtos.ProblemStatus>().ReverseMap();
         CreateMap<Core.Domain.ProblemCategory, API.Dtos.ProblemCategory>().ReverseMap();
         

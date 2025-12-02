@@ -1,6 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -28,15 +29,34 @@ public class TouristProblemController : ControllerBase
     [HttpGet("my-problems")]
     public ActionResult<PagedResult<ProblemDto>> GetMyProblems([FromQuery] int page, [FromQuery] int pageSize)
     {
-        var creatorId = GetPersonId();
+        var creatorId = User.UserId();
         var result = _problemService.GetByCreator(creatorId, page, pageSize);
         return Ok(result);
+    }
+
+    [HttpGet("{id:long}")]
+    public ActionResult<ProblemDto> GetById(long id)
+    {
+        try
+        {
+            var touristId = User.UserId();
+            var problem = _problemService.Get(id, touristId);
+            return Ok(problem);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
     }
 
     [HttpPost]
     public ActionResult<ProblemDto> Create([FromBody] ProblemDto problem)
     {
-        problem.CreatorId = GetPersonId();
+        problem.CreatorId = User.UserId();
         problem.CreationTime = DateTime.UtcNow;
         return Ok(_problemService.Create(problem));
     }
@@ -44,7 +64,7 @@ public class TouristProblemController : ControllerBase
     [HttpPut("{id:long}")]
     public ActionResult<ProblemDto> Update([FromBody] ProblemDto problem)
     {
-        problem.CreatorId = GetPersonId();
+        problem.CreatorId = User.UserId();
         return Ok(_problemService.Update(problem));
     }
 
@@ -55,9 +75,28 @@ public class TouristProblemController : ControllerBase
         return Ok();
     }
 
-    private long GetPersonId()
+    [HttpPut("{id:long}/status")]
+    public ActionResult<ProblemDto> ChangeStatus(long id, [FromBody] ChangeProblemStatusDto dto)
     {
-        var personIdClaim = User.FindFirst("personId")?.Value;
-        return long.Parse(personIdClaim ?? "0");
+        try
+        {
+            var touristId = User.UserId();
+            var problem = _problemService.ChangeProblemStatus(id, touristId, dto.Status, dto.Comment);
+            return Ok(problem);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
+}
+
+public class ChangeProblemStatusDto
+{
+    public ProblemStatus Status { get; set; }
+    public string? Comment { get; set; }
 }

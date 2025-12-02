@@ -32,7 +32,7 @@ public class AuthorProblemMessageController : ControllerBase
     {
         try
         {
-            var authorId = User.PersonId();
+            var authorId = User.UserId();
             var message = _problemMessageService.AddMessage(dto.ProblemId, authorId, dto.Content);
 
             var problem = _problemService.Get(dto.ProblemId, authorId);
@@ -64,7 +64,7 @@ public class AuthorProblemMessageController : ControllerBase
     {
         try
         {
-            var authorId = User.PersonId();
+            var authorId = User.UserId();
             _problemService.Get(problemId, authorId);
             
             var messages = _problemMessageService.GetMessagesByProblemId(problemId);
