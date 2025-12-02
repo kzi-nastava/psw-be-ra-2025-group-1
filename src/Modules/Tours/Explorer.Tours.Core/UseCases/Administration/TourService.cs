@@ -42,7 +42,9 @@ public class TourService : ITourService
 
     public TourDto GetById(long id)
     {
-        return _mapper.Map<TourDto>(_tourRepository.Get(id));
+        var tour = _tourRepository.Get(id);
+        var dto = _mapper.Map<TourDto>(tour);
+        return dto;
     }
 
     public PagedResult<TourDto> GetPaged(int page, int pageSize)

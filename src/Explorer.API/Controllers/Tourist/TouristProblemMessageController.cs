@@ -32,7 +32,7 @@ public class TouristProblemMessageController : ControllerBase
     {
         try
         {
-            var touristId = User.PersonId();
+            var touristId = User.UserId();
             var message = _problemMessageService.AddMessage(dto.ProblemId, touristId, dto.Content);
 
             var problem = _problemService.Get(dto.ProblemId, touristId);
@@ -64,7 +64,7 @@ public class TouristProblemMessageController : ControllerBase
     {
         try
         {
-            var touristId = User.PersonId();
+            var touristId = User.UserId();
             _problemService.Get(problemId, touristId);
             
             var messages = _problemMessageService.GetMessagesByProblemId(problemId);

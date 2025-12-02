@@ -24,7 +24,7 @@ public class ProblemMessageService : IProblemMessageService
         _mapper = mapper;
     }
 
-    public ProblemMessageDto AddMessage(long problemId, long authorId, string content)
+    public ProblemMessageDto AddMessage(long problemId, long authorId, string content, bool isAdmin = false)
     {
         if (string.IsNullOrWhiteSpace(content))
             throw new ArgumentException("Message content cannot be empty.");
@@ -33,7 +33,7 @@ public class ProblemMessageService : IProblemMessageService
         if (problem == null)
             throw new NotFoundException($"Problem with id {problemId} not found.");
 
-        if (authorId != problem.CreatorId && authorId != problem.AuthorId)
+        if (!isAdmin && authorId != problem.CreatorId && authorId != problem.AuthorId)
             throw new UnauthorizedAccessException("Only participants can add messages to this problem.");
 
         var message = new ProblemMessage(problemId, authorId, content);
