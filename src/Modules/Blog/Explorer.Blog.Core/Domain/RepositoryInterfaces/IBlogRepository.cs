@@ -6,4 +6,5 @@ public interface IBlogRepository
     List<Blog> GetByUserId(long userId);
     Blog Update(Blog blog);
     Blog GetById(long id);
+    List<Blog> GetVisibleForUser(long userId);          //svi blogovi koje trenutni korisnik sme da vidi
 }

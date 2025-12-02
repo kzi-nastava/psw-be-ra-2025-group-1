@@ -51,4 +51,10 @@ public class BlogService : IBlogService
         var updatedBlog = _blogRepository.Update(blog);
         return _mapper.Map<BlogDto>(updatedBlog);
     }
+
+    public List<BlogDto> GetVisibleBlogs(long userId)
+    {
+        var blogs = _blogRepository.GetVisibleForUser(userId);
+        return _mapper.Map<List<BlogDto>>(blogs);
+    }
 }
