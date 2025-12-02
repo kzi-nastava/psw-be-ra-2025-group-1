@@ -44,7 +44,7 @@ public class NotificationService : INotificationService
     {
         var notification = _notificationRepository.Get(notificationId);
         if (notification == null)
-            throw new NotFoundException($"Notification with id {notificationId} not found.");
+            throw new KeyNotFoundException($"Notification with id {notificationId} not found.");
 
         notification.MarkAsRead();
         var result = _notificationRepository.Update(notification);
@@ -55,7 +55,7 @@ public class NotificationService : INotificationService
     {
         var notification = _notificationRepository.Get(notificationId);
         if (notification == null)
-            throw new NotFoundException($"Notification with id {notificationId} not found.");
+            throw new KeyNotFoundException($"Notification with id {notificationId} not found.");
 
         notification.MarkAsUnread();
         var result = _notificationRepository.Update(notification);
@@ -64,6 +64,10 @@ public class NotificationService : INotificationService
 
     public void Delete(long notificationId)
     {
+        var notification = _notificationRepository.Get(notificationId);
+        if (notification == null)
+            throw new KeyNotFoundException($"Notification with id {notificationId} not found.");
+        
         _notificationRepository.Delete(notificationId);
     }
 }
