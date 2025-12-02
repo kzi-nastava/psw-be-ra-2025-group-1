@@ -11,6 +11,7 @@
 	  <None Remove="TestData\b-users.sql" />
 	  <None Remove="TestData\c-people.sql" />
 	  <None Remove="TestData\d-messaging.sql" />
+	  <None Remove="TestData\e-problem.sql" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Content Include="TestData\a-delete.sql">
@@ -23,6 +24,9 @@
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="TestData\d-messaging.sql">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="TestData\e-problem.sql">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>
