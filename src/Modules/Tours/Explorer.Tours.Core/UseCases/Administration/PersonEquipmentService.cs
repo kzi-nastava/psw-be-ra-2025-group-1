@@ -72,24 +72,16 @@ public class PersonEquipmentService : IPersonEquipmentService
 
     public PersonEquipmentDto AddEquipmentToPerson(PersonEquipmentDto personEquipment)
     {
+        // PRVO proveri da li equipment postoji - bacice NotFoundException ako ne postoji
+        var equipment = _equipmentRepository.Get(personEquipment.EquipmentId);
+        
         var existingPersonEquipment = _personEquipmentRepository.GetByPersonAndEquipment(personEquipment.PersonId, personEquipment.EquipmentId);
 
         if (existingPersonEquipment != null)
         {
             // Person already has this equipment, return the existing record
             var existingDto = _mapper.Map<PersonEquipmentDto>(existingPersonEquipment);
-            
-            // Load equipment details
-            try
-            {
-                var equipment = _equipmentRepository.Get(existingPersonEquipment.EquipmentId);
-                existingDto.Equipment = _mapper.Map<EquipmentDto>(equipment);
-            }
-            catch (NotFoundException)
-            {
-                existingDto.Equipment = null;
-            }
-            
+            existingDto.Equipment = _mapper.Map<EquipmentDto>(equipment);
             return existingDto;
         }
         else
@@ -99,17 +91,7 @@ public class PersonEquipmentService : IPersonEquipmentService
             var result = _personEquipmentRepository.Add(newPersonEquipment);
             
             var resultDto = _mapper.Map<PersonEquipmentDto>(result);
-            
-            // Load equipment details
-            try
-            {
-                var equipment = _equipmentRepository.Get(result.EquipmentId);
-                resultDto.Equipment = _mapper.Map<EquipmentDto>(equipment);
-            }
-            catch (NotFoundException)
-            {
-                resultDto.Equipment = null;
-            }
+            resultDto.Equipment = _mapper.Map<EquipmentDto>(equipment);
             
             return resultDto;
         }

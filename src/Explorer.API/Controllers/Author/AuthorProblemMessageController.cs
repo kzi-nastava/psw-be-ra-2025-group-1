@@ -1,3 +1,4 @@
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Infrastructure.Authentication;
@@ -45,6 +46,10 @@ public class AuthorProblemMessageController : ControllerBase
 
             return Ok(message);
         }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
         catch (UnauthorizedAccessException ex)
         {
             return Forbid();
@@ -69,6 +74,10 @@ public class AuthorProblemMessageController : ControllerBase
             
             var messages = _problemMessageService.GetMessagesByProblemId(problemId);
             return Ok(messages);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
         }
         catch (UnauthorizedAccessException)
         {

@@ -11,7 +11,12 @@ public class ProblemMessage : Entity
 
     public ProblemMessage(long problemId, long authorId, string content)
     {
-        if (string.IsNullOrWhiteSpace(content)) throw new ArgumentException("Content cannot be empty.");
+        if (problemId == 0) 
+            throw new ArgumentException("Problem ID must be a valid identifier.");
+        if (authorId == 0 || authorId == -1) 
+            throw new ArgumentException("Author ID must be a valid identifier.");
+        if (string.IsNullOrWhiteSpace(content)) 
+            throw new ArgumentException("Content cannot be empty.");
         
         ProblemId = problemId;
         AuthorId = authorId;

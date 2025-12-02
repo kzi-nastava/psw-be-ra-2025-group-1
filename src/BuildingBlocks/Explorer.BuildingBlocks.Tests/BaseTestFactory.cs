@@ -29,13 +29,16 @@ public abstract class BaseTestFactory<TDbContext> : WebApplicationFactory<Progra
     {
         try
         {
+            context.Database.EnsureDeleted();
+            
             context.Database.EnsureCreated();
+            
             var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
             databaseCreator.CreateTables();
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // CreateTables throws an exception if the schema already exists. This is a workaround for multiple dbcontexts.
+            logger.LogWarning(ex, "CreateTables threw an exception (expected for multiple contexts)");
         }
 
         try
