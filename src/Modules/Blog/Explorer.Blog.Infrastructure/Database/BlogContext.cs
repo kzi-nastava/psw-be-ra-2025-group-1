@@ -12,5 +12,11 @@ public class BlogContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("blog");
+
+        modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.Images).HasColumnType("text[]");
+
+        modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.Status).IsRequired();
+
+        modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.LastModifiedDate).IsRequired(false); // nullable bcs the blog doesn't have to be updated if it's not needed
     }
 }
