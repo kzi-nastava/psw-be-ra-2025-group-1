@@ -13,7 +13,8 @@ public interface IBlogService
 
     List<BlogDto> GetVisibleBlogs(long userId);    // lista blogova koje user sme da vidi
 
-    CommentDto AddCommentToBlog(long blogId, long userId, CommentDto commentDto);
-    CommentDto UpdateCommentInBlog(long blogId, long userId, CommentDto commentDto);
+    public CommentDto GetCommentForBlog(long blogId, long commentId);
+    CommentDto AddCommentToBlog(long blogId, CommentCreateDto commentDto);
+    CommentDto UpdateCommentInBlog(long blogId, CommentUpdateDto commentDto);
     public void DeleteCommentFromBlog(long blogId, long userId, long commentId);
 }

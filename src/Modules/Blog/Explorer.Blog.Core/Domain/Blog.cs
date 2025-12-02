@@ -65,7 +65,7 @@ public class Blog : AggregateRoot
         LastModifiedDate = DateTime.UtcNow;
     }
 
-    public void Archive() // utor može da arhivira blog koji je objavljen, nakon čega nije moguće menjati sadržaj.
+    public void Archive() // Autor može da arhivira blog koji je objavljen, nakon čega nije moguće menjati sadržaj.
     {
         if (Status != BlogStatus.Published)
         {
@@ -86,24 +86,33 @@ public class Blog : AggregateRoot
         return comment;
     }
 
-    public Comment UpdateComment(Comment updatedComment) // Ažuriranje komentara na blog
+    public Comment UpdateComment(long userId, long commentId, string content) // Ažuriranje komentara na blog
     {
-        var comment = Comments.FirstOrDefault(c => c.Id == updatedComment.Id);
+        var comment = Comments.FirstOrDefault(c => c.Id == commentId);
+
         if (comment == null)
         {
-            throw new KeyNotFoundException($"Comment with ID {updatedComment.Id} not found.");
+            throw new KeyNotFoundException($"Comment with ID {commentId} not found.");
+        }
+        if (comment.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("User is not authorized to update this comment.");
         }
 
-        comment.UpdateContent(updatedComment.Content);
+        comment.UpdateContent(content);
         return comment;
     }
 
-    public void DeleteComment(long commentId)
+    public void DeleteComment(long commentId, long userId)
     {
         var comment = Comments.FirstOrDefault(c => c.Id == commentId);
         if (comment == null)
         {
             throw new KeyNotFoundException($"Comment with ID {commentId} not found.");
+        }
+        if (comment.UserId != userId)
+        {
+            throw new UnauthorizedAccessException("User is not authorized to delete this comment.");
         }
         Comments.Remove(comment);
     }

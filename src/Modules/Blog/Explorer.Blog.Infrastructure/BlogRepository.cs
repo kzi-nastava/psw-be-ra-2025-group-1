@@ -63,26 +63,26 @@ public class BlogRepository : IBlogRepository
         return comment;
     }
 
-    public Comment AddCommentToBlog(long blogId, Comment comment)
+    public Comment AddCommentToBlog(long blogId, long userId, string content)
     {
         var blog = GetById(blogId);
-        blog.Comments.Add(comment);
+        var comment = blog.AddComment(userId, content);
         _context.SaveChanges();
         return comment;
     }
 
-    public Comment UpdateCommentInBlog(long blogId, Comment updatedComment)
+    public Comment UpdateCommentInBlog(long blogId, long userId, long commentId, string content)
     {
         var blog = GetById(blogId);
-        var existingComment = blog.UpdateComment(updatedComment);
+        var existingComment = blog.UpdateComment(userId, commentId, content);
         _context.SaveChanges();
         return existingComment;
     }
 
-    public void DeleteComment(long blogId, long commentId)
+    public void DeleteComment(long blogId, long userId, long commentId)
     {
         var blog = GetById(blogId);
-        blog.DeleteComment(commentId);
+        blog.DeleteComment(commentId, userId);
         _context.SaveChanges();
     }
 }

@@ -92,20 +92,30 @@ public class BlogController : ControllerBase
         }
     }
 
+    [HttpGet("comments/get/blogId={blogId}/commentId={commentId}")]
+    public ActionResult<CommentDto> GetComment(long blogId, long commentId)
+    {
+        var result = _blogService.GetCommentForBlog(blogId, commentId);
+        return Ok(result);
+    }
+
     [HttpPut("comments/add/blogId={blogId}")]
-    public ActionResult<CommentDto> AddComment(long blogId, [FromBody] CommentDto commentDto) 
+    public ActionResult<CommentDto> AddComment(long blogId, [FromBody] CommentCreateDto commentDto) 
     {
         var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
-        var result = _blogService.AddCommentToBlog(blogId, userId, commentDto);
+        commentDto.UserId = userId;
+        var result = _blogService.AddCommentToBlog(blogId, commentDto);
 
         return Ok(result);
     }
 
-    [HttpPut("comments/update/blogId={blogId}")]
-    public ActionResult<CommentDto> UpdateComment(long blogId, [FromBody] CommentDto commentDto)
+    [HttpPut("comments/update/blogId={blogId}/commentId={commentId}")]
+    public ActionResult<CommentDto> UpdateComment(long blogId, long commentId, [FromBody] CommentUpdateDto commentDto)
     {
         var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
-        var result = _blogService.UpdateCommentInBlog(blogId, userId, commentDto);
+        commentDto.UserId = userId;
+        commentDto.Id = commentId;
+        var result = _blogService.UpdateCommentInBlog(blogId, commentDto);
 
         return Ok(result);
     }

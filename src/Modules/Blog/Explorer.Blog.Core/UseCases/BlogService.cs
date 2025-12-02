@@ -59,30 +59,29 @@ public class BlogService : IBlogService
         return _mapper.Map<List<BlogDto>>(blogs);
     }
 
-    public CommentDto AddCommentToBlog(long blogId, long userId, CommentDto commentDto)
+    public CommentDto GetCommentForBlog(long blogId, long commentId)
     {
-        commentDto.UserId = userId; // Set the userId of the comment to the current user
-        var comment = _blogRepository.AddCommentToBlog(blogId, _mapper.Map<Domain.Comment>(commentDto));
+        var comment = _blogRepository.GetCommentForBlog(blogId, commentId);
         return _mapper.Map<CommentDto>(comment);
     }
 
-    public CommentDto UpdateCommentInBlog(long blogId, long userId, CommentDto commentDto)
+    public CommentDto AddCommentToBlog(long blogId, CommentCreateDto commentDto)
     {
-        if (commentDto.UserId != userId)
-        {
-            throw new UnauthorizedAccessException("User is not authorized to update this comment.");
-        }
-        var comment = _blogRepository.UpdateCommentInBlog(blogId, _mapper.Map<Domain.Comment>(commentDto));
+        var comment = _blogRepository.AddCommentToBlog(blogId, commentDto.UserId, commentDto.Content);
+        return _mapper.Map<CommentDto>(comment);
+    }
+
+    public CommentDto UpdateCommentInBlog(long blogId, CommentUpdateDto commentDto)
+    {
+        var comment = _blogRepository.UpdateCommentInBlog(blogId, commentDto.UserId, commentDto.Id, commentDto.Content);
         return _mapper.Map<CommentDto>(comment);
     }
 
     public void DeleteCommentFromBlog(long blogId, long userId, long commentId)
     {
         var comment = _blogRepository.GetCommentForBlog(blogId, commentId);
-        if (comment.UserId != userId)
-        {
-            throw new UnauthorizedAccessException("User is not authorized to delete this comment.");
-        }
-        _blogRepository.DeleteComment(blogId, commentId);
+        _blogRepository.DeleteComment(blogId, userId, commentId);
     }
+
+
 }
