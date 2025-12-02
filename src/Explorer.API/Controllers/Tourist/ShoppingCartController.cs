@@ -1,11 +1,10 @@
-﻿using Explorer.Tours.API.Public.Administration;
-using Explorer.Tours.API.Public.Tourist;
+﻿using Explorer.Tours.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Explorer.API.Controllers.Tourist
 {
-    [AllowAnonymous]
+    [Authorize]
     [Route("api/tourist/cart")]
     [ApiController]
     public class ShoppingCartController : ControllerBase
@@ -17,16 +16,27 @@ namespace Explorer.API.Controllers.Tourist
             _service = service;
         }
 
-        [Authorize] 
+        [HttpGet]
+        public IActionResult GetCart()
+        {
+            long touristId = long.Parse(User.FindFirst("personId")!.Value);
+            var cart = _service.GetCart(touristId);
+            return Ok(cart);
+        }
+
         [HttpPost("add/{tourId}")]
         public IActionResult AddToCart(long tourId)
         {
             long touristId = long.Parse(User.FindFirst("personId")!.Value);
-
             _service.AddToCart(touristId, tourId);
-
             return Ok("Added to cart.");
         }
-
+        [HttpDelete("remove/{tourId}")]
+        public IActionResult RemoveFromCart(long tourId)
+        {
+            long touristId = long.Parse(User.FindFirst("personId")!.Value);
+            _service.RemoveFromCart(touristId, tourId);
+            return Ok("Removed from cart.");
+        }
     }
 }
