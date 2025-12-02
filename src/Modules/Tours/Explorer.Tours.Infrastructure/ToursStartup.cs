@@ -1,7 +1,6 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
-using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
@@ -37,6 +36,7 @@ public static class ToursStartup
         services.AddScoped<IPersonEquipmentService, PersonEquipmentService>(); //dodala sam
         services.AddScoped<ITourBrowsingService, TourBrowsingService>();
 
+        services.AddScoped<IShoppingCartService, ShoppingCartService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -47,6 +47,9 @@ public static class ToursStartup
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
         services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); //dodala sam
+        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
+
+
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();

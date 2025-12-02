@@ -4,6 +4,8 @@ namespace Explorer.Tours.Core.Domain.Shopping;
 
 public class OrderItem : ValueObject
 {
+    public long Id { get; private set; }
+
     public long TourId { get; private set; }
     public string TourName { get; private set; }
     public decimal Price { get; private set; }

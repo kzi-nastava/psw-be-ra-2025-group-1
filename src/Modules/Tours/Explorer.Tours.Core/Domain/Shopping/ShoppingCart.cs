@@ -11,10 +11,8 @@ public class ShoppingCart : AggregateRoot
 
     public decimal TotalPrice => _items.Sum(i => i.TotalPrice);
 
-    // EF Core needs this
     protected ShoppingCart() { }
 
-    // Domain constructor
     public ShoppingCart(long touristId)
     {
         TouristId = touristId;
