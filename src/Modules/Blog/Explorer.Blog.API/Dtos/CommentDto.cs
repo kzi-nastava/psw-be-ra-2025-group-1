@@ -11,6 +11,7 @@ namespace Explorer.Blog.API.Dtos
         public long Id { get; set; }
         public long UserId { get; set; }
         public string Content { get; set; }
+        public string AuthorName { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime? LastModifiedDate { get; set; }
     }

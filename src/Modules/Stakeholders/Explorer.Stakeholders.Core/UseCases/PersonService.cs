@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Explorer.Stakeholders.API.Dtos;
+using Explorer.Stakeholders.API.Internal;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Explorer.Stakeholders.Core.UseCases
 {
-    public class PersonService : IPersonService
+    public class PersonService : IPersonService, IInternalPersonService
     {
         private readonly IPersonRepository _personRepository;
         private readonly IMapper _mapper;
@@ -32,6 +33,12 @@ namespace Explorer.Stakeholders.Core.UseCases
         {
             var result = _personRepository.Get(id);
             return _mapper.Map<PersonDto>(result);
+        }
+
+        public PersonDto GetPersonByUserId(long userId)
+        {
+            var person = _personRepository.GetByUserId(userId);
+            return _mapper.Map<PersonDto>(person);
         }
     }
 }

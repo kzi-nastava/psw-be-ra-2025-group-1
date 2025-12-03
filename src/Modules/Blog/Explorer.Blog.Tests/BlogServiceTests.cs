@@ -5,6 +5,7 @@ using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 using Explorer.Blog.Core.Mappers;
 using Explorer.Blog.Core.UseCases;
 using BlogEntity = Explorer.Blog.Core.Domain.Blog;
+using Explorer.Stakeholders.API.Internal;
 
 using Moq;
 using Shouldly;
@@ -17,6 +18,7 @@ public class BlogServiceTests
     private readonly Mock<IBlogRepository> _mockRepository;
     private readonly IMapper _mapper;
     private readonly BlogService _service;
+    private readonly IInternalPersonService _personRepository;
 
     public BlogServiceTests()
     {
@@ -29,7 +31,9 @@ public class BlogServiceTests
 
         _mockRepository = new Mock<IBlogRepository>();
 
-        _service = new BlogService(_mockRepository.Object, _mapper);
+        _personRepository = Mock.Of<IInternalPersonService>();
+
+        _service = new BlogService(_mockRepository.Object, _mapper, _personRepository);
     }
 
     [Fact]

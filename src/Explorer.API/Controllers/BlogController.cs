@@ -21,7 +21,7 @@ public class BlogController : ControllerBase
     [HttpPost]
     public ActionResult<BlogDto> CreateBlog([FromBody] BlogCreateDto blogDto) // Kreiranje bloga
     {
-        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value ?? "0");
         var result = _blogService.CreateBlog(userId, blogDto);
 
         return Ok(result);
@@ -30,7 +30,7 @@ public class BlogController : ControllerBase
     [HttpGet("my")]
     public ActionResult<List<BlogDto>> GetMyBlogs() // Pregled blogova; auth token sadrzi userId -> JWT
     {
-        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value ?? "0");
         var result = _blogService.GetUserBlogs(userId);
 
         return Ok(result);
@@ -39,7 +39,7 @@ public class BlogController : ControllerBase
     [HttpGet]
     public ActionResult<List<BlogDto>> GetVisibleBlogs()        //pregled svih blogova koje user sme da vidi
     {
-        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value ?? "0");
         var result = _blogService.GetVisibleBlogs(userId);
 
         return Ok(result);
@@ -102,7 +102,7 @@ public class BlogController : ControllerBase
     [HttpPut("comments/add/blogId={blogId}")]
     public ActionResult<CommentDto> AddComment(long blogId, [FromBody] CommentCreateDto commentDto) 
     {
-        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var userId = User.Claims.FirstOrDefault(c => c.Type == "id") is not null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
         commentDto.UserId = userId;
         var result = _blogService.AddCommentToBlog(blogId, commentDto);
 
@@ -112,7 +112,7 @@ public class BlogController : ControllerBase
     [HttpPut("comments/update/blogId={blogId}/commentId={commentId}")]
     public ActionResult<CommentDto> UpdateComment(long blogId, long commentId, [FromBody] CommentUpdateDto commentDto)
     {
-        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var userId = User.Claims.FirstOrDefault(c => c.Type == "id") is not null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
         commentDto.UserId = userId;
         commentDto.Id = commentId;
         var result = _blogService.UpdateCommentInBlog(blogId, commentDto);
@@ -123,7 +123,7 @@ public class BlogController : ControllerBase
     [HttpDelete("comments/delete/blogId={blogId}/commentId={commentId}")]
     public ActionResult DeleteComment(long blogId, long commentId)
     {
-        var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var userId = User.Claims.FirstOrDefault(c => c.Type == "id") is not null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
         _blogService.DeleteCommentFromBlog(blogId, userId, commentId);
         return Ok();
     }
