@@ -1,5 +1,6 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Dtos.Enums;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
@@ -28,9 +29,9 @@ public class TourBrowsingService : ITourBrowsingService
             Price = t.Price,
             Status = t.Status switch
             {
-                TourStatus.Published => TourStatusDTO.Published,
-                TourStatus.Archived => TourStatusDTO.Archived,
-                _ => TourStatusDTO.Draft
+                TourStatus.Published => TourStatusDto.Published,
+                TourStatus.Archived => TourStatusDto.Archived,
+                _ => TourStatusDto.Draft
             }
         };
     }
