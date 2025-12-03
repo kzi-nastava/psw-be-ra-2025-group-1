@@ -15,9 +15,9 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
     {
     }
 
-    private static TransportTimeController CreateController(IServiceScope scope)
+    private static TourController CreateController(IServiceScope scope)
     {
-        return new TransportTimeController(scope.ServiceProvider.GetRequiredService<ITransportTimeService>())
+        return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>(), scope.ServiceProvider.GetRequiredService<ITransportTimeService>())
         {
             ControllerContext = BuildContext("-1")
         };
@@ -38,7 +38,7 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         };
 
         // Act
-        var result = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TransportTimeDto;
+        var result = ((ObjectResult)controller.CreateTransportTime(newEntity).Result)?.Value as TransportTimeDto;
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -69,7 +69,7 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         };
 
         // Act
-        var result = ((ObjectResult)controller.Update(updatedEntity).Result)?.Value as TransportTimeDto;
+        var result = ((ObjectResult)controller.UpdateTransportTime(updatedEntity).Result)?.Value as TransportTimeDto;
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -95,7 +95,7 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         var transportTimeId = -2;
 
         // Act
-        var result = (OkResult)controller.Delete(transportTimeId).Result;
+        var result = (OkResult)controller.DeleteTransportTime(transportTimeId).Result;
 
         // Assert - Response
         result.ShouldNotBeNull();
