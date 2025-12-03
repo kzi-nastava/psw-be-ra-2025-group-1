@@ -37,6 +37,13 @@ public class TourController : ControllerBase
     }
 
     [AllowAnonymous]
+    [HttpGet("my")]
+    public ActionResult<PagedResult<TourDto>> GetMyToursPaged([FromQuery] int page, [FromQuery] int pageSize)
+    {
+        return Ok(_tourService.GetByCreator(User.PersonId(), page, pageSize));
+    }
+
+    [AllowAnonymous]
     [HttpGet]
     public ActionResult<PagedResult<TourDto>> GetByPage([FromQuery] int page, [FromQuery] int pageSize)
     {
