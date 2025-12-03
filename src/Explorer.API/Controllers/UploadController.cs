@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Explorer.API.Controllers
 {
     [Route("api/upload")]
+    [Authorize]
     [ApiController]
     public class UploadController : ControllerBase
     {
