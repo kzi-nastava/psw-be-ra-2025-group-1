@@ -1,4 +1,4 @@
-Write-Host "=== RUNNING MIGRATION RESET SCRIPT (PMC) ==="
+Write-Host "=== RUNNING MIGRATION RESET SCRIPT ===" -ForegroundColor Cyan
 
 # Delete old migration folders
 $migrationFolders = @(
@@ -10,31 +10,51 @@ $migrationFolders = @(
 foreach ($folder in $migrationFolders) {
     if (Test-Path $folder) {
         Remove-Item $folder -Recurse -Force
-        Write-Host "Deleted $folder"
+        Write-Host "Deleted $folder" -ForegroundColor Yellow
     } else {
-        Write-Host "Folder not found: $folder"
+        Write-Host "Folder not found: $folder" -ForegroundColor Gray
     }
 }
 
 Write-Host ""
 
-# Reset migrations
-Write-Host "=== Migratating StakeholdersContext ==="
-Add-Migration Init -Context StakeholdersContext -Project Explorer.Stakeholders.Infrastructure -StartupProject Explorer.API
-Update-Database -Context StakeholdersContext -Project Explorer.Stakeholders.Infrastructure -StartupProject Explorer.API
+# Reset migrations using dotnet ef commands
+Write-Host "=== Migrating StakeholdersContext ===" -ForegroundColor Cyan
+dotnet ef migrations add Init `
+    --context StakeholdersContext `
+    --project Modules/Stakeholders/Explorer.Stakeholders.Infrastructure `
+    --startup-project Explorer.API
+
+dotnet ef database update `
+    --context StakeholdersContext `
+    --project Modules/Stakeholders/Explorer.Stakeholders.Infrastructure `
+    --startup-project Explorer.API
 
 Write-Host ""
-Write-Host "=== Migratating ToursContext ==="
-Add-Migration Init_Tours -Context ToursContext -Project Explorer.Tours.Infrastructure -StartupProject Explorer.API
-Update-Database -Context ToursContext -Project Explorer.Tours.Infrastructure -StartupProject Explorer.API
+
+Write-Host "=== Migrating ToursContext ===" -ForegroundColor Cyan
+dotnet ef migrations add Init_Tours `
+    --context ToursContext `
+    --project Modules/Tours/Explorer.Tours.Infrastructure `
+    --startup-project Explorer.API
+
+dotnet ef database update `
+    --context ToursContext `
+    --project Modules/Tours/Explorer.Tours.Infrastructure `
+    --startup-project Explorer.API
 
 Write-Host ""
-Write-Host "=== Migratating BlogContext ==="
-Add-Migration Init_Blog -Context BlogContext -Project Explorer.Blog.Infrastructure -StartupProject Explorer.API
-Update-Database -Context BlogContext -Project Explorer.Blog.Infrastructure -StartupProject Explorer.API
+
+Write-Host "=== Migrating BlogContext ===" -ForegroundColor Cyan
+dotnet ef migrations add Init_Blog `
+    --context BlogContext `
+    --project Modules/Blog/Explorer.Blog.Infrastructure `
+    --startup-project Explorer.API
+
+dotnet ef database update `
+    --context BlogContext `
+    --project Modules/Blog/Explorer.Blog.Infrastructure `
+    --startup-project Explorer.API
 
 Write-Host ""
-Write-Host "=== MIGRATION RESET FINISHED ==="
-
-# Demo seeder
-
+Write-Host "=== MIGRATION RESET FINISHED ===" -ForegroundColor Green
