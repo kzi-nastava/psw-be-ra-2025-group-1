@@ -11,7 +11,7 @@ on:
 jobs:
   test:
     name: Test
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     
     env:
       DATABASE_HOST: localhost
@@ -21,6 +21,21 @@ jobs:
       DATABASE_PASSWORD: root
       DATABASE_POOLING: true
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: explorer_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - name: Install .NET 8 SDK
         uses: actions/setup-dotnet@v4
@@ -29,15 +44,6 @@ jobs:
 
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Start PostgreSQL service
-        run: |
-          $pgService = Get-Service -Name postgresql* -ErrorAction SilentlyContinue
-          if ($pgService.Status -ne 'Running') {
-              Start-Service -InputObject $pgService
-          }
-          # Wait until Postgres is ready
-          & "C:\Program Files\PostgreSQL\16\bin\pg_isready.exe" -U postgres -d explorer-v1-test
 
       - name: Restore dependencies
         run: dotnet restore ./src/Explorer.sln
