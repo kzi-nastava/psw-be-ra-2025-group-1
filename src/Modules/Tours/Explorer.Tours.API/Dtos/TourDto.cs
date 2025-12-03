@@ -12,7 +12,7 @@ public class TourDto
     public long Id { get; set; }
     public long CreatorId { get; init; }
     public string Title { get; init; } = "";
-    public string Description { get; init; }= "";
+    public string Description { get; init; } = "";
     public int Difficulty { get; init; } = -1;
     public string[] Tags { get; init; }= Array.Empty<string>();
     public TourStatusDto Status { get; init; }= TourStatusDto.Draft;
