@@ -22,8 +22,10 @@ public class TourService : ITourService
     public bool Archive(long id)
     {
         var tour = GetById(id);
+        if(tour == null) return false;
+
         bool canArchive = true;
-        if (tour.Status == TourStatusDTO.Archived) return true;
+        if (tour.Status == TourStatusDTO.Archived) return canArchive;
 
         Tour? tourToUpdate = _tourRepository.Get(id);
         if (tourToUpdate != null)
@@ -74,6 +76,9 @@ public class TourService : ITourService
     {
         var tour = GetById(id);
         bool canPublish = true;
+
+        if (tour == null) return false;
+
 
         if (tour.Status == TourStatusDTO.Published) return true;
         if (tour.Title.Length <= 0) canPublish = false;

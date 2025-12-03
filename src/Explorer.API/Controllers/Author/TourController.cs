@@ -84,4 +84,28 @@ public class TourController : ControllerBase
         return Ok();
     }
 
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPut("{id:long}/archive")]
+    public ActionResult Archive(long id)
+    {
+        bool result = _tourService.Archive(id);
+        if (result)
+        {
+            return Ok();
+        }
+        return BadRequest("Tour could not be archived.");
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPut("{id:long}/publish")]
+    public ActionResult Publish(long id)
+    {
+        bool result = _tourService.Publish(id);
+        if (result)
+        {
+            return Ok();
+        }
+        return BadRequest("Tour could not be published.");
+    }
+
 }
