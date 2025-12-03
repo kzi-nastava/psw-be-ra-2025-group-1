@@ -56,10 +56,32 @@ public class TourController : ControllerBase
     }
 
     [AllowAnonymous]
-    [HttpGet("{tourId:long}/transport-times")]
-    public ActionResult<List<TransportTimeDto>> GetTransportTimes(long tourId)
+    [HttpGet("{id:long}/transport-times")]
+    public ActionResult<List<TransportTimeDto>> GetTransportTime(long id)
     {
-        return Ok(_transportTimeService.GetByTourId(tourId).ToList());
+        return Ok(_transportTimeService.GetByTourId(id));
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPost("{id:long}/transport-times")]
+    public ActionResult<TransportTimeDto> CreateTransportTime([FromBody] TransportTimeDto transport)
+    {
+        return Ok(_transportTimeService.Create(transport));
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPut("{id:long}/transport-times/{transportId:long}")]
+    public ActionResult<TransportTimeDto> UpdateTransportTime([FromBody] TransportTimeDto transport)
+    {
+        return Ok(_transportTimeService.Update(transport));
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpDelete("{id:long}/transport-times/{transportId:long}")]
+    public ActionResult<TransportTimeDto> DeleteTransportTime(long id)
+    {
+        _transportTimeService.Delete(id);
+        return Ok();
     }
 
 }
