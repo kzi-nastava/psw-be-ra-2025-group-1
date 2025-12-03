@@ -43,6 +43,9 @@ jobs:
       - name: Build solution
         run: dotnet build ./src/Explorer.sln --no-incremental --configuration Release
 
+      - name: Create test results folder
+        run: mkdir -p TestResults
+
       - name: Run tests
         env:
           DATABASE_HOST: localhost
