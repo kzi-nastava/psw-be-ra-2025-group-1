@@ -102,7 +102,7 @@ public class BlogController : ControllerBase
     [HttpPut("comments/add/blogId={blogId}")]
     public ActionResult<CommentDto> AddComment(long blogId, [FromBody] CommentCreateDto commentDto) 
     {
-        var userId = User is null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
+        var userId = User.Claims.FirstOrDefault(c => c.Type == "id") is not null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
         commentDto.UserId = userId;
         var result = _blogService.AddCommentToBlog(blogId, commentDto);
 
@@ -112,7 +112,7 @@ public class BlogController : ControllerBase
     [HttpPut("comments/update/blogId={blogId}/commentId={commentId}")]
     public ActionResult<CommentDto> UpdateComment(long blogId, long commentId, [FromBody] CommentUpdateDto commentDto)
     {
-        var userId = User is null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
+        var userId = User.Claims.FirstOrDefault(c => c.Type == "id") is not null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
         commentDto.UserId = userId;
         commentDto.Id = commentId;
         var result = _blogService.UpdateCommentInBlog(blogId, commentDto);
@@ -123,7 +123,7 @@ public class BlogController : ControllerBase
     [HttpDelete("comments/delete/blogId={blogId}/commentId={commentId}")]
     public ActionResult DeleteComment(long blogId, long commentId)
     {
-        var userId = User is null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
+        var userId = User.Claims.FirstOrDefault(c => c.Type == "id") is not null ? long.Parse(User.Claims.First(c => c.Type == "id").Value) : -1;
         _blogService.DeleteCommentFromBlog(blogId, userId, commentId);
         return Ok();
     }
