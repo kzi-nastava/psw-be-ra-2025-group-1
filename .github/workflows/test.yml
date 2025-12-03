@@ -51,4 +51,4 @@ jobs:
           DATABASE_USERNAME: postgres
           DATABASE_PASSWORD: root
           DATABASE_POOLING: true
-        run: dotnet test ./src/Explorer.sln --configuration Release --no-build --logger "console;verbosity=normal"
+        run: dotnet test ./src/Explorer.sln --configuration Release --no-build --logger "console;verbosity=minimal"
