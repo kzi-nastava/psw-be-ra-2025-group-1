@@ -52,4 +52,18 @@ public class TourController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("{id:long}/equipment/{equipId: long}")]
+    public ActionResult<TourDto> AddEquipment(long id, long equipId)
+    {
+        _tourService.AddEquipment(id, equipId);
+        return Ok();
+    }
+
+    [HttpDelete("{id:long}/equipment/{equipId: long}")]
+    public ActionResult<TourDto> RemoveEquipment(long id, long equipId)
+    {
+        _tourService.RemoveEquipment(id, equipId);
+        return Ok();
+    }
+
 }

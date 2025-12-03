@@ -18,4 +18,6 @@ public interface ITourService
     TourDto Create(TourDto tour);
     TourDto Update(long id, TourDto tour);
     void Delete(long id);
+    TourDto AddEquipment(long id, long equipmentId);
+    TourDto RemoveEquipment(long id,  long equipmentId);
 }

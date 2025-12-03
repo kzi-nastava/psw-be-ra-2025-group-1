@@ -22,6 +22,7 @@ public class Tour : Entity
     public string[] Tags { get; private set; }
     public TourStatus Status { get; private set; }
     public double Price { get; private set; }
+    public List<Equipment> Equipment { get; private set; } = new List<Equipment>();
 
     public Tour()
     {
@@ -52,5 +53,15 @@ public class Tour : Entity
         Tags = tags;
         Status = status;
         Price = price;
+    }
+
+    public void AddEquipment(Equipment equipment)
+    {
+        Equipment.Add(equipment);
+    }
+
+    public void RemoveEquipment(Equipment equipment)
+    {
+        Equipment.Remove(equipment);
     }
 }

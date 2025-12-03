@@ -9,11 +9,13 @@ namespace Explorer.Tours.Core.UseCases.Administration;
 public class TourService : ITourService
 {
     private readonly ITourRepository _tourRepository;
+    private readonly IEquipmentRepository _equipmentRepository;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, IMapper mapper)
+    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
     {
         _tourRepository = tourRepository;
+        _equipmentRepository = equipmentRepository;
         _mapper = mapper;
     }
 
@@ -59,6 +61,23 @@ public class TourService : ITourService
         tour.Update(tourDto.CreatorId, tourDto.Title, tourDto.Description, tourDto.Difficulty,
             tourDto.Tags, (TourStatus)tourDto.Status, tourDto.Price);
 
+        var result = _tourRepository.Update(tour);
+        return _mapper.Map<TourDto>(result);
+    }
+
+    public TourDto AddEquipment(long id, long equipmentId)
+    {
+        var tour = _tourRepository.Get(id);
+        var equip = _equipmentRepository.Get(equipmentId);
+        tour.AddEquipment(equip);
+        var result = _tourRepository.Update(tour);
+        return _mapper.Map<TourDto>(result);
+    }
+    public TourDto RemoveEquipment(long id, long equipmentId)
+    {
+        var tour = _tourRepository.Get(id);
+        var equip = _equipmentRepository.Get(equipmentId);
+        tour.RemoveEquipment(equip);
         var result = _tourRepository.Update(tour);
         return _mapper.Map<TourDto>(result);
     }

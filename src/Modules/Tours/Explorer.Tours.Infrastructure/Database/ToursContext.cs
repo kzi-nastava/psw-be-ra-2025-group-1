@@ -18,5 +18,10 @@ public class ToursContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("tours");
+
+        modelBuilder.Entity<Tour>()
+        .HasMany(t => t.Equipment)
+        .WithMany()
+        .UsingEntity(j => j.ToTable("TourEquipment"));
     }
 }
