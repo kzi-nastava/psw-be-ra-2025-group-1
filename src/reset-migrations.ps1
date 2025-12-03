@@ -55,6 +55,3 @@ dotnet ef database update `
     --context BlogContext `
     --project Modules/Blog/Explorer.Blog.Infrastructure `
     --startup-project Explorer.API
-
-Write-Host ""
-Write-Host "=== MIGRATION RESET FINISHED ===" -ForegroundColor Green

@@ -1,6 +1,18 @@
 ﻿# ============================================
-# RESET AND SEED DATABASE SCRIPT
+# RESET DATABASE SCRIPT
 # ============================================
+# Usage:
+#   .\reset-databases.ps1             # Full reset and seed both databases
+#   .\reset-database.ps1 -NoSeed      # Runs migrations, but keeps the main DB empty
+#   .\reset-database.ps1 -KeepDb      # Keep main DB, reset test DB only
+# ============================================
+
+param(
+    [switch]$NoSeed,
+    [switch]$KeepDb
+)
+
+Write-Host "=== RESETTING PostgreSQL DATABASES ===" -ForegroundColor Cyan
 
 # PostgreSQL connection info
 $pgHost = "localhost"
@@ -10,20 +22,31 @@ $pgPassword = "root"
 
 # Set password for psql
 $env:PGPASSWORD = $pgPassword
+$pgExe = "C:\Program Files\PostgreSQL\18\bin\psql.exe"    # MAKE SURE THAT THIS IS THE CORRECT PATH FOR YOU
 
-$pgExe = "C:\Program Files\PostgreSQL\18\bin\psql.exe" # MAKE SURE THAT THIS IS THE CORRECT PATH FOR YOU
+# Determine which databases to drop based on flags
+if ($KeepDb) {
+    Write-Host "Mode: Keeping main database (explorer-v1), only resetting test database" -ForegroundColor Yellow
+    $databasesToDrop = "'explorer-v1-test'"
+    $dropCommands = 'DROP DATABASE IF EXISTS "explorer-v1-test";'
+} else {
+    Write-Host "Mode: Resetting both databases" -ForegroundColor Yellow
+    $databasesToDrop = "'explorer-v1', 'explorer-v1-test'"
+    $dropCommands = @"
+DROP DATABASE IF EXISTS "explorer-v1";
+DROP DATABASE IF EXISTS "explorer-v1-test";
+"@
+}
 
 $sql = @"
 SELECT pg_terminate_backend(pid)
 FROM pg_stat_activity
-WHERE datname IN ('explorer-v1', 'explorer-v1-test')
+WHERE datname IN ($databasesToDrop)
   AND pid <> pg_backend_pid();
-
-DROP DATABASE IF EXISTS "explorer-v1";
-DROP DATABASE IF EXISTS "explorer-v1-test";
+$dropCommands
 "@
 
-Write-Host "Dropping databases explorer-v1 and explorer-v1-test..." -ForegroundColor Yellow
+Write-Host "Dropping databases..." -ForegroundColor Yellow
 
 try {
     $sql | & "$pgExe" -h $pgHost -p $pgPort -U $pgUser -d postgres
@@ -40,28 +63,33 @@ Remove-Item Env:\PGPASSWORD
 # RESET MIGRATIONS
 # ============================================
 
-Write-Host "`n=== RESETTING MIGRATIONS ===" -ForegroundColor Cyan
+if (-not $KeepDb) {
+    Write-Host "`n=== RESETTING MIGRATIONS ===" -ForegroundColor Cyan
 
-try {
-    & "./reset-migrations.ps1"
-    Write-Host "~~~~ Migrations reset successfully ~~~~" -ForegroundColor Green
-} catch {
-    Write-Host "!!!!! Error resetting migrations !!!!!" -ForegroundColor Red
-    exit 1
+    try {
+        & "./reset-migrations.ps1"
+        Write-Host "~~~~ Migrations reset successfully ~~~~" -ForegroundColor Green
+    } catch {
+        Write-Host "!!!!! Error resetting migrations !!!!!" -ForegroundColor Red
+        exit 1
+    }
 }
 
 # ============================================
 # SEED DATABASE
 # ============================================
 
-Write-Host "`n=== SEEDING DATABASE ===" -ForegroundColor Cyan
-
-try {
-    dotnet run --project ./Explorer.API/Explorer.API.csproj -- --seed
-    Write-Host "~~~~ Database seeded successfully ~~~~" -ForegroundColor Green
-} catch {
-    Write-Host "!!!!! Error seeding database !!!!!" -ForegroundColor Red
-    exit 1
+# KeepDb mode always skips seeding (can't seed if we kept the main DB)
+if (-not $KeepDb -and -not $NoSeed) {
+    Write-Host "`n=== SEEDING DATABASE ===" -ForegroundColor Cyan
+    
+    try {
+        dotnet run --project ./Explorer.API/Explorer.API.csproj -- --seed
+        Write-Host "~~~~ Database seeded successfully ~~~~" -ForegroundColor Green
+    } catch {
+        Write-Host "!!!!! Error seeding database !!!!!" -ForegroundColor Red
+        exit 1
+    }
 }
 
 Write-Host "`n=== ALL OPERATIONS COMPLETED SUCCESSFULLY ===" -ForegroundColor Green
