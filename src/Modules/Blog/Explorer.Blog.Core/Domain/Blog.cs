@@ -27,7 +27,6 @@ public class Blog : AggregateRoot
 
     private void Validate() // Validacija polja koja ne bi trebalo da budu prazna
     {
-        if (UserId <= 0) throw new ArgumentException("UserId must be positive");
         if (string.IsNullOrWhiteSpace(Title)) throw new ArgumentException("Title can't be empty");
         if (string.IsNullOrWhiteSpace(Description)) throw new ArgumentException("Description can't be empty");
     }
