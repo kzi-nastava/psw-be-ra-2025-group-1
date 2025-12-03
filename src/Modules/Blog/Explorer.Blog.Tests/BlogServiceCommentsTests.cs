@@ -6,6 +6,7 @@ using Explorer.Blog.Core.Domain;
 using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 using Explorer.Blog.Core.Mappers;
 using Explorer.Blog.Core.UseCases;
+using Explorer.Stakeholders.API.Internal;
 using Moq;
 using Shouldly;
 using Xunit;
@@ -17,6 +18,7 @@ public class BlogServiceCommentsTests
     private readonly Mock<IBlogRepository> _mockRepository;
     private readonly IMapper _mapper;
     private readonly BlogService _service;
+    private readonly IInternalPersonService _mockPersonService;
 
     public BlogServiceCommentsTests()
     {
@@ -28,7 +30,9 @@ public class BlogServiceCommentsTests
 
         _mockRepository = new Mock<IBlogRepository>();
 
-        _service = new BlogService(_mockRepository.Object, _mapper);
+        _mockPersonService = Mock.Of<IInternalPersonService>();
+
+        _service = new BlogService(_mockRepository.Object, _mapper, _mockPersonService);
     }
 
     [Fact]
