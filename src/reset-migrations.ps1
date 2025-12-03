@@ -35,3 +35,6 @@ Update-Database -Context BlogContext -Project Explorer.Blog.Infrastructure -Star
 
 Write-Host ""
 Write-Host "=== MIGRATION RESET FINISHED ==="
+
+# Demo seeder
+
