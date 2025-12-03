@@ -55,3 +55,9 @@ jobs:
           DATABASE_PASSWORD: root
           DATABASE_POOLING: true
         run: dotnet test ./src/Explorer.sln --configuration Release --no-build --logger "console;verbosity=minimal" --logger "trx;LogFileName=TestResults/test_results.trx"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: TestResults/test_results.trx
