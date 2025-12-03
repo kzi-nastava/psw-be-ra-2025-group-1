@@ -13,9 +13,10 @@ public interface ITourService
     PagedResult<TourDto> GetPaged(int page, int pageSize);
     TourDto GetById(long id);
     List<TourDto> GetAll();
-
     PagedResult<TourDto> GetByCreator(long creatorId, int page, int pageSize);
     TourDto Create(TourDto tour);
     TourDto Update(long id, TourDto tour);
     void Delete(long id);
+    public bool Publish(long id);
+    public bool Archive(long id);
 }

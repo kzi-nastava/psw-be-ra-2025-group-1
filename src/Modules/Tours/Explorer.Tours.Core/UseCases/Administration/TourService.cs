@@ -9,12 +9,31 @@ namespace Explorer.Tours.Core.UseCases.Administration;
 public class TourService : ITourService
 {
     private readonly ITourRepository _tourRepository;
+    private readonly ITransportTimeRepository _timeRepository;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, IMapper mapper)
+    public TourService(ITourRepository tourRepository, ITransportTimeRepository timeRepository, IMapper mapper)
     {
         _tourRepository = tourRepository;
+        _timeRepository = timeRepository;
         _mapper = mapper;
+    }
+
+    public bool Archive(long id)
+    {
+        var tour = GetById(id);
+        if(tour == null) return false;
+
+        bool canArchive = true;
+        if (tour.Status == TourStatusDTO.Archived) return canArchive;
+
+        Tour? tourToUpdate = _tourRepository.Get(id);
+        if (tourToUpdate != null)
+        {
+            tourToUpdate.Archive();
+            _tourRepository.Update(tourToUpdate);
+        }
+        return canArchive;
     }
 
     public TourDto Create(TourDto tourdto)
@@ -25,7 +44,7 @@ public class TourService : ITourService
 
     public void Delete(long id)
     {
-       _tourRepository.Delete(id);
+        _tourRepository.Delete(id);
     }
 
     public List<TourDto> GetAll()
@@ -51,6 +70,36 @@ public class TourService : ITourService
 
         var items = result.Results.Select(_mapper.Map<TourDto>).ToList();
         return new PagedResult<TourDto>(items, result.TotalCount);
+    }
+
+    public bool Publish(long id)
+    {
+        var tour = GetById(id);
+        bool canPublish = true;
+
+        if (tour == null) return false;
+
+
+        if (tour.Status == TourStatusDTO.Published) return true;
+        if (tour.Title.Length <= 0) canPublish = false;
+        if (tour.Description.Length <= 0) canPublish = false;
+        if (tour.Difficulty < 1 || tour.Difficulty > 10) canPublish = false;
+        if (tour.Tags.Length <= 0) canPublish = false;
+
+        //Additional validation needed for two keypoints or more
+        List<TransportTime> transportTimes = _timeRepository.GetByTourId(id).ToList();
+        if (transportTimes.Count < 1) canPublish = false;
+
+        if (canPublish)
+        {
+            Tour? tourToUpdate = _tourRepository.Get(id);
+            if (tourToUpdate != null)
+            {
+                tourToUpdate.Publish();
+                _tourRepository.Update(tourToUpdate);
+            }
+        }
+        return canPublish;
     }
 
     public TourDto Update(long id, TourDto tourDto)
