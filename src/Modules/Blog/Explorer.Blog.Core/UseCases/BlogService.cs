@@ -1,4 +1,5 @@
 using AutoMapper;
+using Explorer.Blog.API.Dtos;
 using Explorer.Blog.API.Public;
 using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 
@@ -57,4 +58,30 @@ public class BlogService : IBlogService
         var blogs = _blogRepository.GetVisibleForUser(userId);
         return _mapper.Map<List<BlogDto>>(blogs);
     }
+
+    public CommentDto GetCommentForBlog(long blogId, long commentId)
+    {
+        var comment = _blogRepository.GetCommentForBlog(blogId, commentId);
+        return _mapper.Map<CommentDto>(comment);
+    }
+
+    public CommentDto AddCommentToBlog(long blogId, CommentCreateDto commentDto)
+    {
+        var comment = _blogRepository.AddCommentToBlog(blogId, commentDto.UserId, commentDto.Content);
+        return _mapper.Map<CommentDto>(comment);
+    }
+
+    public CommentDto UpdateCommentInBlog(long blogId, CommentUpdateDto commentDto)
+    {
+        var comment = _blogRepository.UpdateCommentInBlog(blogId, commentDto.UserId, commentDto.Id, commentDto.Content);
+        return _mapper.Map<CommentDto>(comment);
+    }
+
+    public void DeleteCommentFromBlog(long blogId, long userId, long commentId)
+    {
+        var comment = _blogRepository.GetCommentForBlog(blogId, commentId);
+        _blogRepository.DeleteComment(blogId, userId, commentId);
+    }
+
+
 }

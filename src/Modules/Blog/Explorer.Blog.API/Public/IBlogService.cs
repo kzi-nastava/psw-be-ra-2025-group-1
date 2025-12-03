@@ -1,3 +1,5 @@
+using Explorer.Blog.API.Dtos;
+
 namespace Explorer.Blog.API.Public;
 
 public interface IBlogService
@@ -10,4 +12,9 @@ public interface IBlogService
     BlogDto ArchiveBlog(long blogId);
 
     List<BlogDto> GetVisibleBlogs(long userId);    // lista blogova koje user sme da vidi
+
+    public CommentDto GetCommentForBlog(long blogId, long commentId);
+    CommentDto AddCommentToBlog(long blogId, CommentCreateDto commentDto);
+    CommentDto UpdateCommentInBlog(long blogId, CommentUpdateDto commentDto);
+    public void DeleteCommentFromBlog(long blogId, long userId, long commentId);
 }
