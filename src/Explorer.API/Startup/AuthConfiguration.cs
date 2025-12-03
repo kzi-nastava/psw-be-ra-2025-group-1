@@ -80,6 +80,7 @@ public static class AuthConfiguration
             options.AddPolicy("touristPolicy", policy => policy.RequireRole("tourist"));
             options.AddPolicy("userPolicy", policy =>policy.RequireRole("administrator", "author", "tourist"));
             options.AddPolicy("authorOrTouristPolicy", policy => policy.RequireRole("author", "tourist"));
+            options.AddPolicy("touristOrAdministratorPolicy", policy => policy.RequireRole("tourist", "administrator"));
         });
     }
 }

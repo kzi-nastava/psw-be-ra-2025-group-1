@@ -1,28 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.BuildingBlocks.Infrastructure.Database;
-using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+using Explorer.Stakeholders.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
-namespace Explorer.Tours.Infrastructure.Database.Repositories;
+namespace Explorer.Stakeholders.Infrastructure.Database.Repositories;
 
 public class ProblemDbRepository : IProblemRepository
 {
-    protected readonly ToursContext DbContext;
+    protected readonly StakeholdersContext DbContext;
     private readonly DbSet<Problem> _dbSet;
 
-    public ProblemDbRepository(ToursContext dbContext)
+    public ProblemDbRepository(StakeholdersContext dbContext)
     {
         DbContext = dbContext;
         _dbSet = DbContext.Set<Problem>();
     }
+    
     public Problem Create(Problem problem)
     {
         _dbSet.Add(problem);
