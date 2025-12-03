@@ -13,6 +13,28 @@ jobs:
     name: Test
     runs-on: windows-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: explorer-v1-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_SCHEMA: explorer-v1-test
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: root
+      DATABASE_POOLING: true
+
     steps:
       - name: Install .NET 8 SDK
         uses: actions/setup-dotnet@v4
@@ -29,4 +51,4 @@ jobs:
         run: dotnet build ./src/Explorer.sln --no-incremental --configuration Release
 
       - name: Run tests
-        run: dotnet test ./src/Explorer.sln
+        run: dotnet test ./src/Explorer.sln --configuration Release --no-build
