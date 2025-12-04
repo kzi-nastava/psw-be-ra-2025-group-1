@@ -1,3 +1,4 @@
+using Explorer.API.Demo;
 using Explorer.API.Middleware;
 using Explorer.API.Startup;
 using Explorer.Stakeholders.API.Public;
@@ -30,6 +31,7 @@ builder.Services.ConfigureAuth();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<DemoSeeder>();
 
 builder.Services.RegisterModules();
 
@@ -45,6 +47,15 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseHsts();
+}
+
+// Check for seed argument
+if (args.Contains("--seed"))
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DemoSeeder>();
+    seeder.Seed();
+    return;
 }
 
 // Added for UploadController
