@@ -30,6 +30,15 @@ if ($KeepDb) {
     $databasesToDrop = "'explorer-v1-test'"
     $dropCommands = 'DROP DATABASE IF EXISTS "explorer-v1-test";'
 } else {
+    # Confirmation prompt for main database deletion
+    Write-Host "`nWARNING: This operation will delete the main (explorer-v1) database." -ForegroundColor Yellow
+    $confirmation = Read-Host "Are you sure you want to continue? (y/n)"
+
+    if ($confirmation -ne 'y' -and $confirmation -ne 'Y') {
+        Write-Host "Canceled." -ForegroundColor Yellow
+        Remove-Item Env:\PGPASSWORD
+        exit 0
+    }
     Write-Host "Mode: Resetting both databases" -ForegroundColor Yellow
     $databasesToDrop = "'explorer-v1', 'explorer-v1-test'"
     $dropCommands = @"
