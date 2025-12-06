@@ -4,3 +4,4 @@ DELETE FROM stakeholders."TourPreferences";
 DELETE FROM stakeholders."Ratings";
 DELETE FROM stakeholders."Messages";
 DELETE FROM stakeholders."Conversations";
+DELETE FROM stakeholders."Problems";

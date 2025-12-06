@@ -1,9 +1,15 @@
+using Explorer.API.Demo;
 using Explorer.API.Middleware;
 using Explorer.API.Startup;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.UseCases;
 using Explorer.Stakeholders.Infrastructure.Repositories;
+
+// Create wwwroot for images
+var wwwroot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
+if (!Directory.Exists(wwwroot))
+    Directory.CreateDirectory(wwwroot);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +31,7 @@ builder.Services.ConfigureAuth();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<DemoSeeder>();
 
 builder.Services.RegisterModules();
 
@@ -41,6 +48,18 @@ else
 {
     app.UseHsts();
 }
+
+// Check for seed argument
+if (args.Contains("--seed"))
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<DemoSeeder>();
+    seeder.Seed();
+    return;
+}
+
+// Added for UploadController
+app.UseStaticFiles();
 
 app.UseRouting();
 app.UseCors(corsPolicy);
