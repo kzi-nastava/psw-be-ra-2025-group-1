@@ -24,8 +24,7 @@ public class TourService : ITourService
         var tour = GetById(id);
         if(tour == null) return false;
 
-        bool canArchive = true;
-        if (tour.Status == TourStatusDTO.Archived) return canArchive;
+        if (tour.Status == TourStatusDTO.Archived) return false;
 
         Tour? tourToUpdate = _tourRepository.Get(id);
         if (tourToUpdate != null)
@@ -33,7 +32,7 @@ public class TourService : ITourService
             tourToUpdate.Archive();
             _tourRepository.Update(tourToUpdate);
         }
-        return canArchive;
+        return true;
     }
 
     public TourDto Create(TourDto tourdto)
@@ -80,7 +79,8 @@ public class TourService : ITourService
         if (tour == null) return false;
 
 
-        if (tour.Status == TourStatusDTO.Published) return true;
+        if (tour.Status == TourStatusDTO.Published) return false;
+
         if (tour.Title.Length <= 0) canPublish = false;
         if (tour.Description.Length <= 0) canPublish = false;
         if (tour.Difficulty < 1 || tour.Difficulty > 10) canPublish = false;
@@ -105,6 +105,11 @@ public class TourService : ITourService
     public TourDto Update(long id, TourDto tourDto)
     {
         var tour = _tourRepository.Get(id);
+        if (tour == null)
+        {
+            throw new KeyNotFoundException($"Tour with id {id} not found.");
+        }
+
         tour.Update(tourDto.CreatorId, tourDto.Title, tourDto.Description, tourDto.Difficulty,
             tourDto.Tags, (TourStatus)tourDto.Status, tourDto.Price);
 
