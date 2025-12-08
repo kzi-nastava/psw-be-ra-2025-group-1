@@ -15,6 +15,7 @@ public class StakeholdersContext : DbContext
     public DbSet<UserLocation> UserLocations { get; set; }
     public DbSet<Problem> Problems { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<ProblemDeadline> ProblemDeadlines { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
@@ -53,6 +54,7 @@ public class StakeholdersContext : DbContext
         });
 
         ConfigureProblems(modelBuilder);
+        ConfigureProblemDeadlines(modelBuilder);
         ConfigureNotifications(modelBuilder);
     }
 
@@ -115,6 +117,24 @@ public class StakeholdersContext : DbContext
             cfg.HasIndex(p => p.AuthorId);
             cfg.HasIndex(p => p.Status);
             cfg.HasIndex(p => p.CreationTime);
+        });
+    }
+
+    private static void ConfigureProblemDeadlines(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProblemDeadline>(cfg =>
+        {
+            cfg.ToTable("ProblemDeadlines");
+            cfg.HasKey(pd => pd.Id);
+
+            cfg.Property(pd => pd.ProblemId).IsRequired();
+            cfg.Property(pd => pd.DeadlineDate).IsRequired();
+            cfg.Property(pd => pd.SetByAdminId).IsRequired();
+            cfg.Property(pd => pd.SetAt).IsRequired();
+
+            cfg.HasIndex(pd => pd.ProblemId);
+            cfg.HasIndex(pd => pd.DeadlineDate);
+            cfg.HasIndex(pd => pd.SetByAdminId);
         });
     }
 

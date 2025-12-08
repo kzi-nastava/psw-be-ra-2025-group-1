@@ -11,4 +11,5 @@ public interface IProblemRepository
     PagedResult<Problem> GetPaged(int page, int pageSize);
     PagedResult<Problem> GetByCreatorId(long creatorId, int page, int pageSize);
     PagedResult<Problem> GetByAuthorId(long authorId, int page, int pageSize);
+    List<Problem> GetUnresolvedOlderThan(int days);
 }

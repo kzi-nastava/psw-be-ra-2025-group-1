@@ -6,6 +6,9 @@ public enum NotificationType
 {
     ProblemReportMessage,
     ProblemReportDeadline,
+    ProblemDeadlineExpired,
+    ProblemClosedByAdmin,
+    AuthorPenalized,
     Other
 }
 

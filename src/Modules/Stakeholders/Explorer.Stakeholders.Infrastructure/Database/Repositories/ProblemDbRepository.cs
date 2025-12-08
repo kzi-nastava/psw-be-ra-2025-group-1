@@ -80,4 +80,13 @@ public class ProblemDbRepository : IProblemRepository
             throw new NotFoundException(e.Message);
         }
     }
+
+    public List<Problem> GetUnresolvedOlderThan(int days)
+    {
+        var cutoffDate = DateTime.UtcNow.AddDays(-days);
+        return _dbSet
+            .Where(p => p.Status == ProblemStatus.Open && p.CreationTime < cutoffDate)
+            .OrderByDescending(p => p.CreationTime)
+            .ToList();
+    }
 }
