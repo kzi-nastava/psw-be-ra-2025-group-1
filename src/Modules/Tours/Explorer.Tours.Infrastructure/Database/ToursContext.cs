@@ -17,8 +17,6 @@ public class ToursContext : DbContext
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
 
-    public DbSet<PersonEquipment> PersonEquipment { get; set; } //dodala sam
-
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
