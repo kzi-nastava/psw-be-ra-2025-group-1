@@ -13,6 +13,7 @@ public class ToursProfile : Profile
         CreateMap<FacilityDto, Facility>().ReverseMap();
         CreateMap<MeetUpDto, MeetUp>().ReverseMap();
         CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();
+        CreateMap<TransportTimeDto, TransportTime>().ReverseMap();
         
         // TourExecution mappings with explicit enum conversion
         CreateMap<TourExecution, TourExecutionDto>()
