@@ -1,4 +1,5 @@
 using Explorer.Blog.API.Dtos;
+using Explorer.Blog.API.Public;
 using Explorer.Blog.Infrastructure.Database;
 using Explorer.BuildingBlocks.Tests;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,14 +23,14 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
     public async Task GetMyBlogs_WithTestData_ReturnsUserBlogs()
     {
         var token = await AuthenticateTestUser();
-        
-        TestClient.DefaultRequestHeaders.Authorization = 
+
+        TestClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", token);
 
         var response = await TestClient.GetAsync("/api/blog/my");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        
+
         var responseContent = await response.Content.ReadAsStringAsync();
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var blogs = JsonSerializer.Deserialize<List<BlogDto>>(responseContent, options);
@@ -42,7 +43,7 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
     public async Task CreateBlog_ValidInput_ReturnsCreatedBlogAndDatabaseIsUpdated()
     {
         var token = await AuthenticateTestUser();
-        
+
         var createDto = new
         {
             title = "New Integration Test Blog",
@@ -52,14 +53,14 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
 
         var json = JsonSerializer.Serialize(createDto);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
-        
-        TestClient.DefaultRequestHeaders.Authorization = 
+
+        TestClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", token);
 
         var response = await TestClient.PostAsync("/api/blog", content);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        
+
         var responseContent = await response.Content.ReadAsStringAsync();
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var createdBlog = JsonSerializer.Deserialize<BlogDto>(responseContent, options);
@@ -70,7 +71,7 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
 
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<BlogContext>();
-        
+
         var blogInDb = dbContext.Blogs.FirstOrDefault(b => b.Id == createdBlog.Id);
         blogInDb.ShouldNotBeNull();
         blogInDb.Title.ShouldBe("New Integration Test Blog");
@@ -79,7 +80,7 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
     [Fact]
     public async Task CreateBlog_Unauthorized_Returns401()
     {
-        
+
         var createDto = new
         {
             title = "Unauthorized Blog",
@@ -89,10 +90,10 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
         var json = JsonSerializer.Serialize(createDto);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        
+
         var response = await TestClient.PostAsync("/api/blog", content);
 
-        
+
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
@@ -112,14 +113,14 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
 
         var registerJson = JsonSerializer.Serialize(registerDto);
         var registerContent = new StringContent(registerJson, Encoding.UTF8, "application/json");
-        
+
         await TestClient.PostAsync("/api/users", registerContent);
 
         // Login
         var loginDto = new { username = username, password = "Test123!" };
         var loginJson = JsonSerializer.Serialize(loginDto);
         var loginContent = new StringContent(loginJson, Encoding.UTF8, "application/json");
-        
+
         var loginResponse = await TestClient.PostAsync("/api/users/login", loginContent);
 
         var loginResponseContent = await loginResponse.Content.ReadAsStringAsync();
@@ -128,4 +129,4 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
 
         return loginResult?["accessToken"].GetString() ?? throw new Exception("Failed to get access token");
     }
-} 
+}
