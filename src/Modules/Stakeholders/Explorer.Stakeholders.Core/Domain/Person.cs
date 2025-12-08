@@ -9,17 +9,17 @@ public class Person : Entity
     public string Name { get; set; }
     public string Surname { get; set; }
     public string Email { get; set; }
-    public string? ProfileImagePath { get; set; }
+    public string? ProfileImageUrl { get; set; }
     public string? Biography { get; set; }
     public string? Quote { get; set; }
 
-    public Person(long userId, string name, string surname, string email, string profileImagePath = "", string biography = "", string quote = "")
+    public Person(long userId, string name, string surname, string email, string profileImageUrl = "", string biography = "", string quote = "")
     {
         UserId = userId;
         Name = name;
         Surname = surname;
         Email = email;
-        ProfileImagePath = profileImagePath;
+        ProfileImageUrl = profileImageUrl;
         Biography = biography;
         Quote = quote;
         Validate();

@@ -61,4 +61,22 @@ public class TourDbRepository : ITourRepository
         dbContext.SaveChanges();
         return tour;
     }
+
+    public PagedResult<Tour> GetPublished(int page, int pageSize)
+    {
+        var query = _dbSet.Where(t => t.Status == TourStatus.Published);
+
+        var task = query.GetPaged(page, pageSize);
+        task.Wait();
+
+        return task.Result;
+    }
+
+
+    public Tour? GetPublishedById(long id)
+    {
+        return _dbSet
+            .FirstOrDefault(t => t.Id == id && t.Status == TourStatus.Published);
+    }
+
 }
