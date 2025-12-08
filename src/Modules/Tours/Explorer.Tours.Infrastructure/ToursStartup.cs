@@ -44,6 +44,7 @@ public static class ToursStartup
         services.AddScoped<ITourRepository, TourDbRepository>();
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
+        services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); //dodala sam
         services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
 

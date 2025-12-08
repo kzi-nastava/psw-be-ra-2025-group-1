@@ -10,6 +10,7 @@ public class ToursContext : DbContext
     public DbSet<Tour> Tour { get; set; }
     public DbSet<Facility> Facility { get; set; }
     public DbSet<MeetUp> MeetUp { get; set; }
+    public DbSet<TourExecution> TourExecutions { get; set; }
 
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }

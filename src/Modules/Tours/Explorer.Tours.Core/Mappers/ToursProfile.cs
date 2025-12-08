@@ -12,6 +12,13 @@ public class ToursProfile : Profile
         CreateMap<TourDto, Tour>().ReverseMap();
         CreateMap<FacilityDto, Facility>().ReverseMap();
         CreateMap<MeetUpDto, MeetUp>().ReverseMap();
-        CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap(); //dodala sam
+        CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();
+        
+        // TourExecution mappings with explicit enum conversion
+        CreateMap<TourExecution, TourExecutionDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (TourExecutionStatusDto)src.Status));
+        
+        CreateMap<TourExecutionDto, TourExecution>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (TourExecutionStatus)src.Status));
     }
 }
