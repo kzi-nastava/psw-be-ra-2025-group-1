@@ -23,11 +23,26 @@ public class BlogRepository : IBlogRepository
     
     public List<BlogEntity> GetByUserId(long userId)
     {
-        return _context.Blogs.Include(b => b.Comments).Where(b => b.UserId == userId).ToList(); // LINQ query to filter by userId
+        return _context.Blogs.Include(b => b.Comments).Include(b => b.Votes).Where(b => b.UserId == userId).ToList(); // LINQ query to filter by userId
     }
 
     public BlogEntity Update(BlogEntity blog)
     {
+        var existingVoteIds = _context.Votes.Where(v => v.BlogId == blog.Id).Select(v => v.Id).ToList();
+
+        var currentVoteIds = blog.Votes.Select(v => v.Id).ToList();
+
+        var votesToDelete = existingVoteIds.Except(currentVoteIds).ToList();
+
+        foreach (var voteId in votesToDelete)
+        {
+            var voteToDelete = _context.Votes.Find(voteId);
+            if (voteToDelete != null)
+            {
+                _context.Votes.Remove(voteToDelete);
+            }
+        }
+
         _context.Blogs.Update(blog);
         _context.SaveChanges(); // commits changes to Postgre
         return blog;
@@ -35,13 +50,14 @@ public class BlogRepository : IBlogRepository
 
     public BlogEntity GetById(long id)
     {
-        return _context.Blogs.Include(b => b.Comments).FirstOrDefault(b => b.Id == id) ?? throw new KeyNotFoundException($"Blog with the ID {id} was not found.");
+        return _context.Blogs.Include(b => b.Comments).Include(b => b.Votes).FirstOrDefault(b => b.Id == id) ?? throw new KeyNotFoundException($"Blog with the ID {id} was not found.");
     }
 
     public List<BlogEntity> GetVisibleForUser(long userId)          //svi blogovi koji nisu draft + moji draftovi
     {
         return _context.Blogs
             .Include(b => b.Comments)
+            .Include(b => b.Votes)
             .Where(b => b.Status != BlogStatus.Draft || b.UserId == userId)
             .ToList();
     }

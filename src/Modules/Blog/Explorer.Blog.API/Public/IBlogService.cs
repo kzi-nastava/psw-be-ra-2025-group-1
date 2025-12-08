@@ -17,4 +17,7 @@ public interface IBlogService
     CommentDto AddCommentToBlog(long blogId, CommentCreateDto commentDto);
     CommentDto UpdateCommentInBlog(long blogId, CommentUpdateDto commentDto);
     public void DeleteCommentFromBlog(long blogId, long userId, long commentId);
+
+    VoteDto AddVoteToBlog(long blogId, long userId, VoteCreateDto voteDto);
+    void RemoveVoteFromBlog(long blogId, long userId);
 }

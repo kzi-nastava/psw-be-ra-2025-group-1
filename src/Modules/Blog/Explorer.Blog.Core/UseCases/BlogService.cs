@@ -1,6 +1,7 @@
 using AutoMapper;
 using Explorer.Blog.API.Dtos;
 using Explorer.Blog.API.Public;
+using Explorer.Blog.Core.Domain;
 using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.API.Internal;
 
@@ -117,5 +118,23 @@ public class BlogService : IBlogService
         var person = _personService.GetPersonByUserId(mappedComment.UserId);
         mappedComment.AuthorName = person.Name + " " + person.Surname;
         return mappedComment;
+    }
+
+    public VoteDto AddVoteToBlog(long blogId, long userId, VoteCreateDto voteDto)
+    {
+        var blog = _blogRepository.GetById(blogId);
+
+        var voteType = voteDto.VoteType == "Upvote" ? VoteType.Upvote : VoteType.Downvote;
+        var vote = blog.AddVote(userId, voteType);
+
+        _blogRepository.Update(blog);
+        return _mapper.Map<VoteDto>(vote);
+    }
+
+    public void RemoveVoteFromBlog(long blogId, long userId)
+    {
+        var blog = _blogRepository.GetById(blogId);
+        blog.RemoveVote(userId);
+        _blogRepository.Update(blog);
     }
 }

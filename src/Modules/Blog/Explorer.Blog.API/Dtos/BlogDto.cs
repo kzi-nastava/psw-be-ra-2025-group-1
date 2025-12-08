@@ -11,4 +11,8 @@ public class BlogDto
     public string Status {get; set;}
     public DateTime? LastModifiedDate {get; set;}
     public List<CommentDto> Comments {get; set;} = new List<CommentDto>();
+
+    public List<VoteDto> Votes { get ; set; }
+    public int VoteScore { get ; set; }
+    public VoteType? CurrentUserVote { get ; set; }
 }
