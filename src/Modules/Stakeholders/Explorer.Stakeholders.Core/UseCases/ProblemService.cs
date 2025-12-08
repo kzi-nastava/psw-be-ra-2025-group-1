@@ -15,12 +15,21 @@ namespace Explorer.Stakeholders.Core.UseCases;
 public class ProblemService : IProblemService
 {
     private readonly IProblemRepository _problemRepository;
+    private readonly IProblemDeadlineRepository _problemDeadlineRepository;
+    private readonly INotificationService _notificationService;
     private readonly ITourService _tourService;
     private readonly IMapper _mapper;
 
-    public ProblemService(IProblemRepository repository, ITourService tourService, IMapper mapper)
+    public ProblemService(
+        IProblemRepository repository, 
+        IProblemDeadlineRepository problemDeadlineRepository,
+        INotificationService notificationService,
+        ITourService tourService, 
+        IMapper mapper)
     {
         _problemRepository = repository;
+        _problemDeadlineRepository = problemDeadlineRepository;
+        _notificationService = notificationService;
         _tourService = tourService;
         _mapper = mapper;
     }
@@ -129,5 +138,125 @@ public class ProblemService : IProblemService
         problem.SetAdminDeadline(deadline);
         var result = _problemRepository.Update(problem);
         return _mapper.Map<ProblemDto>(result);
+    }
+
+    public List<ProblemDto> GetUnresolvedOlderThan(int days = 5)
+    {
+        var problems = _problemRepository.GetUnresolvedOlderThan(days);
+        return problems.Select(_mapper.Map<ProblemDto>).ToList();
+    }
+
+    // ProblemDeadline implementations
+    public ProblemDeadlineDto SetDeadline(long problemId, DateTime deadlineDate, long adminId)
+    {
+        // Verify problem exists
+        var problem = _problemRepository.Get(problemId);
+        
+        // Create new deadline record
+        var deadline = new ProblemDeadline(problemId, deadlineDate, adminId);
+        var result = _problemDeadlineRepository.Create(deadline);
+        
+        // Also update the Problem entity's AdminDeadline for backward compatibility
+        problem.SetAdminDeadline(deadlineDate);
+        _problemRepository.Update(problem);
+        
+        // Notifikacija autoru ture o postavljenom roku
+        _notificationService.Create(
+            problem.AuthorId,
+            $"Administrator has set a deadline of {deadlineDate:yyyy-MM-dd HH:mm} for problem #{problemId}.",
+            NotificationTypeDto.ProblemReportDeadline,
+            problemId
+        );
+        
+        return _mapper.Map<ProblemDeadlineDto>(result);
+    }
+
+    public ProblemDeadlineDto? GetDeadline(long problemId)
+    {
+        var deadline = _problemDeadlineRepository.GetLatestByProblemId(problemId);
+        return deadline != null ? _mapper.Map<ProblemDeadlineDto>(deadline) : null;
+    }
+
+    public bool HasDeadlineExpired(long problemId)
+    {
+        var deadline = _problemDeadlineRepository.GetLatestByProblemId(problemId);
+        return deadline?.HasExpired() ?? false;
+    }
+
+    // Admin akcije
+    public ProblemDto CloseProblemAsAdmin(long problemId, long adminId, string? comment = null)
+    {
+        var problem = _problemRepository.Get(problemId);
+        
+        // Admin moze da zatvori problem bez obzira na trenutni status
+        problem.CloseByAdmin(comment);
+        
+        var result = _problemRepository.Update(problem);
+        
+        // Notifikacija turistu
+        _notificationService.Create(
+            problem.CreatorId,
+            $"Administrator has closed problem #{problemId}. {(comment != null ? $"Comment: {comment}" : "")}",
+            NotificationTypeDto.ProblemClosedByAdmin,
+            problemId
+        );
+        
+        // Notifikacija autoru
+        _notificationService.Create(
+            problem.AuthorId,
+            $"Administrator has closed problem #{problemId}. {(comment != null ? $"Comment: {comment}" : "")}",
+            NotificationTypeDto.ProblemClosedByAdmin,
+            problemId
+        );
+        
+        return _mapper.Map<ProblemDto>(result);
+    }
+
+    public void PenalizeAuthor(long problemId, long adminId)
+    {
+        var problem = _problemRepository.Get(problemId);
+        
+        // Arhiviraj turu kao penalizaciju
+        _tourService.ArchiveTour(problem.TourId);
+        
+        // Zatvori problem
+        problem.CloseByAdmin($"Tour archived by administrator as penalty for unresolved problem.");
+        _problemRepository.Update(problem);
+        
+        // Notifikacija autoru o penalizaciji
+        _notificationService.Create(
+            problem.AuthorId,
+            $"Your tour has been archived as a penalty for not resolving problem #{problemId} within the deadline.",
+            NotificationTypeDto.AuthorPenalized,
+            problemId
+        );
+    }
+
+    public void CheckAndNotifyExpiredDeadlines(long adminId)
+    {
+        // Dobavi sve probleme koji imaju istekao deadline
+        var allProblems = _problemRepository.GetPaged(1, int.MaxValue).Results;
+        
+        foreach (var problem in allProblems)
+        {
+            if (problem.HasMissedAdminDeadline())
+            {
+                // Notifikacija autoru ture
+                _notificationService.Create(
+                    problem.AuthorId,
+                    $"The deadline for problem #{problem.Id} has expired. Please resolve it as soon as possible.",
+                    NotificationTypeDto.ProblemDeadlineExpired,
+                    problem.Id
+                );
+                
+                // Notifikacija adminu
+                _notificationService.Create(
+                    adminId,
+                    $"Problem #{problem.Id} has an expired deadline. Author: {problem.AuthorId}, Tour: {problem.TourId}",
+                    NotificationTypeDto.ProblemDeadlineExpired,
+                    problem.Id
+                );
+            }
+        }
     }
 }

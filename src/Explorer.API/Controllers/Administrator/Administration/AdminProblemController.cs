@@ -26,6 +26,13 @@ public class AdminProblemController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("overdue")]
+    public ActionResult<List<ProblemDto>> GetOverdueProblems([FromQuery] int days = 5)
+    {
+        var problems = _problemService.GetUnresolvedOlderThan(days);
+        return Ok(problems);
+    }
+
     [HttpGet("{id:long}")]
     public ActionResult<ProblemDto> GetProblemById(long id)
     {
@@ -37,6 +44,42 @@ public class AdminProblemController : ControllerBase
         catch (KeyNotFoundException ex)
         {
             return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("{problemId:long}/deadline")]
+    public ActionResult<ProblemDeadlineDto> GetProblemDeadline(long problemId)
+    {
+        var deadline = _problemService.GetDeadline(problemId);
+        if (deadline == null)
+            return NotFound(new { error = "No deadline found for this problem." });
+        
+        return Ok(deadline);
+    }
+
+    [HttpGet("{problemId:long}/deadline/expired")]
+    public ActionResult<bool> HasDeadlineExpired(long problemId)
+    {
+        var hasExpired = _problemService.HasDeadlineExpired(problemId);
+        return Ok(new { problemId, hasExpired });
+    }
+
+    [HttpPost("{problemId:long}/deadline")]
+    public ActionResult<ProblemDeadlineDto> SetProblemDeadline(long problemId, [FromBody] SetDeadlineDto dto)
+    {
+        try
+        {
+            var adminId = User.PersonId();
+            var deadline = _problemService.SetDeadline(problemId, dto.Deadline, adminId);
+            return Ok(deadline);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
     }
 
@@ -54,13 +97,28 @@ public class AdminProblemController : ControllerBase
         }
     }
 
-    [HttpPut("{id:long}/close")]
-    public ActionResult<ProblemDto> CloseProblem(long id)
+    [HttpPost("check-expired-deadlines")]
+    public ActionResult CheckExpiredDeadlines()
     {
         try
         {
             var adminId = User.PersonId();
-            var problem = _problemService.ChangeProblemStatus(id, adminId, ProblemStatus.Unresolved, "Closed by administrator");
+            _problemService.CheckAndNotifyExpiredDeadlines(adminId);
+            return Ok(new { message = "Expired deadlines checked and notifications sent successfully." });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("{id:long}/close")]
+    public ActionResult<ProblemDto> CloseProblem(long id, [FromBody] CloseProblemDto? dto = null)
+    {
+        try
+        {
+            var adminId = User.PersonId();
+            var problem = _problemService.CloseProblemAsAdmin(id, adminId, dto?.Comment);
             return Ok(problem);
         }
         catch (KeyNotFoundException ex)
@@ -68,9 +126,33 @@ public class AdminProblemController : ControllerBase
             return NotFound(new { error = ex.Message });
         }
     }
+
+    [HttpPost("{id:long}/penalize")]
+    public ActionResult PenalizeAuthor(long id)
+    {
+        try
+        {
+            var adminId = User.PersonId();
+            _problemService.PenalizeAuthor(id, adminId);
+            return Ok(new { message = "Author penalized and tour archived successfully." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }
 
 public class SetDeadlineDto
 {
     public DateTime Deadline { get; set; }
+}
+
+public class CloseProblemDto
+{
+    public string? Comment { get; set; }
 }

@@ -28,4 +28,5 @@ public class ProblemDto
     public DateTime? ResolvedAt { get; set; }
     public DateTime? AdminDeadline { get; set; }
     public string? TouristComment { get; set; }
+    public bool LateFlag { get; set; }  // True ako je problem stariji od 5 dana i nije resen
 }

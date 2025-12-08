@@ -41,11 +41,14 @@ public class StakeholderProfile : Profile
                 dto.AuthorId
             ));
         
-        CreateMap<Problem, ProblemDto>();
+        CreateMap<Problem, ProblemDto>()
+            .ForMember(dest => dest.LateFlag, opt => opt.MapFrom(src => src.IsOverdue()));
         
         CreateMap<Core.Domain.ProblemStatus, API.Dtos.ProblemStatus>().ReverseMap();
         CreateMap<Core.Domain.ProblemCategory, API.Dtos.ProblemCategory>().ReverseMap();
         
+        CreateMap<ProblemDeadline, ProblemDeadlineDto>()
+            .ForMember(dest => dest.HasExpired, opt => opt.MapFrom(src => src.HasExpired()));
         
         CreateMap<Notification, NotificationDto>().ReverseMap();
         CreateMap<NotificationTypeDto, NotificationType>().ReverseMap();

@@ -73,6 +73,14 @@ public class Problem : Entity
         TouristComment = comment;
     }
 
+    public void CloseByAdmin(string? comment = null)
+    {
+        // Admin moze da zatvori problem bez obzira na status
+        Status = ProblemStatus.Unresolved;
+        ResolvedAt = DateTime.UtcNow;
+        TouristComment = comment ?? "Closed by administrator";
+    }
+
     public void SetAdminDeadline(DateTime deadline)
     {
         if (deadline <= DateTime.UtcNow)

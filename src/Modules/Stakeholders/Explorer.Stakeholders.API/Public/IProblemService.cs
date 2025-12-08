@@ -17,4 +17,17 @@ public interface IProblemService
     // nove metode za tour issue lifecycle
     ProblemDto ChangeProblemStatus(long problemId, long touristId, ProblemStatus newStatus, string? comment);
     ProblemDto SetAdminDeadline(long problemId, DateTime deadline);
+    List<ProblemDto> GetUnresolvedOlderThan(int days = 5);
+    
+    // ProblemDeadline
+    ProblemDeadlineDto SetDeadline(long problemId, DateTime deadlineDate, long adminId);
+    ProblemDeadlineDto? GetDeadline(long problemId);
+    bool HasDeadlineExpired(long problemId);
+    
+    // Admin akcije
+    ProblemDto CloseProblemAsAdmin(long problemId, long adminId, string? comment = null);
+    void PenalizeAuthor(long problemId, long adminId);
+    
+    // Notifikacije za istekle rokove
+    void CheckAndNotifyExpiredDeadlines(long adminId);
 }
