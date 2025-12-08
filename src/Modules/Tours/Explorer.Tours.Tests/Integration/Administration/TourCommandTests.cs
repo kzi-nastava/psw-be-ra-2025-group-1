@@ -63,16 +63,22 @@ public class TourCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
-        var newEntity = new TourDto { CreatorId = 1, Title = "To Update", Description = "Will be updated", Difficulty = 2, Tags = new[] { "t1" }, Status = TourStatusDTO.Draft, Price = 50.0 };
 
-        var created = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TourDto;
-        created.ShouldNotBeNull();
+        // Added logic to check if the object exists
+        // THis is usefull so that the test passes even when ran with other test or by it's own
+        var stored = dbContext.Tour.FirstOrDefault(i => i.Title == "New Tour");
+        if(stored == null)
+        {
+            var newEntity = new TourDto { CreatorId = 1, Title = "To Update", Description = "Will be updated", Difficulty = 2, Tags = new[] { "t1" }, Status = TourStatusDTO.Draft, Price = 50.0 };
 
-        var stored = dbContext.Tour.FirstOrDefault(i => i.Title == newEntity.Title);
-        stored.ShouldNotBeNull();
+            var created = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TourDto;
+            created.ShouldNotBeNull();
+
+            stored = dbContext.Tour.FirstOrDefault(i => i.Title == newEntity.Title);
+        }
         var id = stored.Id;
 
-        var updatedDto = new TourDto { CreatorId = created.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDTO.Published, Price = 150.0 };
+        var updatedDto = new TourDto { CreatorId = stored.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDTO.Published, Price = 150.0 };
 
         // Act
         var updateResult = ((ObjectResult)controller.Update(id, updatedDto).Result)?.Value as TourDto;

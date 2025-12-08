@@ -13,15 +13,15 @@ if (!Directory.Exists(wwwroot))
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Set test database environment variables in development - COMMENTED OUT FOR MAIN DB ACCESS
-// if (builder.Environment.IsDevelopment())
-// {
-//     Environment.SetEnvironmentVariable("DATABASE_SCHEMA", "explorer-v1-test");
-//Environment.SetEnvironmentVariable("DATABASE_HOST", "localhost");
-//Environment.SetEnvironmentVariable("DATABASE_PORT", "5432");
-//Environment.SetEnvironmentVariable("DATABASE_USERNAME", "postgres");
-//Environment.SetEnvironmentVariable("DATABASE_PASSWORD", "root");
-// }
+//Set test database environment variables in development - COMMENTED OUT FOR MAIN DB ACCESS
+ if (builder.Environment.IsDevelopment())
+ {
+    Environment.SetEnvironmentVariable("DATABASE_SCHEMA", "explorer-v1-test");
+    Environment.SetEnvironmentVariable("DATABASE_HOST", "localhost");
+    Environment.SetEnvironmentVariable("DATABASE_PORT", "5432");
+    Environment.SetEnvironmentVariable("DATABASE_USERNAME", "postgres");
+    Environment.SetEnvironmentVariable("DATABASE_PASSWORD", "root");
+ }
 
 builder.Services.AddControllers();
 builder.Services.ConfigureSwagger(builder.Configuration);
