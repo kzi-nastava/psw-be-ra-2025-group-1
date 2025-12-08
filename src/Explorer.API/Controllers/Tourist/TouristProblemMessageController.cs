@@ -34,10 +34,12 @@ public class TouristProblemMessageController : ControllerBase
         try
         {
             var touristId = User.UserId();
+            
             var message = _problemMessageService.AddMessage(dto.ProblemId, touristId, dto.Content);
 
             var problem = _problemService.Get(dto.ProblemId, touristId);
-            _notificationService.Create(
+            
+            var notification = _notificationService.Create(
                 problem.AuthorId,
                 $"New message from tourist on problem #{dto.ProblemId}",
                 NotificationTypeDto.ProblemReportMessage,

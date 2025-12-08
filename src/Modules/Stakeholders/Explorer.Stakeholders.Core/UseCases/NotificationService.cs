@@ -21,10 +21,20 @@ public class NotificationService : INotificationService
 
     public NotificationDto Create(long userId, string message, NotificationTypeDto type, long? linkId = null)
     {
-        var notificationType = _mapper.Map<NotificationType>(type);
-        var notification = new Notification(userId, message, notificationType, linkId);
-        var result = _notificationRepository.Create(notification);
-        return _mapper.Map<NotificationDto>(result);
+        try
+        {
+           
+            var notificationType = _mapper.Map<NotificationType>(type);
+            var notification = new Notification(userId, message, notificationType, linkId);
+            
+            var result = _notificationRepository.Create(notification);
+            
+            return _mapper.Map<NotificationDto>(result);
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 
     public PagedResult<NotificationDto> GetByUser(long userId, int page, int pageSize)

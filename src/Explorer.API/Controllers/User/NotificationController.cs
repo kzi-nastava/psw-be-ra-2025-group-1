@@ -22,7 +22,7 @@ public class NotificationController : ControllerBase
     [HttpGet]
     public ActionResult<PagedResult<NotificationDto>> GetMyNotifications([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
-        var userId = User.PersonId();
+        var userId = User.UserId();
         var result = _notificationService.GetByUser(userId, page, pageSize);
         return Ok(result);
     }
@@ -30,7 +30,8 @@ public class NotificationController : ControllerBase
     [HttpGet("unread")]
     public ActionResult<List<NotificationDto>> GetUnreadNotifications()
     {
-        var userId = User.PersonId();
+        var userId = User.UserId();
+        
         var notifications = _notificationService.GetUnreadByUser(userId);
         return Ok(notifications);
     }

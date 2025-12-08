@@ -15,13 +15,16 @@ public class AdminProblemMessageController : ControllerBase
 {
     private readonly IProblemMessageService _problemMessageService;
     private readonly IProblemService _problemService;
+    private readonly INotificationService _notificationService;
 
     public AdminProblemMessageController(
         IProblemMessageService problemMessageService,
-        IProblemService problemService)
+        IProblemService problemService,
+        INotificationService notificationService)
     {
         _problemMessageService = problemMessageService;
         _problemService = problemService;
+        _notificationService = notificationService;
     }
 
     [HttpGet("{problemId:long}")]
@@ -45,6 +48,23 @@ public class AdminProblemMessageController : ControllerBase
         {
             var adminId = User.UserId();
             var message = _problemMessageService.AddMessage(dto.ProblemId, adminId, dto.Content, isAdmin: true);
+
+            var problem = _problemService.GetByIdForAdmin(dto.ProblemId);
+            
+            _notificationService.Create(
+                problem.CreatorId,
+                $"New message from administrator on problem #{dto.ProblemId}",
+                NotificationTypeDto.ProblemReportMessage,
+                dto.ProblemId
+            );
+            
+            _notificationService.Create(
+                problem.AuthorId,
+                $"New message from administrator on problem #{dto.ProblemId}",
+                NotificationTypeDto.ProblemReportMessage,
+                dto.ProblemId
+            );
+
             return Ok(message);
         }
         catch (ArgumentException ex)

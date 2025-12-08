@@ -241,18 +241,9 @@ public class ProblemService : IProblemService
         {
             if (problem.HasMissedAdminDeadline())
             {
-                // Notifikacija autoru ture
                 _notificationService.Create(
                     problem.AuthorId,
                     $"The deadline for problem #{problem.Id} has expired. Please resolve it as soon as possible.",
-                    NotificationTypeDto.ProblemDeadlineExpired,
-                    problem.Id
-                );
-                
-                // Notifikacija adminu
-                _notificationService.Create(
-                    adminId,
-                    $"Problem #{problem.Id} has an expired deadline. Author: {problem.AuthorId}, Tour: {problem.TourId}",
                     NotificationTypeDto.ProblemDeadlineExpired,
                     problem.Id
                 );
