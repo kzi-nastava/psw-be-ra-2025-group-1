@@ -137,4 +137,15 @@ public class BlogService : IBlogService
         blog.RemoveVote(userId);
         _blogRepository.Update(blog);
     }
+
+    public BlogDto GetBlogById(long blogId, long userId)
+{
+    var blog = _blogRepository.GetById(blogId);
+    
+    // Check if user can view this blog
+    if (blog.Status == BlogStatus.Draft && blog.UserId != userId)
+        throw new UnauthorizedAccessException("You can only view draft blogs you created.");
+    
+    return AddAuthorToComments(blog);
+}
 }
