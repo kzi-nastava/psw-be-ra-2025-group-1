@@ -18,6 +18,7 @@ public class TourExecution : Entity
     public DateTime? EndTime { get; private set; }
     public DateTime LastActivity { get; private set; }
     public double PercentageCompleted { get; private set; }
+    public List<KeypointProgress> KeypointProgresses { get; private set; } = new();
 
     // For EF Core
     protected TourExecution() { }

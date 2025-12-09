@@ -14,11 +14,12 @@ public class ToursContext : DbContext
     public DbSet<TransportTime> TransportTime { get; set; }
     public DbSet<TourExecution> TourExecutions { get; set; }
     public DbSet<Keypoint> Keypoints { get; set; }
+    public DbSet<KeypointProgress> KeypointProgress { get; set; }
 
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
 
-    public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
+    public ToursContext(DbContextOptions<ToursContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,5 +31,17 @@ public class ToursContext : DbContext
             .WithOne()
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        // One-Many relationship between TourExecution and KeypointProgress
+        modelBuilder.Entity<TourExecution>()
+        .HasMany(e => e.KeypointProgresses)
+        .WithOne()
+        .HasForeignKey("TourExecutionId")
+        .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint: one progress per keypoint per execution
+        modelBuilder.Entity<KeypointProgress>()
+            .HasIndex("TourExecutionId", "KeypointId")
+            .IsUnique();
     }
 }
