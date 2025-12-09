@@ -1,4 +1,5 @@
 ﻿using Explorer.Tours.Core.Domain;
+using Explorer.Tours.Core.Domain.Shopping;
 using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Tours.Infrastructure.Database;
@@ -11,6 +12,11 @@ public class ToursContext : DbContext
     public DbSet<MeetUp> MeetUp { get; set; }
     public DbSet<PersonEquipment> PersonEquipment { get; set; }
     public DbSet<ProblemMessage> ProblemMessages { get; set; }
+    public DbSet<TransportTime> TransportTime { get; set; }
+    public DbSet<TourExecution> TourExecutions { get; set; }
+
+    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
+    public DbSet<OrderItem> OrderItems { get; set; }
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 

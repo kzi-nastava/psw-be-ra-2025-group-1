@@ -22,13 +22,20 @@ public class Tour : Entity
     public string[] Tags { get; private set; }
     public TourStatus Status { get; private set; }
     public double Price { get; private set; }
-
+    public DateTime CreatedAt { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
+    public DateTime PublishedAt { get; private set; }
+    public DateTime ArchivedAt { get; private set; }
     public Tour()
     {
         Title = "";
         Description = "";
         Tags = [];
         Status = TourStatus.Draft;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        PublishedAt = DateTime.MinValue;
+        ArchivedAt = DateTime.MinValue;
     }
     public Tour(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status = TourStatus.Draft, double price = 0)
     {
@@ -52,6 +59,18 @@ public class Tour : Entity
         Tags = tags;
         Status = status;
         Price = price;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Publish()
+    {
+        Status = TourStatus.Published;
+        PublishedAt = DateTime.UtcNow;
+    }
+    public void Archive()
+    {
+        Status = TourStatus.Archived;
+        ArchivedAt = DateTime.UtcNow;
     }
 
     public void Archive()
