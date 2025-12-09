@@ -18,6 +18,7 @@ public class TourExecution : Entity
     public DateTime? EndTime { get; private set; }
     public DateTime LastActivity { get; private set; }
     public double PercentageCompleted { get; private set; }
+    public int CurrentKeypointSequence { get; private set; }
     public List<KeypointProgress> KeypointProgresses { get; private set; } = new();
 
     // For EF Core
@@ -34,6 +35,7 @@ public class TourExecution : Entity
         StartTime = DateTime.UtcNow;
         LastActivity = DateTime.UtcNow;
         PercentageCompleted = 0;
+        CurrentKeypointSequence = 1; // Starts with first keypoint
         Validate();
     }
 
@@ -52,16 +54,37 @@ public class TourExecution : Entity
     {
         if (percentage < 0 || percentage > 100)
             throw new ArgumentException("Percentage must be between 0 and 100");
-        
+
         PercentageCompleted = percentage;
         UpdateLastActivity();
+    }
+
+    public void ReachKeypoint(long keypointId, int totalKeypoints)
+    {
+        if (!IsActive())
+            throw new InvalidOperationException("Can only reach keypoints on an active tour");
+
+        if (KeypointProgresses.Any(kp => kp.KeypointId == keypointId))
+            throw new InvalidOperationException("Keypoint already reached");
+
+        var progress = new KeypointProgress(keypointId);
+        KeypointProgresses.Add(progress);
+
+        CurrentKeypointSequence++;
+        UpdatePercentageCompleted((double)KeypointProgresses.Count / totalKeypoints * 100);
+
+        // If all keypoints reached, complete tour
+        if (CurrentKeypointSequence > totalKeypoints)
+        {
+            Complete();
+        }
     }
 
     public void Complete()
     {
         if (Status != TourExecutionStatus.InProgress)
             throw new InvalidOperationException("Can only complete a tour that is in progress");
-        
+
         Status = TourExecutionStatus.Completed;
         EndTime = DateTime.UtcNow;
         PercentageCompleted = 100;
@@ -72,7 +95,7 @@ public class TourExecution : Entity
     {
         if (Status != TourExecutionStatus.InProgress)
             throw new InvalidOperationException("Can only abandon a tour that is in progress");
-        
+
         Status = TourExecutionStatus.Abandoned;
         EndTime = DateTime.UtcNow;
         UpdateLastActivity();
