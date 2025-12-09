@@ -27,7 +27,7 @@ public class TourCommandTests : BaseToursIntegrationTest
     }
     private static TourController CreateController(IServiceScope scope, string userId = "-1")
     {
-        return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>())
+        return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>(), scope.ServiceProvider.GetRequiredService<ITransportTimeService>())
         {
             ControllerContext = BuildContext(userId)
         };
@@ -76,7 +76,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         stored.ShouldNotBeNull();
         var id = stored.Id;
 
-        var updatedDto = new TourDto { CreatorId = created.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDto.Published, Price = 150.0 };
+        var updatedDto = new TourDto { Id = id, CreatorId = created.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDto.Published, Price = 150.0 };
 
         // Logging in fake user
         var identity = new ClaimsIdentity(new[]

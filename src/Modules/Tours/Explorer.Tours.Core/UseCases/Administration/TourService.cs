@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Dtos.Enums;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
@@ -10,12 +11,30 @@ namespace Explorer.Tours.Core.UseCases.Administration;
 public class TourService : ITourService
 {
     private readonly ITourRepository _tourRepository;
+    private readonly ITransportTimeRepository _timeRepository;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, IMapper mapper)
+    public TourService(ITourRepository tourRepository, ITransportTimeRepository timeRepository, IMapper mapper)
     {
         _tourRepository = tourRepository;
+        _timeRepository = timeRepository;
         _mapper = mapper;
+    }
+
+    public bool Archive(long id)
+    {
+        var tour = GetById(id);
+        if(tour == null) return false;
+
+        if (tour.Status == TourStatusDto.Archived) return false;
+
+        Tour? tourToUpdate = _tourRepository.Get(id);
+        if (tourToUpdate != null)
+        {
+            tourToUpdate.Archive();
+            _tourRepository.Update(tourToUpdate);
+        }
+        return true;
     }
 
     public TourDto Create(CreateTourDto createTourDto)
@@ -57,9 +76,45 @@ public class TourService : ITourService
         return new PagedResult<TourDto>(items, result.TotalCount);
     }
 
+    public bool Publish(long id)
+    {
+        var tour = GetById(id);
+        bool canPublish = true;
+
+        if (tour == null) return false;
+
+
+        if (tour.Status == TourStatusDto.Published) return false;
+
+        if (tour.Title.Length <= 0) canPublish = false;
+        if (tour.Description.Length <= 0) canPublish = false;
+        if (tour.Difficulty < 1 || tour.Difficulty > 10) canPublish = false;
+        if (tour.Tags.Length <= 0) canPublish = false;
+
+        //Additional validation needed for two keypoints or more
+        List<TransportTime> transportTimes = _timeRepository.GetByTourId(id).ToList();
+        if (transportTimes.Count < 1) canPublish = false;
+
+        if (canPublish)
+        {
+            Tour? tourToUpdate = _tourRepository.Get(id);
+            if (tourToUpdate != null)
+            {
+                tourToUpdate.Publish();
+                _tourRepository.Update(tourToUpdate);
+            }
+        }
+        return canPublish;
+    }
+
     public TourDto Update(long id, TourDto tourDto, long authorId)
     {
         var tour = _tourRepository.Get(id);
+        if (tour == null)
+        {
+            throw new KeyNotFoundException($"Tour with id {id} not found.");
+        }
+
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update someone else's tour");
         tour.Update(tourDto.CreatorId, tourDto.Title, tourDto.Description, tourDto.Difficulty,

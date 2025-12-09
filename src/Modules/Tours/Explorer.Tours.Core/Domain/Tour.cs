@@ -23,6 +23,10 @@ public class Tour : AggregateRoot
     public string[] Tags { get; private set; }
     public TourStatus Status { get; private set; }
     public double Price { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
+    public DateTime PublishedAt { get; private set; }
+    public DateTime ArchivedAt { get; private set; }
     public List<Keypoint> Keypoints { get; private set; }
 
     public Tour()
@@ -31,6 +35,10 @@ public class Tour : AggregateRoot
         Description = "";
         Tags = [];
         Status = TourStatus.Draft;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        PublishedAt = DateTime.MinValue;
+        ArchivedAt = DateTime.MinValue;
         Keypoints = [];
     }
     public Tour(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status = TourStatus.Draft, double price = 0)
@@ -56,6 +64,18 @@ public class Tour : AggregateRoot
         Tags = tags;
         Status = status;
         Price = price;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Publish()
+    {
+        Status = TourStatus.Published;
+        PublishedAt = DateTime.UtcNow;
+    }
+    public void Archive()
+    {
+        Status = TourStatus.Archived;
+        ArchivedAt = DateTime.UtcNow;
     }
 
     public Keypoint AddKeypoint(Keypoint keypoint)
@@ -91,18 +111,6 @@ public class Tour : AggregateRoot
             throw new InvalidOperationException("Can only delete last keypoint in tour");
 
         Keypoints.Remove(keypoint);
-    }
-
-    public void Publish()
-    {
-        ValidateForPublishing();
-
-        Status = TourStatus.Published;
-    }
-    
-    private void ValidateForPublishing()
-    {
-       // TODO
     }
 
     private int GenerateKeypointSequenceNumber()
