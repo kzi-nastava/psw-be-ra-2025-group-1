@@ -20,6 +20,24 @@ public class ProblemTests
         problem.AuthorId.ShouldBe(-11);
         problem.Status.ShouldBe(ProblemStatus.Open);
         problem.CreationTime.ShouldNotBe(default);
+        problem.ResolvedAt.ShouldBeNull();
+        problem.AdminDeadline.ShouldBeNull();
+        problem.TouristComment.ShouldBeNull();
+    }
+
+    [Fact]
+    public void Updates_problem_properties()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+
+        // Act
+        problem.Update(5, "Updated description", ProblemCategory.Maintenance);
+
+        // Assert
+        problem.Priority.ShouldBe(5);
+        problem.Description.ShouldBe("Updated description");
+        problem.Category.ShouldBe(ProblemCategory.Maintenance);
     }
 
     [Fact]
@@ -38,6 +56,21 @@ public class ProblemTests
     }
 
     [Fact]
+    public void Marks_problem_as_resolved_without_comment()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+
+        // Act
+        problem.MarkAsResolvedByTourist();
+
+        // Assert
+        problem.Status.ShouldBe(ProblemStatus.ResolvedByTourist);
+        problem.ResolvedAt.ShouldNotBeNull();
+        problem.TouristComment.ShouldBeNull();
+    }
+
+    [Fact]
     public void Marks_problem_as_unresolved()
     {
         // Arrange
@@ -50,6 +83,21 @@ public class ProblemTests
         problem.Status.ShouldBe(ProblemStatus.Unresolved);
         problem.ResolvedAt.ShouldNotBeNull();
         problem.TouristComment.ShouldBe("Still an issue");
+    }
+
+    [Fact]
+    public void Marks_problem_as_unresolved_without_comment()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+
+        // Act
+        problem.MarkAsUnresolved();
+
+        // Assert
+        problem.Status.ShouldBe(ProblemStatus.Unresolved);
+        problem.ResolvedAt.ShouldNotBeNull();
+        problem.TouristComment.ShouldBeNull();
     }
 
     [Theory]
@@ -67,6 +115,51 @@ public class ProblemTests
         // Act & Assert
         Should.Throw<InvalidOperationException>(() => problem.MarkAsResolvedByTourist("Trying again"));
         Should.Throw<InvalidOperationException>(() => problem.MarkAsUnresolved("Trying again"));
+    }
+
+    [Fact]
+    public void Admin_can_close_problem_with_comment()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+
+        // Act
+        problem.CloseByAdmin("Closed by administrator due to policy violation");
+
+        // Assert
+        problem.Status.ShouldBe(ProblemStatus.Unresolved);
+        problem.ResolvedAt.ShouldNotBeNull();
+        problem.TouristComment.ShouldBe("Closed by administrator due to policy violation");
+    }
+
+    [Fact]
+    public void Admin_can_close_problem_without_comment()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+
+        // Act
+        problem.CloseByAdmin();
+
+        // Assert
+        problem.Status.ShouldBe(ProblemStatus.Unresolved);
+        problem.ResolvedAt.ShouldNotBeNull();
+        problem.TouristComment.ShouldBe("Closed by administrator");
+    }
+
+    [Fact]
+    public void Admin_can_close_already_resolved_problem()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+        problem.MarkAsResolvedByTourist("Tourist thinks it's fixed");
+
+        // Act
+        problem.CloseByAdmin("Admin override");
+
+        // Assert
+        problem.Status.ShouldBe(ProblemStatus.Unresolved);
+        problem.TouristComment.ShouldBe("Admin override");
     }
 
     [Fact]
@@ -96,6 +189,17 @@ public class ProblemTests
     }
 
     [Fact]
+    public void Set_deadline_fails_with_current_time()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+        var now = DateTime.UtcNow;
+
+        // Act & Assert
+        Should.Throw<ArgumentException>(() => problem.SetAdminDeadline(now));
+    }
+
+    [Fact]
     public void Detects_overdue_problem()
     {
         // Arrange 
@@ -109,6 +213,36 @@ public class ProblemTests
 
         // Assert
         isOverdue.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Does_not_detect_overdue_for_recent_problem()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+
+        // Act
+        var isOverdue = problem.IsOverdue();
+
+        // Assert
+        isOverdue.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Overdue_only_applies_to_open_problems()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+        var creationTimeField = typeof(Problem).GetField("<CreationTime>k__BackingField", 
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        creationTimeField?.SetValue(problem, DateTime.UtcNow.AddDays(-6));
+        problem.MarkAsResolvedByTourist();
+
+        // Act
+        var isOverdue = problem.IsOverdue();
+
+        // Assert
+        isOverdue.ShouldBeFalse();
     }
 
     [Fact]
@@ -135,6 +269,41 @@ public class ProblemTests
     {
         // Arrange
         var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+
+        // Act
+        var hasMissed = problem.HasMissedAdminDeadline();
+
+        // Assert
+        hasMissed.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Does_not_detect_missed_deadline_when_deadline_is_future()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+        var futureDeadline = DateTime.UtcNow.AddDays(7);
+        problem.SetAdminDeadline(futureDeadline);
+
+        // Act
+        var hasMissed = problem.HasMissedAdminDeadline();
+
+        // Assert
+        hasMissed.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void Missed_deadline_only_applies_to_open_problems()
+    {
+        // Arrange
+        var problem = new Problem(3, "Test problem", ProblemCategory.Safety, -1, -21, -11);
+        var pastDeadline = DateTime.UtcNow.AddDays(-1);
+        
+        var deadlineField = typeof(Problem).GetField("<AdminDeadline>k__BackingField", 
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+        deadlineField?.SetValue(problem, (DateTime?)pastDeadline);
+        
+        problem.MarkAsResolvedByTourist();
 
         // Act
         var hasMissed = problem.HasMissedAdminDeadline();

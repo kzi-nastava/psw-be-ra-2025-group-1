@@ -47,9 +47,6 @@ public class StakeholderProfile : Profile
         CreateMap<Core.Domain.ProblemStatus, API.Dtos.ProblemStatus>().ReverseMap();
         CreateMap<Core.Domain.ProblemCategory, API.Dtos.ProblemCategory>().ReverseMap();
         
-        CreateMap<ProblemDeadline, ProblemDeadlineDto>()
-            .ForMember(dest => dest.HasExpired, opt => opt.MapFrom(src => src.HasExpired()));
-        
         CreateMap<Notification, NotificationDto>().ReverseMap();
         CreateMap<NotificationTypeDto, NotificationType>().ReverseMap();
     }

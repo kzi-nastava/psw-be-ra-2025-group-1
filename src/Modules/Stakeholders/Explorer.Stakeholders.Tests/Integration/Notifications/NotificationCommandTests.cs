@@ -4,9 +4,11 @@ using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Infrastructure.Database;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
+using System.Security.Claims;
 
 namespace Explorer.Stakeholders.Tests.Integration.Notifications;
 
@@ -138,12 +140,23 @@ public class NotificationCommandTests : BaseStakeholdersIntegrationTest
         Should.Throw<KeyNotFoundException>(() => service.Delete(-999));
     }
 
-    private static NotificationController CreateController(IServiceScope scope, string personId)
+    private static NotificationController CreateController(IServiceScope scope, string userId)
     {
         return new NotificationController(
             scope.ServiceProvider.GetRequiredService<INotificationService>())
         {
-            ControllerContext = BuildContext(personId)
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                    {
+                        new Claim("id", userId),
+                        new Claim("personId", userId),
+                        new Claim(ClaimTypes.Role, "tourist")
+                    }, "test"))
+                }
+            }
         };
     }
 }
