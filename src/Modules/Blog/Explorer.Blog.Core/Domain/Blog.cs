@@ -1,4 +1,6 @@
+using System.Security.Cryptography.X509Certificates;
 using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.Blog.API.Dtos;
 
 namespace Explorer.Blog.Core.Domain;
 
@@ -12,6 +14,8 @@ public class Blog : AggregateRoot
     public BlogStatus Status {get; private set;}
     public DateTime? LastModifiedDate {get; private set;}
     public List<Comment> Comments {get; private set;}
+
+    public List<Vote> Votes { get; private set;} = new();
 
     public Blog(long userId, string title, string description, List<string>? images = null)
     {
@@ -115,4 +119,40 @@ public class Blog : AggregateRoot
         }
         Comments.Remove(comment);
     }
+
+    public Vote AddVote(long userId, VoteType voteType)
+    {
+        if (Status != BlogStatus.Published)
+        {
+            throw new InvalidOperationException("Only published blogs can receive votes.");
+        }
+
+        // Remove the previous vote if a user tries to vote again after already having a vote 
+        // Can't both upvote and downvnote a blog
+        var existingVote = Votes.FirstOrDefault(v => v.UserId == userId);
+        if (existingVote != null)
+        {
+            Votes.Remove(existingVote);
+        }
+
+        var vote = new Vote(userId, voteType);
+        Votes.Add(vote);
+        return vote;
+    }
+
+    public void RemoveVote(long userId)
+    {
+        var vote = Votes.FirstOrDefault(v => v.UserId == userId);
+        if (vote != null)
+        {
+            Votes.Remove(vote);
+        }
+    }
+
+    // @Kristina Funkcija da uzme skor, za ono <-10 , >100, >500 sto treba da uradis
+    public int GetVoteScore()
+    {
+        return Votes.Sum(v => (int)v.VoteType);
+    }
+
 }

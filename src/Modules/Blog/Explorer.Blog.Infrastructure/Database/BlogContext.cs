@@ -8,6 +8,7 @@ public class BlogContext : DbContext
 {
     public DbSet<BlogEntity> Blogs {get; set;} // Blogs table in DB
     public DbSet<Comment> Comments {get; set; } // Comments table in DB
+    public DbSet<Vote> Votes { get; set; }
     public BlogContext(DbContextOptions<BlogContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -19,5 +20,10 @@ public class BlogContext : DbContext
         modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.Status).IsRequired();
 
         modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.LastModifiedDate).IsRequired(false); // nullable bcs the blog doesn't have to be updated if it's not needed
+    
+        modelBuilder.Entity<Core.Domain.Blog>().HasMany(b => b.Comments).WithOne().HasForeignKey("BlogId").IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Core.Domain.Blog>().HasMany(b => b.Votes).WithOne().HasForeignKey("BlogId").IsRequired().OnDelete(DeleteBehavior.Cascade);
+
     }
 }

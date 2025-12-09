@@ -127,4 +127,34 @@ public class BlogController : ControllerBase
         _blogService.DeleteCommentFromBlog(blogId, userId, commentId);
         return Ok();
     }
+
+    [HttpPost("{blogId}/votes")]
+    public ActionResult<VoteDto> AddVote(long blogId, [FromBody] VoteCreateDto voteDto)
+    {
+        try
+        {
+            var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+            var result = _blogService.AddVoteToBlog(blogId, userId, voteDto);
+            return Ok(result);
+        }
+        catch (InvalidOperationException e)
+        {
+            return BadRequest(e.Message); // If the blog isn't published it can't get votes
+        }
+    }
+
+    [HttpDelete("{blogId}/votes")]
+    public ActionResult RemoveVote(long blogId)
+    {
+        try
+        {
+            var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+            _blogService.RemoveVoteFromBlog(blogId, userId);
+            return NoContent();
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
+    }
 }
