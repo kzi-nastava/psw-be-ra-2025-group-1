@@ -72,9 +72,4 @@ public class Tour : Entity
         Status = TourStatus.Archived;
         ArchivedAt = DateTime.UtcNow;
     }
-
-    public void Archive()
-    {
-        Status = TourStatus.Archived;
-    }
 }
