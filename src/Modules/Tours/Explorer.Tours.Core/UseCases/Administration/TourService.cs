@@ -26,6 +26,22 @@ public class TourService : ITourService
         var tour = GetById(id);
         if(tour == null) return false;
 
+        if (tour.Status == TourStatusDTO.Archived) return false;
+
+        Tour? tourToUpdate = _tourRepository.Get(id);
+        if (tourToUpdate != null)
+        {
+            tourToUpdate.Archive();
+            _tourRepository.Update(tourToUpdate);
+        }
+        return true;
+    }
+
+    public bool Archive(long id)
+    {
+        var tour = GetById(id);
+        if(tour == null) return false;
+
         if (tour.Status == TourStatusDto.Archived) return false;
 
         Tour? tourToUpdate = _tourRepository.Get(id);
@@ -85,6 +101,37 @@ public class TourService : ITourService
 
 
         if (tour.Status == TourStatusDto.Published) return false;
+
+        if (tour.Title.Length <= 0) canPublish = false;
+        if (tour.Description.Length <= 0) canPublish = false;
+        if (tour.Difficulty < 1 || tour.Difficulty > 10) canPublish = false;
+        if (tour.Tags.Length <= 0) canPublish = false;
+
+        //Additional validation needed for two keypoints or more
+        List<TransportTime> transportTimes = _timeRepository.GetByTourId(id).ToList();
+        if (transportTimes.Count < 1) canPublish = false;
+
+        if (canPublish)
+        {
+            Tour? tourToUpdate = _tourRepository.Get(id);
+            if (tourToUpdate != null)
+            {
+                tourToUpdate.Publish();
+                _tourRepository.Update(tourToUpdate);
+            }
+        }
+        return canPublish;
+    }
+
+    public bool Publish(long id)
+    {
+        var tour = GetById(id);
+        bool canPublish = true;
+
+        if (tour == null) return false;
+
+
+        if (tour.Status == TourStatusDTO.Published) return false;
 
         if (tour.Title.Length <= 0) canPublish = false;
         if (tour.Description.Length <= 0) canPublish = false;
