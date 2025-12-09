@@ -15,20 +15,17 @@ namespace Explorer.Stakeholders.Core.UseCases;
 public class ProblemService : IProblemService
 {
     private readonly IProblemRepository _problemRepository;
-    private readonly IProblemDeadlineRepository _problemDeadlineRepository;
     private readonly INotificationService _notificationService;
     private readonly ITourService _tourService;
     private readonly IMapper _mapper;
 
     public ProblemService(
         IProblemRepository repository, 
-        IProblemDeadlineRepository problemDeadlineRepository,
         INotificationService notificationService,
         ITourService tourService, 
         IMapper mapper)
     {
         _problemRepository = repository;
-        _problemDeadlineRepository = problemDeadlineRepository;
         _notificationService = notificationService;
         _tourService = tourService;
         _mapper = mapper;
@@ -82,6 +79,11 @@ public class ProblemService : IProblemService
     public ProblemDto Create(ProblemDto problemDto)
     {
         var tour = _tourService.GetById(problemDto.TourId);
+        if (tour == null)
+        {
+            throw new ArgumentException($"Tour with ID {problemDto.TourId} does not exist.");
+        }
+        
         problemDto.AuthorId = tour.CreatorId;
         
         Console.WriteLine($"🔍 Creating problem for TourId={problemDto.TourId}, CreatorId={problemDto.CreatorId}, AuthorId={problemDto.AuthorId}");
@@ -136,6 +138,15 @@ public class ProblemService : IProblemService
     {
         var problem = _problemRepository.Get(problemId);
         problem.SetAdminDeadline(deadline);
+        
+        // Notifikacija autoru ture o postavljenom roku
+        _notificationService.Create(
+            problem.AuthorId,
+            $"Administrator has set a deadline of {deadline:yyyy-MM-dd HH:mm} for problem #{problemId}.",
+            NotificationTypeDto.ProblemReportDeadline,
+            problemId
+        );
+        
         var result = _problemRepository.Update(problem);
         return _mapper.Map<ProblemDto>(result);
     }
@@ -144,43 +155,6 @@ public class ProblemService : IProblemService
     {
         var problems = _problemRepository.GetUnresolvedOlderThan(days);
         return problems.Select(_mapper.Map<ProblemDto>).ToList();
-    }
-
-    // ProblemDeadline implementations
-    public ProblemDeadlineDto SetDeadline(long problemId, DateTime deadlineDate, long adminId)
-    {
-        // Verify problem exists
-        var problem = _problemRepository.Get(problemId);
-        
-        // Create new deadline record
-        var deadline = new ProblemDeadline(problemId, deadlineDate, adminId);
-        var result = _problemDeadlineRepository.Create(deadline);
-        
-        // Also update the Problem entity's AdminDeadline for backward compatibility
-        problem.SetAdminDeadline(deadlineDate);
-        _problemRepository.Update(problem);
-        
-        // Notifikacija autoru ture o postavljenom roku
-        _notificationService.Create(
-            problem.AuthorId,
-            $"Administrator has set a deadline of {deadlineDate:yyyy-MM-dd HH:mm} for problem #{problemId}.",
-            NotificationTypeDto.ProblemReportDeadline,
-            problemId
-        );
-        
-        return _mapper.Map<ProblemDeadlineDto>(result);
-    }
-
-    public ProblemDeadlineDto? GetDeadline(long problemId)
-    {
-        var deadline = _problemDeadlineRepository.GetLatestByProblemId(problemId);
-        return deadline != null ? _mapper.Map<ProblemDeadlineDto>(deadline) : null;
-    }
-
-    public bool HasDeadlineExpired(long problemId)
-    {
-        var deadline = _problemDeadlineRepository.GetLatestByProblemId(problemId);
-        return deadline?.HasExpired() ?? false;
     }
 
     // Admin akcije

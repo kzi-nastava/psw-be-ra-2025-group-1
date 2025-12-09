@@ -71,19 +71,18 @@ public class TouristProblemMessageController : ControllerBase
     {
         try
         {
-            var touristId = User.UserId();
-            _problemService.Get(problemId, touristId);
-            
             var messages = _problemMessageService.GetMessagesByProblemId(problemId);
+            
+            if (messages == null || !messages.Any())
+            {
+                return Ok(new List<ProblemMessageDto>());
+            }
+            
             return Ok(messages);
         }
         catch (NotFoundException ex)
         {
             return NotFound(new { error = ex.Message });
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Forbid();
         }
         catch (Exception ex)
         {

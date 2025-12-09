@@ -19,11 +19,6 @@ public interface IProblemService
     ProblemDto SetAdminDeadline(long problemId, DateTime deadline);
     List<ProblemDto> GetUnresolvedOlderThan(int days = 5);
     
-    // ProblemDeadline
-    ProblemDeadlineDto SetDeadline(long problemId, DateTime deadlineDate, long adminId);
-    ProblemDeadlineDto? GetDeadline(long problemId);
-    bool HasDeadlineExpired(long problemId);
-    
     // Admin akcije
     ProblemDto CloseProblemAsAdmin(long problemId, long adminId, string? comment = null);
     void PenalizeAuthor(long problemId, long adminId);

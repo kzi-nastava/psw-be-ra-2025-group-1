@@ -15,7 +15,6 @@ public class StakeholdersContext : DbContext
     public DbSet<UserLocation> UserLocations { get; set; }
     public DbSet<Problem> Problems { get; set; }
     public DbSet<Notification> Notifications { get; set; }
-    public DbSet<ProblemDeadline> ProblemDeadlines { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
@@ -32,20 +31,19 @@ public class StakeholdersContext : DbContext
         modelBuilder.Entity<Person>().ToTable("People");
         modelBuilder.Entity<User>().ToTable("Users");
 
-        // Dodaj ostale konfiguracije ako su potrebne
         modelBuilder.Entity<User>().HasIndex(u => u.Username).IsUnique();
 
 
         ConfigureMessaging(modelBuilder);
 
-        modelBuilder.Entity<Rating>(cfg =>          //fluent mapiranja za Rating
+        modelBuilder.Entity<Rating>(cfg =>          
         {
             cfg.ToTable("Ratings");
             cfg.HasKey(r => r.Id);
 
             cfg.Property(r => r.UserId).IsRequired();
-            cfg.Property(r => r.Score).IsRequired();          // 1–5 validacija je u domenu, ovde samo Required
-            cfg.Property(r => r.Comment).HasMaxLength(500);   // opcionalno
+            cfg.Property(r => r.Score).IsRequired();          // 1–5 validacija je u domenu
+            cfg.Property(r => r.Comment).HasMaxLength(500);   
             cfg.Property(r => r.CreatedAt).IsRequired();
             cfg.Property(r => r.UpdatedAt);
 
@@ -54,7 +52,6 @@ public class StakeholdersContext : DbContext
         });
 
         ConfigureProblems(modelBuilder);
-        ConfigureProblemDeadlines(modelBuilder);
         ConfigureNotifications(modelBuilder);
     }
 
@@ -117,24 +114,6 @@ public class StakeholdersContext : DbContext
             cfg.HasIndex(p => p.AuthorId);
             cfg.HasIndex(p => p.Status);
             cfg.HasIndex(p => p.CreationTime);
-        });
-    }
-
-    private static void ConfigureProblemDeadlines(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<ProblemDeadline>(cfg =>
-        {
-            cfg.ToTable("ProblemDeadlines");
-            cfg.HasKey(pd => pd.Id);
-
-            cfg.Property(pd => pd.ProblemId).IsRequired();
-            cfg.Property(pd => pd.DeadlineDate).IsRequired();
-            cfg.Property(pd => pd.SetByAdminId).IsRequired();
-            cfg.Property(pd => pd.SetAt).IsRequired();
-
-            cfg.HasIndex(pd => pd.ProblemId);
-            cfg.HasIndex(pd => pd.DeadlineDate);
-            cfg.HasIndex(pd => pd.SetByAdminId);
         });
     }
 

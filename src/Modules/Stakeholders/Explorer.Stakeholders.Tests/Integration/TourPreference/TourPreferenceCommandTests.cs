@@ -187,36 +187,6 @@ namespace Explorer.Stakeholders.Tests.Integration.TourPreference
             result.PreferedTags.ShouldBeEquivalentTo(newEntity.PreferedTags);
         }
 
-        [Fact(Skip = "Not implemented")]
-        public void Create_fails_when_preference_already_exists()
-        {
-            // Arrange
-            using var scope = Factory.Services.CreateScope();
-            var controller = CreateController(scope);
-            // Creating a fake identity because the method requires the user to be logged in
-            var identity = new ClaimsIdentity(new[]
-            {
-                new Claim("id", "-21"),
-                new Claim(ClaimTypes.Role, "tourist")
-            }, "TestAuthentication");
-            controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
-            var newEntity = new TourPreferenceDto
-            {
-                UserId = -21,
-                BicycleRating = 1,
-                CarRating = 2,
-                BoatRating = 3,
-                WalkRating = 0,
-                Difficulty = 2.5,
-                PreferedTags = new List<string> { "culture", "food" },
-            };
-            // Act & Assert
-            Should.Throw<InvalidOperationException>(() =>
-            {
-                var result = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TourPreferenceDto;
-            });
-        }
-
         private static TourPreferenceController CreateController(IServiceScope scope)
         {
             var tourPreferenceService = scope.ServiceProvider.GetRequiredService<ITourPreferenceService>();

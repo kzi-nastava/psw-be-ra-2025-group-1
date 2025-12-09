@@ -47,42 +47,6 @@ public class AdminProblemController : ControllerBase
         }
     }
 
-    [HttpGet("{problemId:long}/deadline")]
-    public ActionResult<ProblemDeadlineDto> GetProblemDeadline(long problemId)
-    {
-        var deadline = _problemService.GetDeadline(problemId);
-        if (deadline == null)
-            return NotFound(new { error = "No deadline found for this problem." });
-        
-        return Ok(deadline);
-    }
-
-    [HttpGet("{problemId:long}/deadline/expired")]
-    public ActionResult<bool> HasDeadlineExpired(long problemId)
-    {
-        var hasExpired = _problemService.HasDeadlineExpired(problemId);
-        return Ok(new { problemId, hasExpired });
-    }
-
-    [HttpPost("{problemId:long}/deadline")]
-    public ActionResult<ProblemDeadlineDto> SetProblemDeadline(long problemId, [FromBody] SetDeadlineDto dto)
-    {
-        try
-        {
-            var adminId = User.PersonId();
-            var deadline = _problemService.SetDeadline(problemId, dto.Deadline, adminId);
-            return Ok(deadline);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-    }
-
     [HttpPut("{id:long}/deadline")]
     public ActionResult<ProblemDto> SetDeadline(long id, [FromBody] SetDeadlineDto dto)
     {
