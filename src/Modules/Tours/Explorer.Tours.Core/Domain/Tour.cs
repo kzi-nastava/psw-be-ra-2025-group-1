@@ -54,8 +54,4 @@ public class Tour : Entity
         Price = price;
     }
 
-    public void Archive()
-    {
-        Status = TourStatus.Archived;
-    }
 }
