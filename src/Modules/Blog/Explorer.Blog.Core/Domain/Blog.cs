@@ -133,7 +133,7 @@ public class Blog : AggregateRoot
 
     public Vote AddVote(long userId, VoteType voteType)
     {
-        if (Status != BlogStatus.Published)
+        if (!IsInteractive())
         {
             throw new InvalidOperationException("Only published blogs can receive votes.");
         }
@@ -156,7 +156,7 @@ public class Blog : AggregateRoot
 
     public void RemoveVote(long userId)
     {
-        if (Status == BlogStatus.Closed)
+        if (IsReadOnly())
         {
             throw new InvalidOperationException("Votes cannot be changed on a closed blog.");
         }
@@ -205,6 +205,19 @@ public class Blog : AggregateRoot
         }
 
         LastModifiedDate = DateTime.UtcNow;
+    }
+
+
+    private bool IsReadOnly()
+    {
+        return Status == BlogStatus.Closed || Status == BlogStatus.Archived;
+    }
+
+    private bool IsInteractive()
+    {
+        return Status == BlogStatus.Published
+            || Status == BlogStatus.Active
+            || Status == BlogStatus.Famous;
     }
 
 }
