@@ -15,8 +15,7 @@ public class TourService : ITourService
     private readonly IEquipmentRepository _equipmentRepository;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, ITransportTimeRepository timeRepository, IMapper mapper)
-    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
+    public TourService(ITourRepository tourRepository, ITransportTimeRepository timeRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
     {
         _tourRepository = tourRepository;
         _timeRepository = timeRepository;
@@ -161,18 +160,22 @@ public class TourService : ITourService
         var result = _tourRepository.Update(tour);
     }
 
-    public TourDto AddEquipment(long id, long equipmentId)
+    public TourDto AddEquipment(long id, long equipmentId, long authorId)
     {
         var tour = _tourRepository.Get(id);
         var equip = _equipmentRepository.Get(equipmentId);
+        if(tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't add equipment to someone else's tour");
         tour.AddEquipment(equip);
         var result = _tourRepository.Update(tour);
         return _mapper.Map<TourDto>(result);
     }
-    public TourDto RemoveEquipment(long id, long equipmentId)
+    public TourDto RemoveEquipment(long id, long equipmentId, long authorId)
     {
         var tour = _tourRepository.Get(id);
         var equip = _equipmentRepository.Get(equipmentId);
+        if(tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't remove equipment from someone else's tour");
         tour.RemoveEquipment(equip);
         var result = _tourRepository.Update(tour);
         return _mapper.Map<TourDto>(result);

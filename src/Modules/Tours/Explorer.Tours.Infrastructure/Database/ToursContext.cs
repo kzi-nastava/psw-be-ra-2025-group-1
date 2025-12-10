@@ -32,8 +32,8 @@ public class ToursContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Tour>()
-        .HasMany(t => t.Equipment)
-        .WithMany()
-        .UsingEntity(j => j.ToTable("TourEquipment"));
+            .HasMany(t => t.Equipment)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("TourEquipment"));
     }
 }

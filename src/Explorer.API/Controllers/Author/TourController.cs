@@ -147,17 +147,20 @@ public class TourController : ControllerBase
         _tourService.DeleteKeypoint(tourId, keypointId, authorId);
         return Ok();
     }
+    [Authorize(Policy = "authorPolicy")]
     [HttpPost("{id:long}/equipment/{equipId: long}")]
     public ActionResult<TourDto> AddEquipment(long id, long equipId)
     {
-        _tourService.AddEquipment(id, equipId);
+        long authorId = User.PersonId();
+        _tourService.AddEquipment(id, equipId, authorId);
         return Ok();
     }
-
+    [Authorize(Policy = "authorPolicy")]
     [HttpDelete("{id:long}/equipment/{equipId: long}")]
     public ActionResult<TourDto> RemoveEquipment(long id, long equipId)
     {
-        _tourService.RemoveEquipment(id, equipId);
+        long authorId = User.PersonId();
+        _tourService.RemoveEquipment(id, equipId, authorId);
         return Ok();
     }
 

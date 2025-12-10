@@ -28,7 +28,7 @@ public class Tour : AggregateRoot
     public DateTime PublishedAt { get; private set; }
     public DateTime ArchivedAt { get; private set; }
     public List<Keypoint> Keypoints { get; private set; }
-    public List<Equipment> Equipment { get; private set; } = new List<Equipment>();
+    public List<Equipment> Equipment { get; private set; }
 
     public Tour()
     {
@@ -121,11 +121,17 @@ public class Tour : AggregateRoot
 
     public void AddEquipment(Equipment equipment)
     {
+        if (Equipment.Any(e => e.Id == equipment.Id))
+            throw new InvalidOperationException("Equipment already added to the tour");
+
         Equipment.Add(equipment);
     }
 
     public void RemoveEquipment(Equipment equipment)
-    {
+    { 
+        if (!Equipment.Any(e => e.Id == equipment.Id))
+            throw new InvalidOperationException("Equipment not found in the tour");
+
         Equipment.Remove(equipment);
     }
 }

@@ -287,43 +287,96 @@ public class TourCommandTests : BaseToursIntegrationTest
         }
     }
 
-    [Fact]
-    public void Adds_equipment_to_tour()
+    [Theory]
+    [InlineData("-1", -1, -1, 200)] // Valid
+    [InlineData("-2", -1, -2, 403)] // Invalid, unathorizted
+    [InlineData("-1", -1, -1, 403)] // Invalid, already exists
+    [InlineData("-1", -1, -9999999, 404)] // Invalid, equipment doesn't exist
+    [InlineData("-1", -9999999, -1, 404)] // Invalid, tour doesn't exist
+    public void Adds_equipment_to_tour(string authorId, long tourId, long equipmentId, int expectedStatus)
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, authorId);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
-        var tour = new TourDto
+
+
+        if(expectedStatus == 200)
         {
-            CreatorId = 1,
-            Title = "Equipment Tour",
-            Description = "Tour for equipment test",
-            Difficulty = 2,
-            Status = TourStatusDTO.Draft,
-            Price = 75.0
-        };
+            // Act
+            var response = controller.AddEquipment(tourId, equipmentId);
 
-        var created = ((ObjectResult)controller.Create(tour).Result)?.Value as TourDto;
-        created.ShouldNotBeNull();
-        tour.Id = created.Id;
 
-        var equip = new Equipment("Test Backpack", "Test equipment for testing equipment binding and removal from tours");
-        dbContext.Equipment.Add(equip);
-        dbContext.SaveChanges();
+            // Assert – Database
+            var stored = dbContext.Tour
+                .Include(t => t.Equipment)
+                .First(t => t.Id == tourId);
+            stored.Equipment.ShouldContain(e => e.Id == equipmentId);
+        }
+        else
+        {
+            var ex = Should.Throw<Exception>(() => controller.AddEquipment(tourId, equipmentId));
 
-        // Act
-        var response = controller.AddEquipment(tour.Id, equip.Id);
+            if (expectedStatus == 403)
+            {
+                ex.ShouldBeOfType<InvalidOperationException>();
+            }
+            else if (expectedStatus == 404)
+            {
+                ex.ShouldBeOfType<NotFoundException>();
+            }
+        }
+    }
 
-        // Assert – Response
-        response.ShouldBeOfType<OkResult>();
+    [Theory]
+    [InlineData("-1", -1, -1, 200)]        // Valid
+    [InlineData("-1", -1, -1, 403)]        // Invalid, equipment not on tour
+    [InlineData("-1", -1, -9999999, 404)]  // Invalid, equipment doesn't exist
+    [InlineData("-1", -9999999, -1, 404)]  // Invalid, tour doesn't exist
+    public void Removes_equipment_from_tour(string authorId, long tourId, long equipmentId, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // Assert – Database
-        var stored = dbContext.Tour
-            .Include(t => t.Equipment)
-            .First(t => t.Id == tour.Id);
+        if (expectedStatus == 200)
+        {
+            // Ensure the tour actually has the equipment before removing it
+            var tour = dbContext.Tour
+                .Include(t => t.Equipment)
+                .First(t => t.Id == tourId);
 
-        stored.Equipment.ShouldContain(e => e.Id == equip.Id);
+            if (!tour.Equipment.Any(e => e.Id == equipmentId))
+            {
+                var equipment = dbContext.Equipment.First(e => e.Id == equipmentId);
+                tour.Equipment.Add(equipment);
+                dbContext.SaveChanges();
+            }
+
+            // Act
+            var response = controller.RemoveEquipment(tourId, equipmentId);
+
+            // Assert – Database
+            var stored = dbContext.Tour
+                .Include(t => t.Equipment)
+                .First(t => t.Id == tourId);
+
+            stored.Equipment.ShouldNotContain(e => e.Id == equipmentId);
+        }
+        else
+        {
+            var ex = Should.Throw<Exception>(() => controller.RemoveEquipment(tourId, equipmentId));
+
+            if (expectedStatus == 403)
+            {
+                ex.ShouldBeOfType<InvalidOperationException>(); // trying to remove something not assigned
+            }
+            else if (expectedStatus == 404)
+            {
+                ex.ShouldBeOfType<NotFoundException>();
+            }
+        }
     }
 
 }
