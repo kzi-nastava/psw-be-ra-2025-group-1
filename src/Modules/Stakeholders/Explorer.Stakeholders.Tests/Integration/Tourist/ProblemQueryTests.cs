@@ -1,17 +1,17 @@
-﻿using Explorer.API.Controllers.Administrator.Administration;
+using Explorer.API.Controllers.Tourist;
 using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Administration;
+using Explorer.Stakeholders.API.Dtos;
+using Explorer.Stakeholders.API.Public;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
-namespace Explorer.Tours.Tests.Integration.Administration;
+namespace Explorer.Stakeholders.Tests.Integration.Tourist;
 
 [Collection("Sequential")]
-public class ProblemQueryTests : BaseToursIntegrationTest
+public class ProblemQueryTests : BaseStakeholdersIntegrationTest
 {
-    public ProblemQueryTests(ToursTestFactory factory) : base(factory) { }
+    public ProblemQueryTests(StakeholdersTestFactory factory) : base(factory) { }
 
     [Fact]
     public void Retrieves_all()
@@ -30,14 +30,14 @@ public class ProblemQueryTests : BaseToursIntegrationTest
     }
 
     [Fact]
-    public void Retrieves_problems_by_creator()
+    public void Retrieves_my_problems()
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
 
         // Act
-        var result = ((ObjectResult)controller.GetByCreator(-21, 0, 0).Result)?.Value as PagedResult<ProblemDto>;
+        var result = ((ObjectResult)controller.GetMyProblems(0, 0).Result)?.Value as PagedResult<ProblemDto>;
 
         // Assert
         result.ShouldNotBeNull();
@@ -45,9 +45,9 @@ public class ProblemQueryTests : BaseToursIntegrationTest
         result.Results.All(p => p.CreatorId == -21).ShouldBeTrue();
     }
 
-    private static AdminProblemController CreateController(IServiceScope scope)
+    private static TouristProblemController CreateController(IServiceScope scope)
     {
-        return new AdminProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
+        return new TouristProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
         {
             ControllerContext = BuildContext("-21")
         };
