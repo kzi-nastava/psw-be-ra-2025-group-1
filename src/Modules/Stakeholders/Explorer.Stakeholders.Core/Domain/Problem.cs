@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Explorer.BuildingBlocks.Core.Domain;
 
-namespace Explorer.Tours.Core.Domain;
+namespace Explorer.Stakeholders.Core.Domain;
 
 public enum ProblemCategory
 {
@@ -13,6 +8,7 @@ public enum ProblemCategory
     Maintenance,
     Other
 }
+
 public class Problem : Entity
 {
     public long TourId { get; init; }

@@ -1,7 +1,7 @@
-﻿using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Tours.API.Dtos;
+using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.API.Dtos;
 
-namespace Explorer.Tours.API.Public.Administration;
+namespace Explorer.Stakeholders.API.Public;
 
 public interface IProblemService
 {
@@ -12,4 +12,3 @@ public interface IProblemService
     ProblemDto Update(ProblemDto problem);
     void Delete(long id);
 }
-

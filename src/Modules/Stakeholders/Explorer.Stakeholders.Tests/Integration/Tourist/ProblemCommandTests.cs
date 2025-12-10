@@ -1,19 +1,18 @@
-﻿using Explorer.API.Controllers.Administrator.Administration;
+using Explorer.API.Controllers.Tourist;
 using Explorer.BuildingBlocks.Core.Exceptions;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Administration;
-using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Infrastructure.Database;
+using Explorer.Stakeholders.API.Dtos;
+using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
-namespace Explorer.Tours.Tests.Integration.Administration;
+namespace Explorer.Stakeholders.Tests.Integration.Tourist;
 
 [Collection("Sequential")]
-public class ProblemCommandTests : BaseToursIntegrationTest
+public class ProblemCommandTests : BaseStakeholdersIntegrationTest
 {
-    public ProblemCommandTests(ToursTestFactory factory) : base(factory) { }
+    public ProblemCommandTests(StakeholdersTestFactory factory) : base(factory) { }
 
     [Fact]
     public void Creates()
@@ -21,13 +20,14 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
-        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
         var newEntity = new ProblemDto
         {
             TourId = -1,
+            CreatorId = -21,
             Priority = 3,
             Description = "I was left alone",
-            Category = API.Dtos.ProblemCategory.Safety
+            Category = ProblemCategory.Safety
         };
 
         // Act
@@ -39,7 +39,7 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         result.Priority.ShouldBe(newEntity.Priority);
 
         // Assert - Database
-        var storedEntity = dbContext.Problem.FirstOrDefault(i => i.Description == newEntity.Description);
+        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Description == newEntity.Description);
         storedEntity.ShouldNotBeNull();
         storedEntity.Priority.ShouldBe(result.Priority);
     }
@@ -53,6 +53,7 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         var updatedEntity = new ProblemDto
         {
             TourId = -1,
+            CreatorId = -21,
             Priority = 6,
             Description = "Test problem"
         };
@@ -67,14 +68,15 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
-        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
         var updatedEntity = new ProblemDto
         {
             Id = -1,
             TourId = -1,
+            CreatorId = -21,
             Priority = 4,
             Description = "Dangerous cliff",
-            Category = API.Dtos.ProblemCategory.Safety
+            Category = ProblemCategory.Safety
         };
 
         // Act
@@ -87,7 +89,7 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         result.Priority.ShouldBe(updatedEntity.Priority);
 
         // Assert - Database
-        var storedEntity = dbContext.Problem.FirstOrDefault(i => i.Id == -1);
+        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == -1);
         storedEntity.ShouldNotBeNull();
         storedEntity.Description.ShouldBe(updatedEntity.Description);
     }
@@ -101,6 +103,8 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         var updatedEntity = new ProblemDto
         {
             Id = -1000,
+            TourId = -1,
+            CreatorId = -21,
             Priority = 2,
             Description = "Test"
         };
@@ -115,7 +119,7 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
-        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
 
         // Act
         var result = (OkResult)controller.Delete(-3);
@@ -125,7 +129,7 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.Problem.FirstOrDefault(i => i.Id == -3);
+        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == -3);
         storedEntity.ShouldBeNull();
     }
 
@@ -140,9 +144,9 @@ public class ProblemCommandTests : BaseToursIntegrationTest
         Should.Throw<NotFoundException>(() => controller.Delete(-1000));
     }
 
-    private static AdminProblemController CreateController(IServiceScope scope)
+    private static TouristProblemController CreateController(IServiceScope scope)
     {
-        return new AdminProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
+        return new TouristProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
         {
             ControllerContext = BuildContext("-21")
         };
