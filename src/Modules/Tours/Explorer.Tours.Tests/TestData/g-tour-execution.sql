@@ -1,7 +1,8 @@
--- Test data for TourExecution tests
--- IMPORTANT: This runs AFTER e-tour.sql
+-- Odkomentiši i izmeni
+UPDATE tours."Tour" 
+SET "Status" = 1, "Price" = 100.0
+WHERE "Id" IN (-1, -2);
 
--- Update tour with ID -1 to be Published
---UPDATE tours."Tour" 
---SET "Status" = 1, "Price" = 100.0
---WHERE "Id" = -1;
+UPDATE tours."Tour"
+SET "Status" = 0, "Price" = 120.0
+WHERE "Id" = -3;

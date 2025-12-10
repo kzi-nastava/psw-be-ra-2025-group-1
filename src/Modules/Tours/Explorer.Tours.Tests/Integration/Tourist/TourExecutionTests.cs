@@ -43,20 +43,23 @@ public class TourExecutionTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope, -21); // Tourist ID from test data
+        var controller = CreateController(scope, -21);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
         var startTourDto = new StartTourDto
         {
-            TourId = -1, // Tour from e-tour.sql (must be Published/Archived)
+            TourId = -1,
             InitialLatitude = 45.2396,
             InitialLongitude = 19.8227
         };
 
         // Act
-        var result = ((ObjectResult)controller.StartTour(startTourDto).Result)?.Value as TourExecutionDto;
+        var actionResult = controller.StartTour(startTourDto);
 
-        // Assert - Response
+        // Assert
+        actionResult.Result.ShouldBeOfType<OkObjectResult>();
+        var result = ((OkObjectResult)actionResult.Result)?.Value as TourExecutionDto;
+
         result.ShouldNotBeNull();
         result.Id.ShouldNotBe(0);
         result.TouristId.ShouldBe(-21);
@@ -64,7 +67,7 @@ public class TourExecutionTests : BaseToursIntegrationTest
         result.Status.ShouldBe(TourExecutionStatusDto.InProgress);
         result.PercentageCompleted.ShouldBe(0);
 
-        // Assert - Database
+        // Database check
         dbContext.ChangeTracker.Clear();
         var storedExecution = dbContext.TourExecutions.FirstOrDefault(te => te.Id == result.Id);
         storedExecution.ShouldNotBeNull();
@@ -77,25 +80,37 @@ public class TourExecutionTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope, -22); // Use different tourist
+        var controller = CreateController(scope, -22);
 
         // Start first tour
-        var firstTour = new StartTourDto { TourId = -1, InitialLatitude = 45.2396, InitialLongitude = 19.8227 };
+        var firstTour = new StartTourDto
+        {
+            TourId = -1,
+            InitialLatitude = 45.2396,
+            InitialLongitude = 19.8227
+        };
         var firstResult = controller.StartTour(firstTour);
-        firstResult.Result.ShouldBeOfType<OkObjectResult>(); // Verify first tour started successfully
+        firstResult.Result.ShouldBeOfType<OkObjectResult>();
 
-        // Try to start second tour
-        var secondTour = new StartTourDto { TourId = -2, InitialLatitude = 45.2396, InitialLongitude = 19.8227 };
-
-        // Act
+        // Try to start the same tour again (or any tour while one is active)
+        var secondTour = new StartTourDto
+        {
+            TourId = -1,
+            InitialLatitude = 45.2500,
+            InitialLongitude = 19.8300
+        };
         var result = controller.StartTour(secondTour);
 
         // Assert
         result.Result.ShouldBeOfType<BadRequestObjectResult>();
         var badRequestResult = result.Result as BadRequestObjectResult;
-        var errorValue = badRequestResult?.Value;
-        errorValue.ShouldNotBeNull();
-        errorValue.ToString().ShouldContain("already has an active tour");
+        badRequestResult.ShouldNotBeNull();
+
+        var errorObj = badRequestResult.Value;
+        errorObj.ShouldNotBeNull();
+        var errorProp = errorObj.GetType().GetProperty("error");
+        var errorMessage = errorProp?.GetValue(errorObj)?.ToString();
+        errorMessage.ShouldContain("already has an active tour");
     }
 
     [Fact]
@@ -103,16 +118,26 @@ public class TourExecutionTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope, -23); // Use different tourist
+        var controller = CreateController(scope, -23);
 
         // Start a tour
-        var startTourDto = new StartTourDto { TourId = -1, InitialLatitude = 45.2396, InitialLongitude = 19.8227 };
-        var started = ((ObjectResult)controller.StartTour(startTourDto).Result)?.Value as TourExecutionDto;
+        var startTourDto = new StartTourDto
+        {
+            TourId = -1,
+            InitialLatitude = 45.2396,
+            InitialLongitude = 19.8227
+        };
+        var startedResult = controller.StartTour(startTourDto);
+        startedResult.Result.ShouldBeOfType<OkObjectResult>();
+        var started = ((OkObjectResult)startedResult.Result)?.Value as TourExecutionDto;
 
         // Act
-        var result = ((ObjectResult)controller.GetActiveTour().Result)?.Value as TourExecutionDto;
+        var getActiveResult = controller.GetActiveTour();
 
         // Assert
+        getActiveResult.Result.ShouldBeOfType<OkObjectResult>();
+        var result = ((OkObjectResult)getActiveResult.Result)?.Value as TourExecutionDto;
+
         result.ShouldNotBeNull();
         result.Id.ShouldBe(started.Id);
         result.Status.ShouldBe(TourExecutionStatusDto.InProgress);
@@ -126,31 +151,40 @@ public class TourExecutionTests : BaseToursIntegrationTest
         var controller = CreateController(scope, -21);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // First complete any existing active tour for this tourist
+        // Clean up any existing active tour for this tourist
         try
         {
-            var activeTour = controller.GetActiveTour();
-            if (activeTour.Result is ObjectResult activeResult && activeResult.Value is TourExecutionDto activeDto)
+            var activeResult = controller.GetActiveTour();
+            if (activeResult.Result is OkObjectResult okResult && okResult.Value is TourExecutionDto activeDto)
             {
                 controller.CompleteTour(activeDto.Id);
             }
         }
-        catch { /* No active tour, that's fine */ }
+        catch { /* No active tour */ }
 
-        // Start a tour
-        var startTourDto = new StartTourDto { TourId = -1, InitialLatitude = 45.2396, InitialLongitude = 19.8227 };
-        var started = ((ObjectResult)controller.StartTour(startTourDto).Result)?.Value as TourExecutionDto;
+        // Start a new tour
+        var startTourDto = new StartTourDto
+        {
+            TourId = -1,
+            InitialLatitude = 45.2396,
+            InitialLongitude = 19.8227
+        };
+        var startedResult = controller.StartTour(startTourDto);
+        startedResult.Result.ShouldBeOfType<OkObjectResult>();
+        var started = ((OkObjectResult)startedResult.Result)?.Value as TourExecutionDto;
 
         // Act
-        var result = ((ObjectResult)controller.CompleteTour(started.Id).Result)?.Value as TourExecutionDto;
+        var completeResult = controller.CompleteTour(started.Id);
 
-        // Assert - Response
+        // Assert
+        completeResult.Result.ShouldBeOfType<OkObjectResult>();
+        var result = ((OkObjectResult)completeResult.Result)?.Value as TourExecutionDto;
+
         result.ShouldNotBeNull();
         result.Status.ShouldBe(TourExecutionStatusDto.Completed);
         result.PercentageCompleted.ShouldBe(100);
         result.EndTime.ShouldNotBeNull();
 
-        // Assert - Database
         dbContext.ChangeTracker.Clear();
         var storedExecution = dbContext.TourExecutions.FirstOrDefault(te => te.Id == result.Id);
         storedExecution.ShouldNotBeNull();
@@ -162,33 +196,42 @@ public class TourExecutionTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope, -21);
+        var controller = CreateController(scope, -22);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // First complete any existing active tour for this tourist
+        // Clean up any existing active tour
         try
         {
-            var activeTour = controller.GetActiveTour();
-            if (activeTour.Result is ObjectResult activeResult && activeResult.Value is TourExecutionDto activeDto)
+            var activeResult = controller.GetActiveTour();
+            if (activeResult.Result is OkObjectResult okResult && okResult.Value is TourExecutionDto activeDto)
             {
                 controller.AbandonTour(activeDto.Id);
             }
         }
-        catch { /* No active tour, that's fine */ }
+        catch { /* No active tour */ }
 
-        // Start a tour
-        var startTourDto = new StartTourDto { TourId = -1, InitialLatitude = 45.2396, InitialLongitude = 19.8227 };
-        var started = ((ObjectResult)controller.StartTour(startTourDto).Result)?.Value as TourExecutionDto;
+        // Start a new tour
+        var startTourDto = new StartTourDto
+        {
+            TourId = -1,
+            InitialLatitude = 45.2396,
+            InitialLongitude = 19.8227
+        };
+        var startedResult = controller.StartTour(startTourDto);
+        startedResult.Result.ShouldBeOfType<OkObjectResult>();
+        var started = ((OkObjectResult)startedResult.Result)?.Value as TourExecutionDto;
 
         // Act
-        var result = ((ObjectResult)controller.AbandonTour(started.Id).Result)?.Value as TourExecutionDto;
+        var abandonResult = controller.AbandonTour(started.Id);
 
-        // Assert - Response
+        // Assert
+        abandonResult.Result.ShouldBeOfType<OkObjectResult>();
+        var result = ((OkObjectResult)abandonResult.Result)?.Value as TourExecutionDto;
+
         result.ShouldNotBeNull();
         result.Status.ShouldBe(TourExecutionStatusDto.Abandoned);
         result.EndTime.ShouldNotBeNull();
 
-        // Assert - Database
         dbContext.ChangeTracker.Clear();
         var storedExecution = dbContext.TourExecutions.FirstOrDefault(te => te.Id == result.Id);
         storedExecution.ShouldNotBeNull();
@@ -200,28 +243,39 @@ public class TourExecutionTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope, -21);
+        var controller = CreateController(scope, -23);
 
-        // First complete any existing active tour for this tourist
+        // Clean up and start fresh
         try
         {
-            var activeTour = controller.GetActiveTour();
-            if (activeTour.Result is ObjectResult activeResult && activeResult.Value is TourExecutionDto activeDto)
+            var activeResult = controller.GetActiveTour();
+            if (activeResult.Result is OkObjectResult okResult && okResult.Value is TourExecutionDto activeDto)
             {
                 controller.CompleteTour(activeDto.Id);
             }
         }
-        catch { /* No active tour, that's fine */ }
+        catch { /* No active tour */ }
 
         // Start and complete a tour
-        var startTourDto = new StartTourDto { TourId = -1, InitialLatitude = 45.2396, InitialLongitude = 19.8227 };
-        var started = ((ObjectResult)controller.StartTour(startTourDto).Result)?.Value as TourExecutionDto;
+        var startTourDto = new StartTourDto
+        {
+            TourId = -1,
+            InitialLatitude = 45.2396,
+            InitialLongitude = 19.8227
+        };
+        var startedResult = controller.StartTour(startTourDto);
+        startedResult.Result.ShouldBeOfType<OkObjectResult>();
+        var started = ((OkObjectResult)startedResult.Result)?.Value as TourExecutionDto;
+
         controller.CompleteTour(started.Id);
 
         // Act
-        var result = ((ObjectResult)controller.GetHistory().Result)?.Value as List<TourExecutionDto>;
+        var historyResult = controller.GetHistory();
 
         // Assert
+        historyResult.Result.ShouldBeOfType<OkObjectResult>();
+        var result = ((OkObjectResult)historyResult.Result)?.Value as List<TourExecutionDto>;
+
         result.ShouldNotBeNull();
         result.Count.ShouldBeGreaterThan(0);
         result.Any(te => te.Id == started.Id).ShouldBeTrue();
@@ -232,10 +286,16 @@ public class TourExecutionTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope, -23); // Use different tourist to avoid conflicts
+        var controller = CreateController(scope, -21);
 
-        // Tour -3 is Draft status (from test data)
-        var startTourDto = new StartTourDto { TourId = -3, InitialLatitude = 45.2396, InitialLongitude = 19.8227 };
+        // Use tour -15 which is Draft (Status = 0) from e-tour.sql
+        // The status check happens BEFORE purchase check, so we'll get the status error
+        var startTourDto = new StartTourDto
+        {
+            TourId = -15,
+            InitialLatitude = 45.2396,
+            InitialLongitude = 19.8227
+        };
 
         // Act
         var result = controller.StartTour(startTourDto);
@@ -243,14 +303,12 @@ public class TourExecutionTests : BaseToursIntegrationTest
         // Assert
         result.Result.ShouldBeOfType<BadRequestObjectResult>();
         var badRequestResult = result.Result as BadRequestObjectResult;
-        var errorValue = badRequestResult?.Value;
-        errorValue.ShouldNotBeNull();
-        errorValue.ToString().ShouldContain("published or archived");
-    }
-}
+        badRequestResult.ShouldNotBeNull();
 
-// Helper class for error responses
-public class ErrorResponse
-{
-    public string Error { get; set; }
+        var errorObj = badRequestResult.Value;
+        errorObj.ShouldNotBeNull();
+        var errorProp = errorObj.GetType().GetProperty("error");
+        var errorMessage = errorProp?.GetValue(errorObj)?.ToString();
+        errorMessage.ShouldContain("published or archived");
+    }
 }
