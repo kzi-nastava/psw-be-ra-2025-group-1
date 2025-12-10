@@ -20,4 +20,6 @@ public interface IBlogService
 
     VoteDto AddVoteToBlog(long blogId, long userId, VoteCreateDto voteDto);
     void RemoveVoteFromBlog(long blogId, long userId);
+
+    BlogDto GetBlogById(long blogId, long userId);
 }

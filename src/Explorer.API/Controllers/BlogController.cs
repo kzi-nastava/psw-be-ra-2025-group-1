@@ -157,4 +157,23 @@ public class BlogController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+
+    [HttpGet("{id}")]
+    public ActionResult<BlogDto> GetBlogById(long id)
+    {
+        try
+        {
+            var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value ?? "0");
+            var result = _blogService.GetBlogById(id, userId);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException e)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
 }
