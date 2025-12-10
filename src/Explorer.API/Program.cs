@@ -5,6 +5,8 @@ using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.UseCases;
 using Explorer.Stakeholders.Infrastructure.Repositories;
+using Explorer.Tours.API.Public;
+using Explorer.Tours.Core.UseCases;
 
 // Create wwwroot for images
 var wwwroot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -36,6 +38,7 @@ builder.Services.ConfigureCors(corsPolicy);
 builder.Services.ConfigureAuth();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
+builder.Services.AddScoped<ITourExecutionService, TourExecutionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<DemoSeeder>();
 
