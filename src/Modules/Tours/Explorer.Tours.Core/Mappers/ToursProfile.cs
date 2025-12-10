@@ -12,6 +12,8 @@ public class ToursProfile : Profile
         CreateMap<TourDto, Tour>().ReverseMap();
         CreateMap<FacilityDto, Facility>().ReverseMap();
         CreateMap<MeetUpDto, MeetUp>().ReverseMap();
+        CreateMap<CreateTourDto, Tour>().ForMember(dest => dest.Keypoints, opt => opt.Ignore());
+        CreateMap<KeypointDto, Keypoint>().ReverseMap();
         CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();
         CreateMap<TransportTimeDto, TransportTime>().ReverseMap();
         

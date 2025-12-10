@@ -1,4 +1,5 @@
-﻿INSERT INTO tours."Tour"(
+﻿-- Vrv bi bilo pametno smisleno napraviti datume za CreatedAt, UpdatedAt itd i premestiti dodavanje keypoint-ova u drugu sql skriptu
+INSERT INTO tours."Tour"(
     "Id",
     "CreatorId",
     "Title",
@@ -43,7 +44,7 @@ INSERT INTO tours."Tour"(
 )
 VALUES (
     -19,
-    -1,
+    -2,
     'Tour de Hungary',
     'Best places in Hungary',
     1,
@@ -72,7 +73,7 @@ INSERT INTO tours."Tour"(
 )
 VALUES (
     -29,
-    -1,
+    -3,
     'Tour de Banat',
     'Places...',
     1,
@@ -84,3 +85,10 @@ VALUES (
     '2024-01-10T10:00:00Z',
     '2024-01-10T10:00:00Z'
 );
+
+INSERT INTO tours."Tour"(
+	"Id", "CreatorId", "Title", "Description", "Difficulty", "Tags", "Status", "Price", "CreatedAt", "UpdatedAt", "PublishedAt", "ArchivedAt")
+	VALUES (-1, -1, 'Tour de Fruska', 'Best places in Fruska', 1, ARRAY['Vojvodina','Serbia','Fun'], 0, 0.0, '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z');
+INSERT INTO tours."Keypoints"(
+	"Id", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber", "TourId")
+	VALUES (-1, 'KP1', 'Description', '', '', 0, 0, 1, -1);
