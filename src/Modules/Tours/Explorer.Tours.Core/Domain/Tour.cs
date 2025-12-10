@@ -28,6 +28,7 @@ public class Tour : AggregateRoot
     public DateTime PublishedAt { get; private set; }
     public DateTime ArchivedAt { get; private set; }
     public List<Keypoint> Keypoints { get; private set; }
+    public List<Equipment> Equipment { get; private set; }
 
     public Tour()
     {
@@ -116,5 +117,27 @@ public class Tour : AggregateRoot
     private int GenerateKeypointSequenceNumber()
     {
         return Keypoints.Count + 1;
+    }
+
+    public void AddEquipment(Equipment equipment)
+    {
+        if (Equipment.Any(e => e.Id == equipment.Id))
+            throw new InvalidOperationException("Equipment already added to the tour");
+
+        if (Status == TourStatus.Archived)
+            throw new InvalidOperationException("Cannot add equipment to an archived tour");
+
+        Equipment.Add(equipment);
+    }
+
+    public void RemoveEquipment(Equipment equipment)
+    { 
+        if (!Equipment.Any(e => e.Id == equipment.Id))
+            throw new InvalidOperationException("Equipment not found in the tour");
+
+        if (Status == TourStatus.Archived)
+            throw new InvalidOperationException("Cannot remove equipment from an archived tour");
+
+        Equipment.Remove(equipment);
     }
 }
