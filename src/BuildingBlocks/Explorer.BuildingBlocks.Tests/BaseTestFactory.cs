@@ -13,6 +13,9 @@ public abstract class BaseTestFactory<TDbContext> : WebApplicationFactory<Progra
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Set flag so the system knows se are running tests
+        Environment.SetEnvironmentVariable("RUNNING_TESTS", "true");
+
         builder.ConfigureServices(services =>
         {
             using var scope = BuildServiceProvider(services).CreateScope();
