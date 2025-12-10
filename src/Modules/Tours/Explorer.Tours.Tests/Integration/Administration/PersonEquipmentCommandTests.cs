@@ -4,6 +4,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
@@ -44,13 +45,13 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         var updatedEntity = new PersonEquipmentDto
         {
-            PersonId = 0, // This will be overridden by controller to -1
+            PersonId = -1, // This will be overridden by controller to -1
             EquipmentId = 9999 // Non-existent equipment ID
         };
 
-        // Act & Assert - Should throw when trying to get non-existent equipment
         Should.Throw<NotFoundException>(() => controller.Create(updatedEntity));
     }
 
