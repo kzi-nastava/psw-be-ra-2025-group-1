@@ -136,11 +136,9 @@ public class TourExecutionService : ITourExecutionService
         if (Math.Sqrt(longDiff * longDiff - latDiff * latDiff) < nearbyDistance)
         {
             // Mark keypoint as reached and create a new Keypoint Progress for it
-            if (execution.ReachKeypoint(nextKeypoint.Id, tour.Keypoints.Count))
-            {
-                _tourExecutionRepository.Update(execution);
-                return true;
-            }
+            execution.ReachKeypoint(nextKeypoint.Id, tour.Keypoints.Count);
+            _tourExecutionRepository.Update(execution);
+            return true;
         }
 
         return false;
