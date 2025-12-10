@@ -82,7 +82,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         }
         var id = stored.Id;
 
-        var updatedDto = new TourDto { CreatorId = stored.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDTO.Published, Price = 150.0 };
+        var updatedDto = new TourDto { CreatorId = stored.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDto.Published, Price = 150.0 };
 
         // Logging in fake user
         var identity = new ClaimsIdentity(new[]
