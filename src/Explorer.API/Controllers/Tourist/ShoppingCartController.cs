@@ -29,14 +29,20 @@ namespace Explorer.API.Controllers.Tourist
         {
             long touristId = long.Parse(User.FindFirst("personId")!.Value);
             _service.AddToCart(touristId, tourId);
-            return Ok("Added to cart.");
+
+            var updatedCart = _service.GetCart(touristId);
+            return Ok(updatedCart);
         }
+
         [HttpDelete("remove/{tourId}")]
         public IActionResult RemoveFromCart(long tourId)
         {
             long touristId = long.Parse(User.FindFirst("personId")!.Value);
             _service.RemoveFromCart(touristId, tourId);
-            return Ok("Removed from cart.");
+
+            var updatedCart = _service.GetCart(touristId);
+            return Ok(updatedCart);
         }
+
     }
 }
