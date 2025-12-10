@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,11 @@ public class Tour : AggregateRoot
     public string[] Tags { get; private set; }
     public TourStatus Status { get; private set; }
     public double Price { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime UpdatedAt { get; private set; }
+    public DateTime PublishedAt { get; private set; }
+    public DateTime ArchivedAt { get; private set; }
+    public List<Keypoint> Keypoints { get; private set; }
 
     public Tour()
     {
@@ -29,6 +35,11 @@ public class Tour : AggregateRoot
         Description = "";
         Tags = [];
         Status = TourStatus.Draft;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        PublishedAt = DateTime.MinValue;
+        ArchivedAt = DateTime.MinValue;
+        Keypoints = [];
     }
     public Tour(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status = TourStatus.Draft, double price = 0)
     {
@@ -41,6 +52,7 @@ public class Tour : AggregateRoot
         Status = status;
         Price = price;
         CreatorId = creatorId;
+        Keypoints = [];
     }
 
     public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
@@ -52,5 +64,57 @@ public class Tour : AggregateRoot
         Tags = tags;
         Status = status;
         Price = price;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Publish()
+    {
+        Status = TourStatus.Published;
+        PublishedAt = DateTime.UtcNow;
+    }
+    public void Archive()
+    {
+        Status = TourStatus.Archived;
+        ArchivedAt = DateTime.UtcNow;
+    }
+
+    public Keypoint AddKeypoint(Keypoint keypoint)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only add keypoints to tour in draft");
+        keypoint.SequenceNumber = GenerateKeypointSequenceNumber();
+        Keypoints.Add(keypoint);
+        return keypoint;
+    }
+
+    public Keypoint UpdateKeypoint(Keypoint updatedKeypoint)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only update keypoints in tour in draft");
+
+        var keypoint = Keypoints.FirstOrDefault(k => k.Id == updatedKeypoint.Id) ?? throw new NotFoundException("Keypoint not found");
+
+        updatedKeypoint.SequenceNumber = keypoint.SequenceNumber;
+
+        return keypoint.Update(updatedKeypoint);    
+    }
+
+    public void DeleteKeypoint(long keypointId)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only delete keypoints from tour in draft");
+
+        var keypoint = Keypoints.FirstOrDefault(k => k.Id == keypointId) ?? throw new NotFoundException($"Keypoint with id {keypointId} not found in tour");
+
+        // Making it so only the last keypoint can be deleted so we don't have to care for other keypoint's SequenceNumbers :)
+        if (keypointId != Keypoints.Last().Id)
+            throw new InvalidOperationException("Can only delete last keypoint in tour");
+
+        Keypoints.Remove(keypoint);
+    }
+
+    private int GenerateKeypointSequenceNumber()
+    {
+        return Keypoints.Count + 1;
     }
 }

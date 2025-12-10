@@ -30,14 +30,14 @@ namespace Explorer.API.Controllers.Tourist
         [HttpGet("my")]
         public ActionResult<PagedResult<MeetUpDto>> GetAllByUser([FromQuery] int page, [FromQuery] int pageSize)
         {
-            long userId = long.Parse(User.Claims.First(i => i.Type == "id").Value);
+            long userId = User.PersonId() == -1 ? 0 : User.PersonId();
             return Ok(_meetUpService.GetPagedByUser(userId, page, pageSize));
         }
 
         [HttpPost]
         public ActionResult<MeetUpDto> Create([FromBody] MeetUpDto meetUp)
         {
-            long userId = long.Parse(User.Claims.First(i => i.Type == "id").Value);
+            long userId = User.PersonId() == -1 ? 0 : User.PersonId();
             meetUp.UserId = userId;
             return Ok(_meetUpService.Create(meetUp));
         }
@@ -45,6 +45,8 @@ namespace Explorer.API.Controllers.Tourist
         [HttpPut("{id:long}")]
         public ActionResult<MeetUpDto> Update([FromBody] MeetUpDto meetUp)
         {
+            long userId = User.PersonId() == -1 ? 0 : User.PersonId(); //samo zbog testova
+            meetUp.UserId = userId;
             return Ok(_meetUpService.Update(meetUp));
         }
 
