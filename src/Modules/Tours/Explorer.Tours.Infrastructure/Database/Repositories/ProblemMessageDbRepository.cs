@@ -35,4 +35,17 @@ public class ProblemMessageDbRepository : IProblemMessageRepository
     {
         return _dbSet.Find(id);
     }
+
+    public ProblemMessage Update(ProblemMessage message)
+    {
+        _dbSet.Update(message);
+        DbContext.SaveChanges();
+        return message;
+    }
+
+    public void Delete(ProblemMessage message)
+    {
+        _dbSet.Remove(message);
+        DbContext.SaveChanges();
+    }
 }

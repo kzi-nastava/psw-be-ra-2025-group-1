@@ -22,10 +22,18 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         
+        // Create equipment first to ensure it exists
+        var equipmentService = scope.ServiceProvider.GetRequiredService<Explorer.Tours.API.Public.Administration.IEquipmentService>();
+        var equipment = equipmentService.Create(new EquipmentDto
+        {
+            Name = "Test Equipment " + Guid.NewGuid().ToString().Substring(0, 8),
+            Description = "Equipment for testing"
+        });
+        
         var newEntity = new PersonEquipmentDto
         {
             PersonId = -1, // Controller will override this anyway
-            EquipmentId = -1
+            EquipmentId = equipment.Id
         };
 
         // Act
@@ -34,7 +42,7 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         // Assert - Response
         result.ShouldNotBeNull();
         result.PersonId.ShouldBe(-1);
-        result.EquipmentId.ShouldBe(-1);
+        result.EquipmentId.ShouldBe(equipment.Id);
         result.Id.ShouldNotBe(0);
     }
 
@@ -62,23 +70,31 @@ public class PersonEquipmentCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // First, create a person equipment to delete
+        // First, create equipment
+        var equipmentService = scope.ServiceProvider.GetRequiredService<Explorer.Tours.API.Public.Administration.IEquipmentService>();
+        var equipment = equipmentService.Create(new EquipmentDto
+        {
+            Name = "Equipment to Delete " + Guid.NewGuid().ToString().Substring(0, 8),
+            Description = "This equipment will be deleted"
+        });
+
+        // Then create person equipment to delete
         var testEntity = new PersonEquipmentDto
         {
             PersonId = -1,
-            EquipmentId = -1
+            EquipmentId = equipment.Id
         };
         controller.Create(testEntity);
 
         // Act - Delete takes only equipmentId, personId comes from JWT token
-        var result = (OkResult)controller.Delete(-1);
+        var result = (OkResult)controller.Delete(equipment.Id);
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.PersonEquipment.FirstOrDefault(i => i.PersonId == -1 && i.EquipmentId == -1);
+        var storedEntity = dbContext.PersonEquipment.FirstOrDefault(i => i.PersonId == -1 && i.EquipmentId == equipment.Id);
         storedEntity.ShouldBeNull();
     }
     

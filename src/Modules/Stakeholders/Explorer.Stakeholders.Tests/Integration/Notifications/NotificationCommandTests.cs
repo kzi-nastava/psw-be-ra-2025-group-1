@@ -54,19 +54,24 @@ public class NotificationCommandTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        var service = scope.ServiceProvider.GetRequiredService<INotificationService>();
+        
+        // Create a new notification for this test
+        var notification = service.Create(-11, "Test notification for mark as read", NotificationTypeDto.Other);
+        
         var controller = CreateController(scope, "-11");
 
         // Act
-        var result = ((ObjectResult)controller.MarkAsRead(-1).Result)?.Value as NotificationDto;
+        var result = ((ObjectResult)controller.MarkAsRead(notification.Id).Result)?.Value as NotificationDto;
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-1);
+        result.Id.ShouldBe(notification.Id);
         result.IsRead.ShouldBeTrue();
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
-        var storedNotification = dbContext.Notifications.Find(-1L);
+        var storedNotification = dbContext.Notifications.Find(notification.Id);
         storedNotification.ShouldNotBeNull();
         storedNotification.IsRead.ShouldBeTrue();
     }
@@ -77,19 +82,25 @@ public class NotificationCommandTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        var service = scope.ServiceProvider.GetRequiredService<INotificationService>();
+        
+        // Create a notification that's already read
+        var notification = service.Create(-11, "Test notification for mark as unread", NotificationTypeDto.Other);
+        service.MarkAsRead(notification.Id); // Mark it as read first
+        
         var controller = CreateController(scope, "-11");
 
         // Act
-        var result = ((ObjectResult)controller.MarkAsUnread(-3).Result)?.Value as NotificationDto;
+        var result = ((ObjectResult)controller.MarkAsUnread(notification.Id).Result)?.Value as NotificationDto;
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-3);
+        result.Id.ShouldBe(notification.Id);
         result.IsRead.ShouldBeFalse();
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
-        var storedNotification = dbContext.Notifications.Find(-3L);
+        var storedNotification = dbContext.Notifications.Find(notification.Id);
         storedNotification.ShouldNotBeNull();
         storedNotification.IsRead.ShouldBeFalse();
     }
@@ -100,18 +111,24 @@ public class NotificationCommandTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        var service = scope.ServiceProvider.GetRequiredService<INotificationService>();
+        
+        // Create a new notification for this test
+        var notification = service.Create(-22, "Test notification for deletion", NotificationTypeDto.Other);
+        
         var controller = CreateController(scope, "-22");
 
         // Act
-        var result = (NoContentResult)controller.Delete(-4);
+        var result = controller.Delete(notification.Id);
 
         // Assert - Response
-        result.ShouldNotBeNull();
-        result.StatusCode.ShouldBe(204);
+        result.ShouldBeOfType<NoContentResult>();
+        var noContentResult = result as NoContentResult;
+        noContentResult.StatusCode.ShouldBe(204);
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
-        var storedNotification = dbContext.Notifications.Find(-4L);
+        var storedNotification = dbContext.Notifications.Find(notification.Id);
         storedNotification.ShouldBeNull();
     }
 

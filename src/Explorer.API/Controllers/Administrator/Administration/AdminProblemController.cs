@@ -110,13 +110,3 @@ public class AdminProblemController : ControllerBase
         }
     }
 }
-
-public class SetDeadlineDto
-{
-    public DateTime Deadline { get; set; }
-}
-
-public class CloseProblemDto
-{
-    public string? Comment { get; set; }
-}

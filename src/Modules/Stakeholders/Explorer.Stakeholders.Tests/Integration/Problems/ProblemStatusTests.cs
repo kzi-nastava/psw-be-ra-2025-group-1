@@ -23,19 +23,31 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
         var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
 
+        // Create a new problem for this test to avoid interference with other tests
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Test problem for status change",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+
         // Act
-        var result = service.ChangeProblemStatus(-1, -21, ProblemStatus.ResolvedByTourist, "Issue was fixed");
+        var result = service.ChangeProblemStatus(newProblem.Id, -21, ProblemStatus.ResolvedByTourist, "Issue was fixed");
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-1);
+        result.Id.ShouldBe(newProblem.Id);
         result.Status.ShouldBe(ProblemStatus.ResolvedByTourist);
         result.TouristComment.ShouldBe("Issue was fixed");
         result.ResolvedAt.ShouldNotBeNull();
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
-        var storedProblem = dbContext.Problems.Find(-1L);
+        var storedProblem = dbContext.Problems.Find(newProblem.Id);
         storedProblem.ShouldNotBeNull();
         storedProblem.Status.ShouldBe(Core.Domain.ProblemStatus.ResolvedByTourist);
         storedProblem.TouristComment.ShouldBe("Issue was fixed");
@@ -49,8 +61,20 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
         var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
 
+        // Create a new problem for this test - use TourId = -1 to avoid cross-module issues
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,  // Changed from -2 to -1 to use existing tour
+            CreatorId = -22,
+            AuthorId = -11,  // Updated to match tour -1's creator
+            Priority = 5,
+            Description = "Test problem for unresolved status",
+            Category = ProblemCategory.Maintenance,
+            CreationTime = DateTime.UtcNow
+        });
+
         // Act
-        var result = service.ChangeProblemStatus(-2, -22, ProblemStatus.Unresolved, "Still not fixed");
+        var result = service.ChangeProblemStatus(newProblem.Id, -22, ProblemStatus.Unresolved, "Still not fixed");
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -59,7 +83,7 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
-        var storedProblem = dbContext.Problems.Find(-2L);
+        var storedProblem = dbContext.Problems.Find(newProblem.Id);
         storedProblem.Status.ShouldBe(Core.Domain.ProblemStatus.Unresolved);
     }
 
@@ -70,9 +94,21 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
 
-        // Act & Assert - Tourist -23 trying to change status of problem -1 (created by -21)
+        // Create a problem owned by tourist -21
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Test problem for unauthorized access",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+
+        // Act & Assert - Tourist -23 trying to change status of problem created by -21
         Should.Throw<UnauthorizedAccessException>(() => 
-            service.ChangeProblemStatus(-1, -23, ProblemStatus.ResolvedByTourist, "I'm not the creator"));
+            service.ChangeProblemStatus(newProblem.Id, -23, ProblemStatus.ResolvedByTourist, "I'm not the creator"));
     }
 
     [Fact]
@@ -110,12 +146,24 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
 
+        // Create a problem for this test
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Test problem for access check",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+
         // Act - Tourist accessing their own problem
-        var result = service.Get(-1, -21);
+        var result = service.Get(newProblem.Id, -21);
 
         // Assert
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-1);
+        result.Id.ShouldBe(newProblem.Id);
         result.CreatorId.ShouldBe(-21);
     }
 
@@ -126,8 +174,20 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
 
-        // Act & Assert 
-        Should.Throw<UnauthorizedAccessException>(() => service.Get(-1, -23));
+        // Create a problem owned by tourist -21
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Test problem for unauthorized access",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+
+        // Act & Assert - Tourist -23 trying to access problem created by -21
+        Should.Throw<UnauthorizedAccessException>(() => service.Get(newProblem.Id, -23));
     }
 
     [Fact]
@@ -137,10 +197,23 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
         var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
+
+        // Create a problem for this test
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Test problem for deadline",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+
         var deadline = DateTime.UtcNow.AddDays(7);
 
         // Act
-        var result = service.SetAdminDeadline(-1, deadline);
+        var result = service.SetAdminDeadline(newProblem.Id, deadline);
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -149,7 +222,7 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
-        var storedProblem = dbContext.Problems.Find(-1L);
+        var storedProblem = dbContext.Problems.Find(newProblem.Id);
         storedProblem.ShouldNotBeNull();
         storedProblem.AdminDeadline.ShouldNotBeNull();
     }
@@ -160,9 +233,22 @@ public class ProblemStatusTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
+
+        // Create a problem for this test
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Test problem for past deadline",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+
         var pastDeadline = DateTime.UtcNow.AddDays(-1);
 
         // Act & Assert
-        Should.Throw<ArgumentException>(() => service.SetAdminDeadline(-1, pastDeadline));
+        Should.Throw<ArgumentException>(() => service.SetAdminDeadline(newProblem.Id, pastDeadline));
     }
 }

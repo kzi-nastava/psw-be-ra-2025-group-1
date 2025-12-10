@@ -94,9 +94,3 @@ public class TouristProblemController : ControllerBase
         }
     }
 }
-
-public class ChangeProblemStatusDto
-{
-    public ProblemStatus Status { get; set; }
-    public string? Comment { get; set; }
-}

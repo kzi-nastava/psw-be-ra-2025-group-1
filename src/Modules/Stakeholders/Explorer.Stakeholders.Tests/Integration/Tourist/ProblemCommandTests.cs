@@ -74,9 +74,23 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        
+        // Create a new problem to update
+        var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Original description",
+            Category = ProblemCategory.Safety,
+            CreationTime = DateTime.UtcNow
+        });
+        
         var updatedEntity = new ProblemDto
         {
-            Id = -1,
+            Id = newProblem.Id,
             TourId = -1,
             CreatorId = -21,
             Priority = 4,
@@ -89,12 +103,13 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-1);
+        result.Id.ShouldBe(newProblem.Id);
         result.Description.ShouldBe(updatedEntity.Description);
         result.Priority.ShouldBe(updatedEntity.Priority);
 
         // Assert - Database
-        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == -1);
+        dbContext.ChangeTracker.Clear();
+        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == newProblem.Id);
         storedEntity.ShouldNotBeNull();
         storedEntity.Description.ShouldBe(updatedEntity.Description);
     }
@@ -125,16 +140,30 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        
+        // Create a new problem to delete
+        var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Problem to delete",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
 
         // Act
-        var result = (OkResult)controller.Delete(-3);
+        var result = (OkResult)controller.Delete(newProblem.Id);
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == -3);
+        dbContext.ChangeTracker.Clear();
+        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == newProblem.Id);
         storedEntity.ShouldBeNull();
     }
 
@@ -156,6 +185,20 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        
+        // Create a new problem for this test
+        var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Problem to resolve",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+        
         var statusDto = new ChangeProblemStatusDto
         {
             Status = ProblemStatus.ResolvedByTourist,
@@ -163,17 +206,18 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
         };
 
         // Act
-        var result = ((ObjectResult)controller.ChangeStatus(-1, statusDto).Result)?.Value as ProblemDto;
+        var result = ((ObjectResult)controller.ChangeStatus(newProblem.Id, statusDto).Result)?.Value as ProblemDto;
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-1);
+        result.Id.ShouldBe(newProblem.Id);
         result.Status.ShouldBe(ProblemStatus.ResolvedByTourist);
         result.TouristComment.ShouldBe("The issue has been fixed");
         result.ResolvedAt.ShouldNotBeNull();
 
         // Assert - Database
-        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == -1);
+        dbContext.ChangeTracker.Clear();
+        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == newProblem.Id);
         storedEntity.ShouldNotBeNull();
         storedEntity.Status.ShouldBe(Core.Domain.ProblemStatus.ResolvedByTourist);
         storedEntity.TouristComment.ShouldBe("The issue has been fixed");
@@ -186,25 +230,39 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+        
+        // Create a new problem for this test
+        var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 4,
+            Description = "Problem to mark as unresolved",
+            Category = ProblemCategory.Maintenance,
+            CreationTime = DateTime.UtcNow
+        });
+        
         var statusDto = new ChangeProblemStatusDto
         {
             Status = ProblemStatus.Unresolved,
             Comment = "Still waiting for response"
         };
 
-        // Act - Using problem -7 which is open and belongs to user -21
-        var result = ((ObjectResult)controller.ChangeStatus(-7, statusDto).Result)?.Value as ProblemDto;
+        // Act
+        var result = ((ObjectResult)controller.ChangeStatus(newProblem.Id, statusDto).Result)?.Value as ProblemDto;
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-7);
+        result.Id.ShouldBe(newProblem.Id);
         result.Status.ShouldBe(ProblemStatus.Unresolved);
         result.TouristComment.ShouldBe("Still waiting for response");
         result.ResolvedAt.ShouldNotBeNull();
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
-        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == -7);
+        var storedEntity = dbContext.Problems.FirstOrDefault(i => i.Id == newProblem.Id);
         storedEntity.ShouldNotBeNull();
         storedEntity.Status.ShouldBe(Core.Domain.ProblemStatus.Unresolved);
     }
@@ -214,7 +272,21 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
     {
         // Arrange - User -22 trying to change problem created by user -21
         using var scope = Factory.Services.CreateScope();
-        var controller = new TouristProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
+        
+        // Create a problem owned by user -21
+        var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Problem for unauthorized test",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+        
+        var controller = new TouristProblemController(service)
         {
             ControllerContext = new ControllerContext
             {
@@ -229,6 +301,7 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
                 }
             }
         };
+        
         var statusDto = new ChangeProblemStatusDto
         {
             Status = ProblemStatus.ResolvedByTourist,
@@ -236,7 +309,7 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
         };
 
         // Act
-        var result = controller.ChangeStatus(-1, statusDto).Result;
+        var result = controller.ChangeStatus(newProblem.Id, statusDto).Result;
 
         // Assert
         result.ShouldBeOfType<ForbidResult>();
@@ -245,9 +318,26 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
     [Fact]
     public void Change_status_fails_for_non_open_problem()
     {
-        // Arrange - Problem -4 is already resolved
+        // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
+        var service = scope.ServiceProvider.GetRequiredService<IProblemService>();
+        
+        // Create a problem and mark it as resolved
+        var newProblem = service.Create(new ProblemDto
+        {
+            TourId = -1,
+            CreatorId = -21,
+            AuthorId = -11,
+            Priority = 3,
+            Description = "Problem already resolved",
+            Category = ProblemCategory.Other,
+            CreationTime = DateTime.UtcNow
+        });
+        
+        // First, mark it as resolved
+        service.ChangeProblemStatus(newProblem.Id, -21, ProblemStatus.ResolvedByTourist, "First resolution");
+        
         var statusDto = new ChangeProblemStatusDto
         {
             Status = ProblemStatus.ResolvedByTourist,
@@ -255,7 +345,7 @@ public class ProblemCommandTests : BaseStakeholdersIntegrationTest
         };
 
         // Act & Assert
-        Should.Throw<InvalidOperationException>(() => controller.ChangeStatus(-4, statusDto));
+        Should.Throw<InvalidOperationException>(() => controller.ChangeStatus(newProblem.Id, statusDto));
     }
 
     private static TouristProblemController CreateController(IServiceScope scope)

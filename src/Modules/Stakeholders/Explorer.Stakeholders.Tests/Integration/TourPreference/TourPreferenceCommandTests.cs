@@ -156,6 +156,8 @@ namespace Explorer.Stakeholders.Tests.Integration.TourPreference
             // Arrange
             using var scope = Factory.Services.CreateScope();
             var controller = CreateController(scope);
+            var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
+            
             // Creating a fake identity because the method requires the user to be logged in
             var identity = new ClaimsIdentity(new[]
             {
@@ -163,6 +165,15 @@ namespace Explorer.Stakeholders.Tests.Integration.TourPreference
                 new Claim(ClaimTypes.Role, "tourist")
             }, "TestAuthentication");
             controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
+            
+            // Clean up any existing preference for user -22 (from previous test runs)
+            var existingPreference = dbContext.TourPreferences.FirstOrDefault(tp => tp.UserId == -22);
+            if (existingPreference != null)
+            {
+                dbContext.TourPreferences.Remove(existingPreference);
+                dbContext.SaveChanges();
+            }
+            
             var newEntity = new TourPreferenceDto
             {
                 UserId = -22,

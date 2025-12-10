@@ -47,4 +47,43 @@ public class ProblemMessageService : IProblemMessageService
         var messages = _problemMessageRepository.GetByProblemId(problemId);
         return messages.Select(_mapper.Map<ProblemMessageDto>).ToList();
     }
+
+    public ProblemMessageDto GetById(long id)
+    {
+        var message = _problemMessageRepository.Get(id);
+        if (message == null)
+            throw new NotFoundException($"Message with id {id} not found.");
+
+        return _mapper.Map<ProblemMessageDto>(message);
+    }
+
+    public ProblemMessageDto UpdateMessage(long messageId, long authorId, string newContent, bool isAdmin = false)
+    {
+        if (string.IsNullOrWhiteSpace(newContent))
+            throw new ArgumentException("Message content cannot be empty.");
+
+        var message = _problemMessageRepository.Get(messageId);
+        if (message == null)
+            throw new NotFoundException($"Message with id {messageId} not found.");
+
+        if (!isAdmin && message.AuthorId != authorId)
+            throw new UnauthorizedAccessException("Only the author or admin can update this message.");
+
+        message.UpdateContent(newContent);
+        var updatedMessage = _problemMessageRepository.Update(message);
+
+        return _mapper.Map<ProblemMessageDto>(updatedMessage);
+    }
+
+    public void DeleteMessage(long messageId, long authorId, bool isAdmin = false)
+    {
+        var message = _problemMessageRepository.Get(messageId);
+        if (message == null)
+            throw new NotFoundException($"Message with id {messageId} not found.");
+
+        if (!isAdmin && message.AuthorId != authorId)
+            throw new UnauthorizedAccessException("Only the author or admin can delete this message.");
+
+        _problemMessageRepository.Delete(message);
+    }
 }

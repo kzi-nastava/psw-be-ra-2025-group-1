@@ -7,7 +7,7 @@ public class ProblemMessage : Entity
     public long ProblemId { get; init; }
     public long AuthorId { get; init; }
     public DateTime CreatedAt { get; init; }
-    public string Content { get; init; }
+    public string Content { get; private set; }
 
     public ProblemMessage(long problemId, long authorId, string content)
     {
@@ -27,5 +27,13 @@ public class ProblemMessage : Entity
     private ProblemMessage() 
     { 
         Content = string.Empty;
+    }
+
+    public void UpdateContent(string newContent)
+    {
+        if (string.IsNullOrWhiteSpace(newContent))
+            throw new ArgumentException("Content cannot be empty.");
+
+        Content = newContent;
     }
 }
