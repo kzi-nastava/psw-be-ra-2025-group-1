@@ -1,10 +1,11 @@
 using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using Explorer.Stakeholders.API.Public;
+using System;
 
 namespace Explorer.Tours.Core.UseCases;
 
@@ -144,5 +145,66 @@ public class TourExecutionService : ITourExecutionService
         }
 
         return false;
+    }
+
+    public KeypointDto UnlockKeypoint(long executionId)
+    {
+        if (executionId == null)
+            throw new InvalidOperationException("Execution not found.");
+
+        var execution = _tourExecutionRepository.Get(executionId);
+        var tour = _tourRepository.Get(execution.TourId);
+
+        var keypoint = tour.Keypoints
+         .FirstOrDefault(kp => kp.SequenceNumber == execution.CurrentKeypointSequence);
+
+        if (keypoint == null)
+            throw new InvalidOperationException("No keypoint available to unlock");
+
+        var keypointProgress = execution.KeypointProgresses.FirstOrDefault(progress => progress.KeypointId == keypoint.Id);
+
+        // Check if there is a KeypointProgress for the reached keypoint
+        if (keypointProgress == null)
+            throw new InvalidOperationException("Keypoint wasn't reached yet!");
+
+        // Check if that keypoint is already unlocked
+        if (keypointProgress.IsCompleted())
+            throw new InvalidOperationException("Keypoint was already unlocked!");
+
+        // Else
+        keypointProgress.MarkCompleted();
+
+        return new KeypointDto
+        {
+            Id = keypoint.Id,
+            SequenceNumber = keypoint.SequenceNumber,
+            Title = keypoint.Title,
+            Description = keypoint.Description,
+            ImageUrl = keypoint.ImageUrl,
+            Latitude = keypoint.Latitude,
+            Longitude = keypoint.Longitude,
+            Secret = keypoint.Secret
+        };
+    }
+
+    public KeypointViewDto GetNextKeypointInfo(TourExecutionDto executionDto)
+    {
+        var execution = _mapper.Map<TourExecution>(executionDto);
+        var tour = _tourRepository.Get(execution.TourId);
+        var nextKeypoint = tour.Keypoints
+            .FirstOrDefault(kp => kp.SequenceNumber == execution.CurrentKeypointSequence);
+        if (nextKeypoint == null)
+            throw new InvalidOperationException("No next keypoint available");
+
+        return new KeypointViewDto
+        {
+            Id = nextKeypoint.Id,
+            SequenceNumber = nextKeypoint.SequenceNumber,
+            Title = nextKeypoint.Title,
+            Description = nextKeypoint.Description,
+            ImageUrl = nextKeypoint.ImageUrl,
+            Latitude = nextKeypoint.Latitude,
+            Longitude = nextKeypoint.Longitude
+        };
     }
 }

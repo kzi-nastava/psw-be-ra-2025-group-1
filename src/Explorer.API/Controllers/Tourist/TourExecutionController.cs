@@ -1,4 +1,5 @@
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Authorization;
@@ -137,5 +138,52 @@ public class TourExecutionController : ControllerBase
             throw new UnauthorizedAccessException("Tourist ID not found in token");
         
         return long.Parse(personIdClaim);
+    }
+
+    [HttpPost("unlock-keypoint")]
+    public ActionResult<KeypointDto> UnlockKeypoint([FromBody] long tourExecutionId)
+    {
+        var touristId = GetTouristId();
+        try
+        {
+            var keypointInfo = _tourExecutionService.UnlockKeypoint(tourExecutionId);
+            return Ok(keypointInfo);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+
+    [HttpGet("next-keypoint-info")]
+    public ActionResult<KeypointViewDto> GetNextKeypoint()
+    {
+        var touristId = GetTouristId();
+        try
+        {
+            var execution = _tourExecutionService.GetActiveTour(touristId);
+            var keypointInfo = _tourExecutionService.GetNextKeypointInfo(execution);
+            return Ok(keypointInfo);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
     }
 }

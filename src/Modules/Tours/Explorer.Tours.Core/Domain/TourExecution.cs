@@ -1,5 +1,4 @@
 using Explorer.BuildingBlocks.Core.Domain;
-
 namespace Explorer.Tours.Core.Domain;
 
 public enum TourExecutionStatus

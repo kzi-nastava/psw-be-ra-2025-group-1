@@ -11,4 +11,6 @@ public interface ITourExecutionService
     List<TourExecutionDto> GetTouristHistory(long touristId);
     bool CanLeaveReview(long touristId, long tourId);
     bool CheckIfKeypointReached(long touristId, long executionId);
+    KeypointDto UnlockKeypoint(long executionId);
+    KeypointViewDto GetNextKeypointInfo(TourExecutionDto executionDto);
 }
