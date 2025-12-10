@@ -1,6 +1,5 @@
 using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
-using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
@@ -13,13 +12,13 @@ public class TourExecutionService : ITourExecutionService
 {
     private readonly ITourExecutionRepository _tourExecutionRepository;
     private readonly ITourRepository _tourRepository;
-    private readonly IUserLocationService _userLocationService;
+    private readonly IUserLocationRepository _userLocationService;
     private readonly IMapper _mapper;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
-        IUserLocationService userLocationService,
+        IUserLocationRepository userLocationService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;

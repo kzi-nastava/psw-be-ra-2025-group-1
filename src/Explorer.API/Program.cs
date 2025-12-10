@@ -7,6 +7,8 @@ using Explorer.Stakeholders.Core.UseCases;
 using Explorer.Stakeholders.Infrastructure.Repositories;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.UseCases;
+using Explorer.Tours.Infrastructure.Database.Repositories;
+using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 
 // Create wwwroot for images
 var wwwroot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -40,6 +42,7 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<ITourExecutionService, TourExecutionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<Explorer.Tours.Core.Domain.RepositoryInterfaces.IUserLocationRepository, UserLocationAdapter>(); // So there is no link between modules
 builder.Services.AddScoped<DemoSeeder>();
 
 builder.Services.RegisterModules();
