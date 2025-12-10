@@ -39,13 +39,14 @@ public class TourExecutionController : ControllerBase
         }
     }
 
+    // If the location is near the next keypoint, mark it as reached
     [HttpPost("{executionId:long}/check-location")]
     public ActionResult<bool> CheckTouristLocation(long executionId)
     {
         var touristId = GetTouristId();
         try
         {
-            bool result = _tourExecutionService.CheckIfKeypointReached(touristId, executionId);
+            bool result = _tourExecutionService.TryReachKeypoint(touristId, executionId);
             return Ok(result);
         }
         catch (NotFoundException ex)

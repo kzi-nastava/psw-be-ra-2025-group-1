@@ -101,7 +101,7 @@ public class TourExecutionService : ITourExecutionService
         return lastExecution.CanLeaveReview();
     }
 
-    public bool CheckIfKeypointReached(long touristId, long executionId)
+    public bool TryReachKeypoint(long touristId, long executionId)
     {
         var execution = _tourExecutionRepository.Get(executionId);
         var userLocation = _userLocationService.GetByUserId(touristId);
@@ -136,7 +136,7 @@ public class TourExecutionService : ITourExecutionService
 
         if (Math.Sqrt(longDiff * longDiff - latDiff * latDiff) < nearbyDistance)
         {
-            // Mark keypoint as reached
+            // Mark keypoint as reached and create a new Keypoint Progress for it
             if (execution.ReachKeypoint(nextKeypoint.Id, tour.Keypoints.Count))
             {
                 _tourExecutionRepository.Update(execution);
