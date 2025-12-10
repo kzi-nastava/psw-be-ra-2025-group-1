@@ -2,6 +2,7 @@
 using Explorer.API.Controllers.Author;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -113,6 +114,46 @@ public class TourCommandTests : BaseToursIntegrationTest
         // Assert - Database
         var afterDelete = dbContext.Tour.FirstOrDefault(i => i.Id == id);
         afterDelete.ShouldBeNull();
+    }
+
+
+    [Fact]
+    public void Adds_equipment_to_tour()
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        var tour = new TourDto
+        {
+            CreatorId = 1,
+            Title = "Equipment Tour",
+            Description = "Tour for equipment test",
+            Difficulty = 2,
+            Status = TourStatusDTO.Draft,
+            Price = 75.0
+        };
+
+        var created = ((ObjectResult)controller.Create(tour).Result)?.Value as TourDto;
+        created.ShouldNotBeNull();
+        tour.Id = created.Id;
+
+        var equip = new Equipment("Test Backpack", "Test equipment for testing equipment binding and removal from tours");
+        dbContext.Equipment.Add(equip);
+        dbContext.SaveChanges();
+
+        // Act
+        var response = controller.AddEquipment(tour.Id, equip.Id);
+
+        // Assert – Response
+        response.ShouldBeOfType<OkResult>();
+
+        // Assert – Database
+        var stored = dbContext.Tour
+            .Include(t => t.Equipment)
+            .First(t => t.Id == tour.Id);
+
+        stored.Equipment.ShouldContain(e => e.Id == equip.Id);
     }
 
 }
