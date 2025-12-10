@@ -10,4 +10,5 @@ public interface ITourExecutionService
     TourExecutionDto AbandonTour(long touristId, long executionId);
     List<TourExecutionDto> GetTouristHistory(long touristId);
     bool CanLeaveReview(long touristId, long tourId);
+    bool CheckIfKeypointReached(long touristId, long executionId);
 }

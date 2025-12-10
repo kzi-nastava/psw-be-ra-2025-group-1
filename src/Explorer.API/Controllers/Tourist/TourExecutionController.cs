@@ -38,6 +38,29 @@ public class TourExecutionController : ControllerBase
         }
     }
 
+    [HttpPost("{executionId:long}/check-location")]
+    public ActionResult<bool> CheckTouristLocation(long executionId)
+    {
+        var touristId = GetTouristId();
+        try
+        {
+            bool result = _tourExecutionService.CheckIfKeypointReached(touristId, executionId);
+            return Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+
     [HttpGet("active")]
     public ActionResult<TourExecutionDto> GetActiveTour()
     {

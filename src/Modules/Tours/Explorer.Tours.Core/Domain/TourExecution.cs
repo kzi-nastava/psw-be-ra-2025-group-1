@@ -59,13 +59,13 @@ public class TourExecution : Entity
         UpdateLastActivity();
     }
 
-    public void ReachKeypoint(long keypointId, int totalKeypoints)
+    public bool ReachKeypoint(long keypointId, int totalKeypoints)
     {
         if (!IsActive())
             throw new InvalidOperationException("Can only reach keypoints on an active tour");
 
         if (KeypointProgresses.Any(kp => kp.KeypointId == keypointId))
-            throw new InvalidOperationException("Keypoint already reached");
+            return false;
 
         var progress = new KeypointProgress(keypointId);
         KeypointProgresses.Add(progress);
@@ -78,6 +78,7 @@ public class TourExecution : Entity
         {
             Complete();
         }
+        return true;
     }
 
     public void Complete()

@@ -4,6 +4,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Stakeholders.API.Public;
 
 namespace Explorer.Tours.Core.UseCases;
 
@@ -11,15 +12,18 @@ public class TourExecutionService : ITourExecutionService
 {
     private readonly ITourExecutionRepository _tourExecutionRepository;
     private readonly ITourRepository _tourRepository;
+    private readonly IUserLocationService _userLocationService;
     private readonly IMapper _mapper;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
+        IUserLocationService userLocationService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
+        _userLocationService = userLocationService;
         _mapper = mapper;
     }
 
@@ -94,5 +98,51 @@ public class TourExecutionService : ITourExecutionService
             return false;
 
         return lastExecution.CanLeaveReview();
+    }
+
+    public bool CheckIfKeypointReached(long touristId, long executionId)
+    {
+        var execution = _tourExecutionRepository.Get(executionId);
+        var userLocation = _userLocationService.GetByUserId(touristId);
+
+        // ---------- Checks ---------
+        if (userLocation == null)
+            throw new NotFoundException("User location not found. Please update your location first.");
+
+        if (execution == null)
+            throw new NotFoundException($"Tour execution with ID {executionId} not found");
+
+        if (execution.TouristId != touristId)
+            throw new UnauthorizedAccessException("Cannot check location for someone else's tour");
+
+        if (!execution.IsActive())
+            throw new InvalidOperationException("Tour execution is not active");
+
+        var tour = _tourRepository.Get(execution.TourId);
+        if (tour == null)
+            throw new NotFoundException("Tour not found");
+
+        // Get the next keypoint based on CurrentKeypointSequence
+        var nextKeypoint = tour.Keypoints
+            .FirstOrDefault(k => k.SequenceNumber == execution.CurrentKeypointSequence);
+
+        if (nextKeypoint == null)
+            return false; // No more keypoints to reach
+
+        const double nearbyDistance = 0.00018; // approximately 20 meters
+        double longDiff = Math.Abs(userLocation.Longitude - nextKeypoint.Longitude);
+        double latDiff = Math.Abs(userLocation.Latitude - nextKeypoint.Latitude);
+
+        if (Math.Sqrt(longDiff * longDiff - latDiff * latDiff) < nearbyDistance)
+        {
+            // Mark keypoint as reached
+            if (execution.ReachKeypoint(nextKeypoint.Id, tour.Keypoints.Count))
+            {
+                _tourExecutionRepository.Update(execution);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
