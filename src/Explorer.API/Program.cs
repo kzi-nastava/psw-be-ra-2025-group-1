@@ -13,8 +13,8 @@ if (!Directory.Exists(wwwroot))
 
 var builder = WebApplication.CreateBuilder(args);
 
-//Set test database environment variables in development - COMMENTED OUT FOR MAIN DB ACCESS
- if (builder.Environment.IsDevelopment())
+// Set test database environment variables in development - COMMENTED OUT FOR MAIN DB ACCESS
+if (builder.Environment.IsDevelopment())
  {
     Environment.SetEnvironmentVariable("DATABASE_SCHEMA", "explorer-v1-test");
     Environment.SetEnvironmentVariable("DATABASE_HOST", "localhost");
