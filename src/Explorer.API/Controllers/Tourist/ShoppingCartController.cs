@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Explorer.API.Controllers.Tourist
 {
-    [Authorize]
+    [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/cart")]
     [ApiController]
     public class ShoppingCartController : ControllerBase
@@ -29,14 +29,23 @@ namespace Explorer.API.Controllers.Tourist
         {
             long touristId = long.Parse(User.FindFirst("personId")!.Value);
             _service.AddToCart(touristId, tourId);
-            return Ok("Added to cart.");
+            return Ok(new { message = "Tour added to cart successfully" });
         }
+
         [HttpDelete("remove/{tourId}")]
         public IActionResult RemoveFromCart(long tourId)
         {
             long touristId = long.Parse(User.FindFirst("personId")!.Value);
             _service.RemoveFromCart(touristId, tourId);
-            return Ok("Removed from cart.");
+            return Ok(new { message = "Tour removed from cart successfully" });
+        }
+
+        [HttpPost("checkout")]
+        public IActionResult Checkout()
+        {
+            long touristId = long.Parse(User.FindFirst("personId")!.Value);
+            _service.Checkout(touristId);
+            return Ok(new { message = "Checkout successful. Tours purchased!" });
         }
     }
 }

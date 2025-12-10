@@ -34,8 +34,8 @@ public static class ToursStartup
         services.AddScoped<IMeetUpService, MeetUpService>();
         services.AddScoped<IPersonEquipmentService, PersonEquipmentService>(); //dodala sam
         services.AddScoped<ITourBrowsingService, TourBrowsingService>();
-
         services.AddScoped<IShoppingCartService, ShoppingCartService>();
+        services.AddScoped<ITourExecutionService, TourExecutionService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -45,8 +45,9 @@ public static class ToursStartup
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
-        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); //dodala sam
+        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>();
         services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
+        services.AddScoped<ITourPurchaseRepository, TourPurchaseDbRepository>();
 
 
 

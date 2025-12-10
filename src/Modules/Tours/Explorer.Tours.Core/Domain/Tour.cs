@@ -13,7 +13,7 @@ public enum TourStatus
     Published,
     Archived
 }
-public class Tour : Entity
+public class Tour : AggregateRoot
 {
     public long CreatorId { get; private set; }
     public string Title { get; private set; }

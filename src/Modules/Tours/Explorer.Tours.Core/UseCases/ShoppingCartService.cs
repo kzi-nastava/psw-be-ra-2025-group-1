@@ -2,6 +2,7 @@
 using Explorer.Tours.Core.Domain.Shopping;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.Core.Domain;
 
 
 namespace Explorer.Tours.Core.UseCases
@@ -11,11 +12,16 @@ namespace Explorer.Tours.Core.UseCases
     {
         private readonly IShoppingCartRepository _cartRepo;
         private readonly ITourRepository _tourRepo;
+        private readonly ITourPurchaseRepository _purchaseRepo;
 
-        public ShoppingCartService(IShoppingCartRepository cartRepo, ITourRepository tourRepo)
+        public ShoppingCartService(
+            IShoppingCartRepository cartRepo, 
+            ITourRepository tourRepo,
+            ITourPurchaseRepository purchaseRepo)
         {
             _cartRepo = cartRepo;
             _tourRepo = tourRepo;
+            _purchaseRepo = purchaseRepo;
         }
 
         public void AddToCart(long touristId, long tourId)
@@ -29,23 +35,25 @@ namespace Explorer.Tours.Core.UseCases
             if (cart == null)
             {
                 cart = new ShoppingCart(touristId);
-                _cartRepo.Create(cart);
+                cart = _cartRepo.Create(cart);
             }
 
             cart.AddItem(tour.Id, tour.Title, (decimal)tour.Price);
             _cartRepo.Update(cart);
         }
 
-
         public ShoppingCartDto GetCart(long touristId)
         {
             var cart = _cartRepo.GetByTouristId(touristId);
-            if (cart == null) return new ShoppingCartDto
+            if (cart == null) 
             {
-                TouristId = touristId,
-                Items = new List<OrderItemDto>(),
-                TotalPrice = 0
-            };
+                return new ShoppingCartDto
+                {
+                    TouristId = touristId,
+                    Items = new List<OrderItemDto>(),
+                    TotalPrice = 0
+                };
+            }
 
             return new ShoppingCartDto
             {
@@ -67,6 +75,30 @@ namespace Explorer.Tours.Core.UseCases
             if (cart == null) return;
 
             cart.RemoveItem(tourId);
+            _cartRepo.Update(cart);
+        }
+
+        public void Checkout(long touristId)
+        {
+            var cart = _cartRepo.GetByTouristId(touristId);
+            if (cart == null || !cart.Items.Any())
+                throw new InvalidOperationException("Cart is empty");
+
+            foreach (var item in cart.Items)
+            {
+                // Check if already purchased
+                if (_purchaseRepo.HasPurchased(touristId, item.TourId))
+                    continue;
+
+                var purchase = new TourPurchase(touristId, item.TourId, item.Price);
+                _purchaseRepo.Create(purchase);
+            }
+
+            // Clear the cart after purchase
+            foreach (var item in cart.Items.ToList())
+            {
+                cart.RemoveItem(item.TourId);
+            }
             _cartRepo.Update(cart);
         }
     }
