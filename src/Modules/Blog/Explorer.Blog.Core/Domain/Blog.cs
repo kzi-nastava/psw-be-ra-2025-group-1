@@ -80,17 +80,23 @@ public class Blog : AggregateRoot
 
     public Comment AddComment(long userId, string content) // Dodavanje komentara na blog
     {
-        if (Status != BlogStatus.Published)
+        if (Status == BlogStatus.Draft || Status == BlogStatus.Closed || Status == BlogStatus.Archived)
         {
-            throw new InvalidOperationException("Comments can only be added to published blogs.");
+            throw new InvalidOperationException("Comments can only be added to active or published blogs.");
         }
         var comment = new Comment(userId, content);
         Comments.Add(comment);
+
+        UpdateStatusByEngagement();
+
         return comment;
     }
 
     public Comment UpdateComment(long userId, long commentId, string content) // Ažuriranje komentara na blog
     {
+        if (Status == BlogStatus.Closed)
+            throw new InvalidOperationException("Cannot modify comments on a closed blog.");
+
         var comment = Comments.FirstOrDefault(c => c.Id == commentId);
 
         if (comment == null)
@@ -108,6 +114,9 @@ public class Blog : AggregateRoot
 
     public void DeleteComment(long commentId, long userId)
     {
+        if (Status == BlogStatus.Closed)
+            throw new InvalidOperationException("Cannot delete comments on a closed blog.");
+
         var comment = Comments.FirstOrDefault(c => c.Id == commentId);
         if (comment == null)
         {
@@ -118,11 +127,13 @@ public class Blog : AggregateRoot
             throw new UnauthorizedAccessException("User is not authorized to delete this comment.");
         }
         Comments.Remove(comment);
+
+        UpdateStatusByEngagement();
     }
 
     public Vote AddVote(long userId, VoteType voteType)
     {
-        if (Status != BlogStatus.Published)
+        if (!IsInteractive())
         {
             throw new InvalidOperationException("Only published blogs can receive votes.");
         }
@@ -137,15 +148,24 @@ public class Blog : AggregateRoot
 
         var vote = new Vote(userId, voteType);
         Votes.Add(vote);
+
+        UpdateStatusByEngagement();
+
         return vote;
     }
 
     public void RemoveVote(long userId)
     {
+        if (IsReadOnly())
+        {
+            throw new InvalidOperationException("Votes cannot be changed on a closed blog.");
+        }
+
         var vote = Votes.FirstOrDefault(v => v.UserId == userId);
         if (vote != null)
         {
             Votes.Remove(vote);
+            UpdateStatusByEngagement();
         }
     }
 
@@ -153,6 +173,51 @@ public class Blog : AggregateRoot
     public int GetVoteScore()
     {
         return Votes.Sum(v => (int)v.VoteType);
+    }
+
+
+    private void UpdateStatusByEngagement()
+    {
+        // Draft/Archived/Closed ne diramo ovde – rucno se prelazi u ta stanja
+        if (Status == BlogStatus.Draft || Status == BlogStatus.Archived || Status == BlogStatus.Closed)
+        {
+            return;
+        }
+
+        var score = GetVoteScore();
+        var commentsCount = Comments.Count;
+
+        if (score < -10)
+        {
+            Status = BlogStatus.Closed;
+        }
+        else if (score > 500 && commentsCount > 30)
+        {
+            Status = BlogStatus.Famous;
+        }
+        else if (score > 100 || commentsCount > 10)
+        {
+            Status = BlogStatus.Active;
+        }
+        else
+        {
+            Status = BlogStatus.Published;      
+        }
+
+        LastModifiedDate = DateTime.UtcNow;
+    }
+
+
+    private bool IsReadOnly()
+    {
+        return Status == BlogStatus.Closed || Status == BlogStatus.Archived;
+    }
+
+    private bool IsInteractive()
+    {
+        return Status == BlogStatus.Published
+            || Status == BlogStatus.Active
+            || Status == BlogStatus.Famous;
     }
 
 }
