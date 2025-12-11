@@ -37,7 +37,7 @@ public static class ToursStartup
         services.AddScoped<ITransportTimeService, TransportTimeService>();
         services.AddScoped<IPersonEquipmentService, PersonEquipmentService>(); //dodala sam
         services.AddScoped<ITourBrowsingService, TourBrowsingService>();
-
+        services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
         services.AddScoped<IShoppingCartService, ShoppingCartService>();
     }
 
@@ -52,7 +52,7 @@ public static class ToursStartup
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); //dodala sam
         services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
-
+        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
 
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));

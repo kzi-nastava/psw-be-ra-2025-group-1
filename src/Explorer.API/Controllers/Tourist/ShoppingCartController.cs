@@ -43,6 +43,15 @@ namespace Explorer.API.Controllers.Tourist
             var updatedCart = _service.GetCart(touristId);
             return Ok(updatedCart);
         }
+        
+        [HttpPost("checkout")]
+        public ActionResult<List<TourPurchaseTokenDto>> Checkout()
+        {
+            long touristId = long.Parse(User.FindFirst("personId")!.Value);
 
+            var tokens = _service.Checkout(touristId);
+
+            return Ok(tokens);
+        }
     }
 }
