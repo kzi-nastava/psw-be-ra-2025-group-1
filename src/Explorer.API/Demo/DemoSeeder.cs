@@ -1,6 +1,7 @@
 ﻿using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
 
 namespace Explorer.API.Demo
@@ -11,13 +12,15 @@ namespace Explorer.API.Demo
         private readonly IEquipmentService _equipmentService;
         private readonly IFacilityService _facilityService;
         private readonly ITourService _tourService;
+        private readonly ITourExecutionService _tourExecutionService;
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService)
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, ITourExecutionService tourExecution)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
             _facilityService = facilityService;
             _tourService = tourService;
+            _tourExecutionService = tourExecution;
         }
 
         public void Seed()
@@ -28,7 +31,8 @@ namespace Explorer.API.Demo
             SeedEquipment();
             SeedFacilities();
             SeedTours();
-            //SeedKeypoints();
+            SeedKeypoints();
+            SeedTourExecution();
         }
 
         private void SeedAdmin()
@@ -395,5 +399,23 @@ namespace Explorer.API.Demo
             _tourService.AddKeypoint(tour6Id, t6_kp1, author3Id);
         }
 
+        private void SeedTourExecution()
+        {
+            long tour1Id = 1;
+            long tourist2Id = 2;
+
+            TourExecutionDto tourExecution = new TourExecutionDto()
+            {
+                TouristId = tourist2Id,
+                TourId = tour1Id,
+                Status = TourExecutionStatusDto.InProgress,
+                StartTime = DateTime.UtcNow.AddHours(-2), // Started 2 hours ago
+                EndTime = null,
+                LastActivity = DateTime.UtcNow.AddMinutes(-15), // Last activity 15 minutes ago
+                PercentageCompleted = 33.33 // Completed 1 out of 3 keypoints
+            };
+
+            _tourExecutionService.Create(tourExecution);
+        }
     }
 }

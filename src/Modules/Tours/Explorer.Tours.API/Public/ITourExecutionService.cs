@@ -13,4 +13,5 @@ public interface ITourExecutionService
     bool TryReachKeypoint(long touristId, long executionId);
     KeypointDto UnlockKeypoint(long executionId);
     KeypointViewDto GetNextKeypointInfo(TourExecutionDto executionDto);
+    TourExecutionDto Create(TourExecutionDto tourExecutionDto);
 }

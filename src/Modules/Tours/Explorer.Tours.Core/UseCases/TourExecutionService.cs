@@ -204,4 +204,19 @@ public class TourExecutionService : ITourExecutionService
             Longitude = nextKeypoint.Longitude
         };
     }
+
+    public TourExecutionDto Create(TourExecutionDto tourExecutionDto)
+    {
+        if (_tourExecutionRepository.Get(tourExecutionDto.Id) != null)
+        {
+            throw new EntityValidationException("TourExecution with this ID already exists.");
+        }
+        var execution = new TourExecution
+        (
+            tourExecutionDto.TouristId,
+            tourExecutionDto.TourId
+        );
+        var result = _tourExecutionRepository.Create(execution);
+        return _mapper.Map<TourExecutionDto>(result);
+    }
 }
