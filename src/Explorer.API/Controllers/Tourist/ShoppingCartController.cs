@@ -1,6 +1,7 @@
 ﻿using Explorer.Tours.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Explorer.Tours.API.Dtos;
 
 namespace Explorer.API.Controllers.Tourist
 {
