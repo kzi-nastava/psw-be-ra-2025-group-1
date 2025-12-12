@@ -2,6 +2,7 @@ using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Infrastructure.Authentication;
+using Explorer.Tours.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,10 +14,12 @@ namespace Explorer.API.Controllers.Administrator.Administration;
 public class AdminProblemController : ControllerBase
 {
     private readonly IProblemService _problemService;
+    private readonly ITourService _tourService;
 
-    public AdminProblemController(IProblemService problemService)
+    public AdminProblemController(IProblemService problemService, ITourService tourService)
     {
         _problemService = problemService;
+        _tourService = tourService;
     }
 
     [HttpGet]
@@ -97,7 +100,16 @@ public class AdminProblemController : ControllerBase
         try
         {
             var adminId = User.PersonId();
+            
+            // Get problem to access TourId
+            var problem = _problemService.GetByIdForAdmin(id);
+            
+            // Archive the tour (cross-module operation happens at controller level)
+            _tourService.ArchiveTour(problem.TourId);
+            
+            // Handle problem penalization (notifications, status change)
             _problemService.PenalizeAuthor(id, adminId);
+            
             return Ok(new { message = "Author penalized and tour archived successfully." });
         }
         catch (KeyNotFoundException ex)

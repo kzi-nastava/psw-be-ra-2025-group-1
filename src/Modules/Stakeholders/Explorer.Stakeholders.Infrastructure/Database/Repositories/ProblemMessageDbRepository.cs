@@ -1,16 +1,16 @@
 using Explorer.BuildingBlocks.Core.Exceptions;
-using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Explorer.Tours.Infrastructure.Database.Repositories;
+namespace Explorer.Stakeholders.Infrastructure.Database.Repositories;
 
 public class ProblemMessageDbRepository : IProblemMessageRepository
 {
-    protected readonly ToursContext DbContext;
+    protected readonly StakeholdersContext DbContext;
     private readonly DbSet<ProblemMessage> _dbSet;
 
-    public ProblemMessageDbRepository(ToursContext dbContext)
+    public ProblemMessageDbRepository(StakeholdersContext dbContext)
     {
         DbContext = dbContext;
         _dbSet = DbContext.Set<ProblemMessage>();

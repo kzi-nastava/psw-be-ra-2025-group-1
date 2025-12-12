@@ -1,7 +1,7 @@
-using Explorer.Tours.Core.Domain;
+using Explorer.Stakeholders.Core.Domain;
 using Shouldly;
 
-namespace Explorer.Tours.Tests.Unit.Domain;
+namespace Explorer.Stakeholders.Tests.Unit.Domain;
 
 public class ProblemMessageTests
 {

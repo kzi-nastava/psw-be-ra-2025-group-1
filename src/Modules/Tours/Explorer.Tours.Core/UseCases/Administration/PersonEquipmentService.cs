@@ -86,7 +86,7 @@ public class PersonEquipmentService : IPersonEquipmentService
         }
         else
         {
-            var equipment = _equipmentRepository.Get(personEquipment.EquipmentId);
+            //var equipment = _equipmentRepository.Get(personEquipment.EquipmentId);
             if (equipment == null)
             {
                 throw new NotFoundException($"Equipment with ID {personEquipment.EquipmentId} not found");

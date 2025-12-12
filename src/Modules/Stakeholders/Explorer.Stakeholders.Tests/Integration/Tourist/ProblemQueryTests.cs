@@ -196,7 +196,9 @@ public class ProblemQueryTests : BaseStakeholdersIntegrationTest
 
     private static TouristProblemController CreateController(IServiceScope scope)
     {
-        return new TouristProblemController(scope.ServiceProvider.GetRequiredService<IProblemService>())
+        return new TouristProblemController(
+            scope.ServiceProvider.GetRequiredService<IProblemService>(),
+            scope.ServiceProvider.GetRequiredService<Explorer.Tours.API.Public.Administration.ITourService>())
         {
             ControllerContext = new ControllerContext
             {

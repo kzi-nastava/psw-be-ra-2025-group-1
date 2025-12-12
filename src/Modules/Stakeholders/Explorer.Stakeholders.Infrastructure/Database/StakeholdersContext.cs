@@ -14,6 +14,7 @@ public class StakeholdersContext : DbContext
     public DbSet<Rating> Ratings { get; set; }
     public DbSet<UserLocation> UserLocations { get; set; }
     public DbSet<Problem> Problems { get; set; }
+    public DbSet<ProblemMessage> ProblemMessages { get; set; }
     public DbSet<Notification> Notifications { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
@@ -52,6 +53,7 @@ public class StakeholdersContext : DbContext
         });
 
         ConfigureProblems(modelBuilder);
+        ConfigureProblemMessages(modelBuilder);
         ConfigureNotifications(modelBuilder);
     }
 
@@ -114,6 +116,24 @@ public class StakeholdersContext : DbContext
             cfg.HasIndex(p => p.AuthorId);
             cfg.HasIndex(p => p.Status);
             cfg.HasIndex(p => p.CreationTime);
+        });
+    }
+
+    private static void ConfigureProblemMessages(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ProblemMessage>(cfg =>
+        {
+            cfg.ToTable("ProblemMessages");
+            cfg.HasKey(pm => pm.Id);
+
+            cfg.Property(pm => pm.ProblemId).IsRequired();
+            cfg.Property(pm => pm.AuthorId).IsRequired();
+            cfg.Property(pm => pm.Content).IsRequired().HasMaxLength(2000);
+            cfg.Property(pm => pm.CreatedAt).IsRequired();
+
+            cfg.HasIndex(pm => pm.ProblemId);
+            cfg.HasIndex(pm => pm.AuthorId);
+            cfg.HasIndex(pm => pm.CreatedAt);
         });
     }
 

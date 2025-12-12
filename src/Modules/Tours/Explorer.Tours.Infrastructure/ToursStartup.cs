@@ -1,11 +1,9 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
-using Explorer.Tours.API.Public.Social;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
-using Explorer.Tours.Core.UseCases.Social;
 using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -36,7 +34,6 @@ public static class ToursStartup
         services.AddScoped<IFacilityService, FacilityService>();
         services.AddScoped<IMeetUpService, MeetUpService>();
         services.AddScoped<IPersonEquipmentService, PersonEquipmentService>();
-        services.AddScoped<IProblemMessageService, ProblemMessageService>();
         services.AddScoped<ITransportTimeService, TransportTimeService>();
         services.AddScoped<IPersonEquipmentService, PersonEquipmentService>(); //dodala sam
         services.AddScoped<ITourBrowsingService, TourBrowsingService>();
@@ -51,7 +48,6 @@ public static class ToursStartup
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
         services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>();
-        services.AddScoped<IProblemMessageRepository, ProblemMessageDbRepository>();
         services.AddScoped<ITransportTimeRepository, TransportTimeRepository>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); //dodala sam

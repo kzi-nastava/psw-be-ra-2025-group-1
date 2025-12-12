@@ -1,8 +1,8 @@
 using Explorer.API.Controllers.Author;
 using Explorer.API.Controllers.Tourist;
 using Explorer.BuildingBlocks.Core.Exceptions;
-using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Social;
+using Explorer.Stakeholders.API.Dtos;
+using Explorer.Stakeholders.API.Public;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -212,7 +212,6 @@ public class ProblemMessageCommandTests : BaseToursIntegrationTest
         objectResult.StatusCode.ShouldBe(200);
 
         var result = objectResult.Value as List<ProblemMessageDto>;
-
         result.ShouldNotBeNull();
         result.Count.ShouldBeGreaterThan(0);
         result.ShouldAllBe(m => m.ProblemId == -1);
@@ -225,8 +224,8 @@ public class ProblemMessageCommandTests : BaseToursIntegrationTest
     {
         return new TouristProblemMessageController(
             scope.ServiceProvider.GetRequiredService<IProblemMessageService>(),
-            scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.API.Public.INotificationService>(),
-            scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.API.Public.IProblemService>())
+            scope.ServiceProvider.GetRequiredService<INotificationService>(),
+            scope.ServiceProvider.GetRequiredService<IProblemService>())
         {
             ControllerContext = BuildContext(personId)
         };
@@ -236,8 +235,8 @@ public class ProblemMessageCommandTests : BaseToursIntegrationTest
     {
         return new AuthorProblemMessageController(
             scope.ServiceProvider.GetRequiredService<IProblemMessageService>(),
-            scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.API.Public.INotificationService>(),
-            scope.ServiceProvider.GetRequiredService<Explorer.Stakeholders.API.Public.IProblemService>())
+            scope.ServiceProvider.GetRequiredService<INotificationService>(),
+            scope.ServiceProvider.GetRequiredService<IProblemService>())
         {
             ControllerContext = BuildContext(personId)
         };

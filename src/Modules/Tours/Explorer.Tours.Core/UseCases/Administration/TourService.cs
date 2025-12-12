@@ -131,10 +131,11 @@ public class TourService : ITourService
         return _mapper.Map<TourDto>(result);
     }
 
-    public TourDto ArchiveTour(long tourId)
+    public void ArchiveTour(long tourId)
     {
         var tour = _tourRepository.Get(tourId);
         tour.Archive();
+    }
     public KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto, long authorId)
     {
         var tour = _tourRepository.Get(tourId);

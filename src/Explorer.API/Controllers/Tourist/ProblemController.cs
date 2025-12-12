@@ -2,6 +2,7 @@
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Infrastructure.Authentication;
+using Explorer.Tours.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -14,10 +15,12 @@ namespace Explorer.API.Controllers.Tourist;
 public class TouristProblemController : ControllerBase
 {
     private readonly IProblemService _problemService;
+    private readonly ITourService _tourService;
 
-    public TouristProblemController(IProblemService problemService)
+    public TouristProblemController(IProblemService problemService, ITourService tourService)
     {
         _problemService = problemService;
+        _tourService = tourService;
     }
 
     [HttpGet]
@@ -56,9 +59,30 @@ public class TouristProblemController : ControllerBase
     [HttpPost]
     public ActionResult<ProblemDto> Create([FromBody] ProblemDto problem)
     {
-        problem.CreatorId = User.UserId();
-        problem.CreationTime = DateTime.UtcNow;
-        return Ok(_problemService.Create(problem));
+        try
+        {
+            problem.CreatorId = User.UserId();
+            problem.CreationTime = DateTime.UtcNow;
+            
+            // Get AuthorId from Tour (cross-module operation at controller level)
+            var tour = _tourService.GetById(problem.TourId);
+            if (tour == null)
+            {
+                return NotFound(new { error = $"Tour with ID {problem.TourId} does not exist." });
+            }
+            
+            problem.AuthorId = tour.CreatorId;
+            
+            return Ok(_problemService.Create(problem));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id:long}")]

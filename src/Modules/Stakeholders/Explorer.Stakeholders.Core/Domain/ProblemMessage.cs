@@ -1,6 +1,6 @@
 using Explorer.BuildingBlocks.Core.Domain;
 
-namespace Explorer.Tours.Core.Domain;
+namespace Explorer.Stakeholders.Core.Domain;
 
 public class ProblemMessage : Entity
 {

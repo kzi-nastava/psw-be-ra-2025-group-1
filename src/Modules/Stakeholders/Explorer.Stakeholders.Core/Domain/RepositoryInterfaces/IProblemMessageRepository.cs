@@ -1,4 +1,4 @@
-namespace Explorer.Tours.Core.Domain.RepositoryInterfaces;
+namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 
 public interface IProblemMessageRepository
 {

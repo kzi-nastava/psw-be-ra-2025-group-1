@@ -1,4 +1,4 @@
-namespace Explorer.Tours.API.Dtos;
+namespace Explorer.Stakeholders.API.Dtos;
 
 public class AddProblemMessageDto
 {

@@ -5,7 +5,6 @@ using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
-using Explorer.Tours.API.Public.Administration;
 using DomainProblemStatus = Explorer.Stakeholders.Core.Domain.ProblemStatus;
 using DtoProblemStatus = Explorer.Stakeholders.API.Dtos.ProblemStatus;
 using DomainProblemCategory = Explorer.Stakeholders.Core.Domain.ProblemCategory;
@@ -16,18 +15,15 @@ public class ProblemService : IProblemService
 {
     private readonly IProblemRepository _problemRepository;
     private readonly INotificationService _notificationService;
-    private readonly ITourService _tourService;
     private readonly IMapper _mapper;
 
     public ProblemService(
         IProblemRepository repository, 
         INotificationService notificationService,
-        ITourService tourService, 
         IMapper mapper)
     {
         _problemRepository = repository;
         _notificationService = notificationService;
-        _tourService = tourService;
         _mapper = mapper;
     }
 
@@ -78,13 +74,11 @@ public class ProblemService : IProblemService
 
     public ProblemDto Create(ProblemDto problemDto)
     {
-        var tour = _tourService.GetById(problemDto.TourId);
-        if (tour == null)
+        // AuthorId mora biti postavljen pre poziva ovog servisa (npr. u kontroleru)
+        if (problemDto.AuthorId == 0)
         {
-            throw new ArgumentException($"Tour with ID {problemDto.TourId} does not exist.");
+            throw new ArgumentException("AuthorId must be set before creating a problem.");
         }
-        
-        problemDto.AuthorId = tour.CreatorId;
         
         Console.WriteLine($"🔍 Creating problem for TourId={problemDto.TourId}, CreatorId={problemDto.CreatorId}, AuthorId={problemDto.AuthorId}");
         
@@ -190,10 +184,7 @@ public class ProblemService : IProblemService
     {
         var problem = _problemRepository.Get(problemId);
         
-        // Arhiviraj turu kao penalizaciju
-        _tourService.ArchiveTour(problem.TourId);
-        
-        // Zatvori problem
+        // Zatvori problem - arhiviranje ture će biti obavljeno na nivou kontrolera
         problem.CloseByAdmin($"Tour archived by administrator as penalty for unresolved problem.");
         _problemRepository.Update(problem);
         

@@ -1,6 +1,6 @@
-using Explorer.Tours.API.Dtos;
+using Explorer.Stakeholders.API.Dtos;
 
-namespace Explorer.Tours.API.Public.Social;
+namespace Explorer.Stakeholders.API.Public;
 
 public interface IProblemMessageService
 {

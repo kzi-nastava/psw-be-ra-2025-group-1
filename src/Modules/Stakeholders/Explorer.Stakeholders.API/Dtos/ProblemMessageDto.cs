@@ -1,6 +1,6 @@
 using System;
 
-namespace Explorer.Tours.API.Dtos;
+namespace Explorer.Stakeholders.API.Dtos;
 
 public class ProblemMessageDto
 {

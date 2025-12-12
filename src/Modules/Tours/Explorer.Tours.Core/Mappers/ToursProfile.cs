@@ -15,8 +15,6 @@ public class ToursProfile : Profile
         CreateMap<CreateTourDto, Tour>().ForMember(dest => dest.Keypoints, opt => opt.Ignore());
         CreateMap<KeypointDto, Keypoint>().ReverseMap();
         CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();
-        
-        CreateMap<ProblemMessageDto, ProblemMessage>().ReverseMap();
         CreateMap<TransportTimeDto, TransportTime>().ReverseMap();
         
         // TourExecution mappings with explicit enum conversion
