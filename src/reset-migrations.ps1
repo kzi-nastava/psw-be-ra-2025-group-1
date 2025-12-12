@@ -1,5 +1,8 @@
 Write-Host "=== RUNNING MIGRATION RESET SCRIPT ===" -ForegroundColor Cyan
 
+# SET THE DATABASE ENVIRONMENT VARIABLE
+$env:DATABASE_SCHEMA = "explorer-v1"
+
 # Delete old migration folders
 $migrationFolders = @(
     "Modules\Stakeholders\Explorer.Stakeholders.Infrastructure\Migrations",
@@ -18,17 +21,16 @@ foreach ($folder in $migrationFolders) {
 
 Write-Host ""
 
-# Reset migrations using dotnet ef commands
 Write-Host "=== Migrating StakeholdersContext ===" -ForegroundColor Cyan
 dotnet ef migrations add Init `
     --context StakeholdersContext `
     --project Modules/Stakeholders/Explorer.Stakeholders.Infrastructure `
-    --startup-project Explorer.API
+    --startup-project Explorer.API 
 
 dotnet ef database update `
     --context StakeholdersContext `
     --project Modules/Stakeholders/Explorer.Stakeholders.Infrastructure `
-    --startup-project Explorer.API
+    --startup-project Explorer.API 
 
 Write-Host ""
 

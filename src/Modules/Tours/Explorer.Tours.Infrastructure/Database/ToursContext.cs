@@ -14,6 +14,7 @@ public class ToursContext : DbContext
     public DbSet<ProblemMessage> ProblemMessages { get; set; }
     public DbSet<TransportTime> TransportTime { get; set; }
     public DbSet<TourExecution> TourExecutions { get; set; }
+    public DbSet<Keypoint> Keypoints { get; set; }
 
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
@@ -56,5 +57,17 @@ public class ToursContext : DbContext
         
         modelBuilder.Entity<ProblemMessage>()
             .HasIndex(pm => pm.AuthorId);
+
+        // One-Many relationship between Tour and Keypoint
+        modelBuilder.Entity<Tour>()
+            .HasMany(e => e.Keypoints)
+            .WithOne()
+            .HasForeignKey("TourId")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Tour>()
+            .HasMany(t => t.Equipment)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("TourEquipment"));
     }
 }

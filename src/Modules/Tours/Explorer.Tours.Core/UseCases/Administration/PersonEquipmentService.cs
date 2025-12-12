@@ -86,13 +86,21 @@ public class PersonEquipmentService : IPersonEquipmentService
         }
         else
         {
+            var equipment = _equipmentRepository.Get(personEquipment.EquipmentId);
+            if (equipment == null)
+            {
+                throw new NotFoundException($"Equipment with ID {personEquipment.EquipmentId} not found");
+            }
             // Create new PersonEquipment record
             var newPersonEquipment = new PersonEquipment(personEquipment.PersonId, personEquipment.EquipmentId);
             var result = _personEquipmentRepository.Add(newPersonEquipment);
             
             var resultDto = _mapper.Map<PersonEquipmentDto>(result);
-            resultDto.Equipment = _mapper.Map<EquipmentDto>(equipment);
             
+            // Load equipment details
+            equipment = _equipmentRepository.Get(result.EquipmentId);
+            resultDto.Equipment = _mapper.Map<EquipmentDto>(equipment);
+
             return resultDto;
         }
     }
