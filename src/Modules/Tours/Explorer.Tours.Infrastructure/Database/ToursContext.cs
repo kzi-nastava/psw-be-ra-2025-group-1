@@ -39,6 +39,7 @@ public class ToursContext : DbContext
         modelBuilder.Entity<Tour>()
             .HasMany(t => t.TransportTimes)
             .WithOne()
+            .IsRequired()
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
     }
