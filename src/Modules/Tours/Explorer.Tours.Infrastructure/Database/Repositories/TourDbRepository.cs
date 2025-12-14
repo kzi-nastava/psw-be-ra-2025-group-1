@@ -40,6 +40,7 @@ public class TourDbRepository : ITourRepository
     {
         return _dbSet
             .Include(t => t.Keypoints)
+            .Include(t => t.Equipment)
             .FirstOrDefault(t => t.Id == id)
             ?? throw new NotFoundException($"Tour {id} not found");
     }
@@ -48,6 +49,7 @@ public class TourDbRepository : ITourRepository
     {
         var query = _dbSet
             .Include(t => t.Keypoints)
+            .Include(t => t.Equipment)
             .Where(t => t.CreatorId == creatorId);
         var task = query.GetPagedById(page, pageSize);
         task.Wait();
@@ -58,6 +60,7 @@ public class TourDbRepository : ITourRepository
     {
         var task = _dbSet
             .Include(t => t.Keypoints)
+            .Include(t => t.Equipment)
             .GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;

@@ -29,7 +29,9 @@ namespace Explorer.API.Controllers.Tourist
         {
             long touristId = long.Parse(User.FindFirst("personId")!.Value);
             _service.AddToCart(touristId, tourId);
-            return Ok(new { message = "Tour added to cart successfully" });
+
+            var updatedCart = _service.GetCart(touristId);
+            return Ok(updatedCart);
         }
 
         [HttpDelete("remove/{tourId}")]
@@ -46,6 +48,10 @@ namespace Explorer.API.Controllers.Tourist
             long touristId = long.Parse(User.FindFirst("personId")!.Value);
             _service.Checkout(touristId);
             return Ok(new { message = "Checkout successful. Tours purchased!" });
+
+            var updatedCart = _service.GetCart(touristId);
+            return Ok(updatedCart);
         }
+
     }
 }
