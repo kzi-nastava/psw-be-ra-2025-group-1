@@ -17,7 +17,11 @@ public class TourDto
     public string[] Tags { get; init; }= Array.Empty<string>();
     public TourStatusDto Status { get; init; }= TourStatusDto.Draft;
     public double Price { get; init; } = -1;
-    public List<KeypointDto> Keypoints { get; init; }
+    public DateTime CreatedAt { get; init; }
+    public DateTime UpdatedAt { get; init; }
+    public DateTime PublishedAt { get; init; }
+    public DateTime ArchivedAt { get; init; }
+    public List<KeypointDto> Keypoints { get; init; } = [];
     public List<TransportTimeDto> TransportTimes { get; init; } = [];
 }
 

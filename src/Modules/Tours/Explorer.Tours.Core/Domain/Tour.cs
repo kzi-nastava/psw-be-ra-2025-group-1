@@ -1,5 +1,6 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Tours.API.Dtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,6 +73,21 @@ public class Tour : AggregateRoot
         Status = status;
         Price = price;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public void Update(TourDto dto)
+    {
+        CreatedAt = dto.CreatedAt;
+        UpdatedAt = dto.UpdatedAt;
+        PublishedAt = dto.PublishedAt;
+        ArchivedAt = dto.ArchivedAt;
+        CreatorId = dto.CreatorId;
+        Title = dto.Title;
+        Description = dto.Description;
+        Difficulty = dto.Difficulty;
+        Tags= dto.Tags;
+        Status = (TourStatus)dto.Status;
+        Price = dto.Price;
     }
 
     public void Publish()

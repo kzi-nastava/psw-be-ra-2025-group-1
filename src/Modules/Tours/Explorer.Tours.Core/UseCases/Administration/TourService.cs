@@ -24,7 +24,7 @@ public class TourService : ITourService
     public bool Archive(long id)
     {
         var tour = GetById(id);
-        if(tour == null) return false;
+        if (tour == null) return false;
 
         if (tour.Status == TourStatusDto.Archived)
         {
@@ -49,7 +49,7 @@ public class TourService : ITourService
     public void Delete(long id, long authorId)
     {
         var tour = _tourRepository.Get(id);
-        if(tour == null)
+        if (tour == null)
             throw new KeyNotFoundException($"Tour with id {id} not found.");
 
         if (tour.CreatorId != authorId)
@@ -165,7 +165,7 @@ public class TourService : ITourService
     {
         var tour = _tourRepository.Get(id);
         var equip = _equipmentRepository.Get(equipmentId);
-        if(tour.CreatorId != authorId)
+        if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add equipment to someone else's tour");
         tour.AddEquipment(equip);
         var result = _tourRepository.Update(tour);
@@ -175,7 +175,7 @@ public class TourService : ITourService
     {
         var tour = _tourRepository.Get(id);
         var equip = _equipmentRepository.Get(equipmentId);
-        if(tour.CreatorId != authorId)
+        if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't remove equipment from someone else's tour");
         tour.RemoveEquipment(equip);
         var result = _tourRepository.Update(tour);

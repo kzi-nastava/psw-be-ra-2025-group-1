@@ -70,7 +70,7 @@ public class TourController : ControllerBase
     }
 
     [Authorize(Policy = "authorPolicy")]
-    [HttpPost("{id:long}/transport-times")]
+    [HttpPost("{tourId:long}/transport-times")]
     public ActionResult<TransportTimeDto> AddTransportTime(long tourId, [FromBody] TransportTimeDto transport)
     {
         long authorId = User.PersonId();
