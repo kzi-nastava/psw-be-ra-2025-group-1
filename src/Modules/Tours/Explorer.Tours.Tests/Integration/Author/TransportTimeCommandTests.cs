@@ -1,8 +1,10 @@
 using Explorer.API.Controllers.Author;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
@@ -17,7 +19,7 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
 
     private static TourController CreateController(IServiceScope scope)
     {
-        return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>(), scope.ServiceProvider.GetRequiredService<ITransportTimeService>())
+        return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>())
         {
             ControllerContext = BuildContext("-1")
         };
@@ -30,25 +32,35 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        
+        var tour = dbContext.Tour.FirstOrDefault(t => t.Status == TourStatus.Draft);
+        if (tour == null)
+        {
+            // Fallback: create a tour if none exists
+             tour = new Tour(1, "Temp Tour", "Desc", 1, new[] { "tag" }, TourStatus.Draft, 100);
+             dbContext.Tour.Add(tour);
+             dbContext.SaveChanges();
+        }
+        var tourId = tour.Id;
+
         var newEntity = new TransportTimeDto
         {
             Type = TransportTypeDto.Car,
             Duration = 45,
-            TourId = -15
         };
 
         // Act
-        var result = ((ObjectResult)controller.CreateTransportTime(newEntity).Result)?.Value as TransportTimeDto;
+        var response = controller.AddTransportTime(tourId, newEntity);
+        var result = (response.Result as ObjectResult)?.Value as TransportTimeDto;
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.Id.ShouldNotBe(0);
         result.Type.ShouldBe(newEntity.Type);
         result.Duration.ShouldBe(newEntity.Duration);
-        result.TourId.ShouldBe(newEntity.TourId);
 
         // Assert - Database
-        var storedEntity = dbContext.TransportTime.FirstOrDefault(i => i.Duration == newEntity.Duration && i.TourId == newEntity.TourId);
+        var storedEntity = dbContext.TransportTime.FirstOrDefault(i => i.Duration == newEntity.Duration && i.Type == TransportType.Car);
         storedEntity.ShouldNotBeNull();
         storedEntity.Duration.ShouldBe(result.Duration);
     }
@@ -60,29 +72,41 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        
+        var existingTransport = dbContext.TransportTime.FirstOrDefault();
+        if (existingTransport == null)
+        {
+             var wrapperTour = new Tour(1, "Temp Tour", "Desc", 1, new[] { "tag" }, TourStatus.Draft, 100);
+             dbContext.Tour.Add(wrapperTour);
+             var tt = wrapperTour.AddTransportTime(new TransportTime(TransportType.Foot, 10));
+             dbContext.SaveChanges();
+             existingTransport = tt;
+        }
+
+        var tour = dbContext.Tour.Include(t => t.TransportTimes).First(t => t.TransportTimes.Any(tt => tt.Id == existingTransport.Id));
+        
         var updatedEntity = new TransportTimeDto
         {
-            Id = -1,
+            Id = existingTransport.Id,
             Type = TransportTypeDto.Bike,
-            Duration = 20,
-            TourId = -15
+            Duration = 20
         };
 
         // Act
-        var result = ((ObjectResult)controller.UpdateTransportTime(updatedEntity).Result)?.Value as TransportTimeDto;
+        var response = controller.UpdateTransportTime(tour.Id, existingTransport.Id, updatedEntity);
+        var result = (response.Result as ObjectResult)?.Value as TransportTimeDto;
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-1);
+        result.Id.ShouldBe(existingTransport.Id);
         result.Type.ShouldBe(updatedEntity.Type);
         result.Duration.ShouldBe(updatedEntity.Duration);
-        result.TourId.ShouldBe(updatedEntity.TourId);
 
         // Assert - Database
-        var storedEntity = dbContext.TransportTime.FirstOrDefault(i => i.Id == -1);
+        var storedEntity = dbContext.TransportTime.AsNoTracking().FirstOrDefault(i => i.Id == existingTransport.Id);
         storedEntity.ShouldNotBeNull();
         storedEntity.Duration.ShouldBe(updatedEntity.Duration);
-        storedEntity.Type.ShouldBe(Explorer.Tours.Core.Domain.TransportType.Bike);
+        storedEntity.Type.ShouldBe(TransportType.Bike);
     }
 
     [Fact]
@@ -92,17 +116,30 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
-        var transportTimeId = -2;
+
+        // Find a transport time to delete
+        var existingTransport = dbContext.TransportTime.FirstOrDefault();
+        if (existingTransport == null)
+        {
+             var wrapperTour = new Tour(1, "Temp Tour", "Desc", 1, new[] { "tag" }, TourStatus.Draft, 100);
+             dbContext.Tour.Add(wrapperTour);
+             var tt = wrapperTour.AddTransportTime(new TransportTime(TransportType.Foot, 10));
+             dbContext.SaveChanges();
+             existingTransport = tt;
+        }
+        
+        var tour = dbContext.Tour.Include(t => t.TransportTimes).First(t => t.TransportTimes.Any(tt => tt.Id == existingTransport.Id));
+        var transportTimeId = existingTransport.Id;
 
         // Act
-        var result = (OkResult)controller.DeleteTransportTime(transportTimeId).Result;
+        var result = controller.DeleteTransportTime(tour.Id, transportTimeId) as OkResult;
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.TransportTime.FirstOrDefault(i => i.Id == transportTimeId);
+        var storedEntity = dbContext.TransportTime.AsNoTracking().FirstOrDefault(i => i.Id == transportTimeId);
         storedEntity.ShouldBeNull();
     }
 }

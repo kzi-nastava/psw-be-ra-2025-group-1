@@ -11,14 +11,12 @@ namespace Explorer.Tours.Core.UseCases.Administration;
 public class TourService : ITourService
 {
     private readonly ITourRepository _tourRepository;
-    private readonly ITransportTimeRepository _timeRepository;
     private readonly IEquipmentRepository _equipmentRepository;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, ITransportTimeRepository timeRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
+    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
     {
         _tourRepository = tourRepository;
-        _timeRepository = timeRepository;
         _equipmentRepository = equipmentRepository;
         _mapper = mapper;
     }
@@ -51,6 +49,9 @@ public class TourService : ITourService
     public void Delete(long id, long authorId)
     {
         var tour = _tourRepository.Get(id);
+        if(tour == null)
+            throw new KeyNotFoundException($"Tour with id {id} not found.");
+
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't delete someone else's tour");
         _tourRepository.Delete(id);
@@ -97,7 +98,7 @@ public class TourService : ITourService
         if (tour.Tags.Length <= 0) canPublish = false;
 
         //Additional validation needed for two keypoints or more
-        List<TransportTime> transportTimes = _timeRepository.GetByTourId(id).ToList();
+        List<TransportTimeDto> transportTimes = tour.TransportTimes;
         if (transportTimes.Count < 1) canPublish = false;
 
         if (canPublish)
@@ -179,5 +180,35 @@ public class TourService : ITourService
         tour.RemoveEquipment(equip);
         var result = _tourRepository.Update(tour);
         return _mapper.Map<TourDto>(result);
+    }
+
+    public TransportTimeDto AddTransportTime(long tourId, TransportTimeDto timeDto, long authorId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        if (tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't add transport time to someone else's tour");
+        var transportTime = tour.AddTransportTime(_mapper.Map<TransportTime>(timeDto));
+        _tourRepository.Update(tour);
+
+        return _mapper.Map<TransportTimeDto>(transportTime);
+    }
+    public TransportTimeDto UpdateTransportTime(long tourId, TransportTimeDto timeDto, long authorId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        if (tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't update transport time from someone else's tour");
+        var tt = tour.UpdateTransportTime(_mapper.Map<TransportTime>(timeDto));
+        _tourRepository.Update(tour);
+
+        return _mapper.Map<TransportTimeDto>(tt);
+    }
+
+    public void DeleteTransportTime(long tourId, long timeId, long authorId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        if (tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't delete transport time from someone else's tour");
+        tour.DeleteTransportTime(timeId);
+        var result = _tourRepository.Update(tour);
     }
 }

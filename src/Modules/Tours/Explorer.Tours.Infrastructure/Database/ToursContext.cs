@@ -35,5 +35,11 @@ public class ToursContext : DbContext
             .HasMany(t => t.Equipment)
             .WithMany()
             .UsingEntity(j => j.ToTable("TourEquipment"));
+
+        modelBuilder.Entity<Tour>()
+            .HasMany(t => t.TransportTimes)
+            .WithOne()
+            .HasForeignKey("TourId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

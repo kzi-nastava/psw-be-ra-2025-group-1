@@ -3,6 +3,7 @@ using Explorer.BuildingBlocks.Core.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,6 +30,7 @@ public class Tour : AggregateRoot
     public DateTime ArchivedAt { get; private set; }
     public List<Keypoint> Keypoints { get; private set; }
     public List<Equipment> Equipment { get; private set; }
+    public List<TransportTime> TransportTimes { get; private set; }
 
     public Tour()
     {
@@ -41,6 +43,8 @@ public class Tour : AggregateRoot
         PublishedAt = DateTime.MinValue;
         ArchivedAt = DateTime.MinValue;
         Keypoints = [];
+        Equipment = [];
+        TransportTimes = [];
     }
     public Tour(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status = TourStatus.Draft, double price = 0)
     {
@@ -54,6 +58,8 @@ public class Tour : AggregateRoot
         Price = price;
         CreatorId = creatorId;
         Keypoints = [];
+        Equipment = [];
+        TransportTimes = [];
     }
 
     public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
@@ -139,5 +145,31 @@ public class Tour : AggregateRoot
             throw new InvalidOperationException("Cannot remove equipment from an archived tour");
 
         Equipment.Remove(equipment);
+    }
+
+    public TransportTime AddTransportTime(TransportTime transportTime)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only add transport times to tour in draft status");
+        TransportTimes.Add(transportTime);
+        return transportTime;
+    }
+    public TransportTime UpdateTransportTime(TransportTime updatedTime)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only add transport times to tour in draft status");
+
+        var tt = TransportTimes.FirstOrDefault(k => k.Id == updatedTime.Id) ?? throw new NotFoundException("TransportTime not found");
+
+        return tt.Update(updatedTime);
+    }
+
+    public TransportTime DeleteTransportTime(long transportTimeId)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only delete transport times from tour in draft status");
+        var tt = TransportTimes.FirstOrDefault(k => k.Id == transportTimeId) ?? throw new NotFoundException("TransportTime not found");
+        TransportTimes.Remove(tt);
+        return tt;
     }
 }
