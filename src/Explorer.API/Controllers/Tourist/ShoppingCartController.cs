@@ -30,8 +30,6 @@ namespace Explorer.API.Controllers.Tourist
         {
             long touristId = long.Parse(User.FindFirst("id")!.Value);
             _service.AddToCart(touristId, tourId);
-
-
             var updatedCart = _service.GetCart(touristId);
             return Ok(updatedCart);
         }
@@ -45,23 +43,10 @@ namespace Explorer.API.Controllers.Tourist
         }
 
         [HttpPost("checkout")]
-        public IActionResult Checkout()
-        {
-            long touristId = long.Parse(User.FindFirst("personId")!.Value);
-            _service.Checkout(touristId);
-            return Ok(new { message = "Checkout successful. Tours purchased!" });
-
-            var updatedCart = _service.GetCart(touristId);
-            return Ok(updatedCart);
-        }
-        
-        [HttpPost("checkout")]
         public ActionResult<List<TourPurchaseTokenDto>> Checkout()
         {
             long touristId = long.Parse(User.FindFirst("id")!.Value);
-
             var tokens = _service.Checkout(touristId);
-
             return Ok(tokens);
         }
     }
