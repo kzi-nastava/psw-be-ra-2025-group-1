@@ -107,12 +107,10 @@ namespace Explorer.Tours.Core.UseCases
                 _tokenRepo.Create(token);
                 createdTokens.Add(token);
             }
-
-            // ✅ prazni korpu posle checkout-a
+            
             cart.Clear();
             _cartRepo.Update(cart);
 
-            // ✅ RUČNO MAPIRANJE (bez AutoMapper-a)
             return createdTokens.Select(t => new TourPurchaseTokenDto
             {
                 Id = t.Id,

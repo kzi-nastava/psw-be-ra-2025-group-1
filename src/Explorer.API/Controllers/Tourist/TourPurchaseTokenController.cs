@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace Explorer.API.Controllers.Tourist
 {
     [ApiController]
-    [Route("api/tour-purchase-tokens")]
-    [Authorize(Roles = "tourist")]
+    [Route("api/tourist/tour-purchase-tokens")]
+    [Authorize(Roles = "tourist, author")]
     public class TourPurchaseTokenController : ControllerBase
     {
         private readonly ITourPurchaseTokenService _tokenService;
@@ -24,7 +24,7 @@ namespace Explorer.API.Controllers.Tourist
         [HttpGet("my")]
         public ActionResult<List<TourPurchaseTokenDto>> GetMyTokens()
         {
-            long touristId = long.Parse(User.FindFirst("personId")!.Value);
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
 
             var tokens = _tokenService.GetByUser(touristId);
             return Ok(tokens);
@@ -36,7 +36,7 @@ namespace Explorer.API.Controllers.Tourist
         {
             if (tourId <= 0) return BadRequest("tourId must be positive.");
 
-            long touristId = long.Parse(User.FindFirst("personId")!.Value);
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
 
             var hasValid = _tokenService.HasValidToken(touristId, tourId);
             return Ok(hasValid);
