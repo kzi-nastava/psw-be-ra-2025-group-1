@@ -13,10 +13,11 @@ public class ToursContext : DbContext
     public DbSet<PersonEquipment> PersonEquipment { get; set; }
     public DbSet<TransportTime> TransportTime { get; set; }
     public DbSet<TourExecution> TourExecutions { get; set; }
-    public DbSet<Keypoint> Keypoints { get; set; }
-
     public DbSet<ShoppingCart> ShoppingCarts { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
+    
+    public DbSet<TourPurchase> TourPurchases { get; set; }
+    public DbSet<Keypoint> Keypoints { get; set; }
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
@@ -30,5 +31,10 @@ public class ToursContext : DbContext
             .WithOne()
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Tour>()
+            .HasMany(t => t.Equipment)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("TourEquipment"));
     }
 }
