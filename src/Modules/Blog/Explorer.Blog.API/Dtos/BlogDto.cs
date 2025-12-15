@@ -14,5 +14,5 @@ public class BlogDto
 
     public List<VoteDto> Votes { get ; set; }
     public int VoteScore { get ; set; }
-    public VoteType? CurrentUserVote { get ; set; }
+    public VoteTypeDto? CurrentUserVote { get ; set; }
 }

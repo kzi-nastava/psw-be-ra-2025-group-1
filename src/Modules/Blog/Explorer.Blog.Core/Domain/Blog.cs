@@ -1,6 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
 using Explorer.BuildingBlocks.Core.Domain;
-using Explorer.Blog.API.Dtos;
 
 namespace Explorer.Blog.Core.Domain;
 
@@ -131,7 +130,7 @@ public class Blog : AggregateRoot
         UpdateStatusByEngagement();
     }
 
-    public Vote AddVote(long userId, VoteType voteType)
+    public Vote AddVote(long userId, VoteType voteType)  
     {
         if (!IsInteractive())
         {
