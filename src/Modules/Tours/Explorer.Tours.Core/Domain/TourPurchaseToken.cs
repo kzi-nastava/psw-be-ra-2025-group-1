@@ -24,15 +24,18 @@ public class TourPurchaseToken : AggregateRoot
 
     public TourPurchaseToken(long tourId, long userId, DateOnly purchaseDate)
     {
-        // NOVO - dozvoli negativne ID-jeve za testiranje:
-        if (tourId == 0) throw new ArgumentException("TourId must not be zero.", nameof(tourId));
-        if (userId == 0) throw new ArgumentException("UserId must not be zero.", nameof(userId));
+        if (tourId <= 0)
+            throw new ArgumentException("TourId must be greater than zero.", nameof(tourId));
+
+        if (userId <= 0)
+            throw new ArgumentException("UserId must be greater than zero.", nameof(userId));
 
         TourId = tourId;
         UserId = userId;
         PurchaseDate = purchaseDate;
         Status = TourPurchaseTokenStatus.Active;
     }
+
 
     public void MarkAsUsed()
     {

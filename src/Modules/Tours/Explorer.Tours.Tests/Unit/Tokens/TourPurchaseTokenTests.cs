@@ -27,21 +27,20 @@ namespace Explorer.Tours.Tests.Unit.TourPurchaseTokensFolder
         }
 
         [Theory]
-        [InlineData(0, 1)]   // nevalidan tourId
-        [InlineData(-1, 1)]  // nevalidan tourId
-        [InlineData(1, 0)]   // nevalidan userId
-        [InlineData(1, -1)]  // nevalidan userId
+        [InlineData(0, 1)]
+        [InlineData(-1, 1)]
+        [InlineData(1, 0)]
+        [InlineData(1, -1)]
         public void Constructor_throws_for_invalid_ids(long tourId, long userId)
         {
-            // Arrange
             var purchaseDate = DateOnly.FromDateTime(DateTime.UtcNow);
 
-            // Act & Assert
             Should.Throw<ArgumentException>(() =>
             {
                 _ = new TourPurchaseToken(tourId, userId, purchaseDate);
             });
         }
+
 
         [Fact]
         public void MarkAsUsed_sets_status_used_and_makes_token_invalid()
