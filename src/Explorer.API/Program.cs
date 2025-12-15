@@ -39,6 +39,7 @@ builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<DemoSeeder>();
 
+
 builder.Services.RegisterModules();
 
 var app = builder.Build();

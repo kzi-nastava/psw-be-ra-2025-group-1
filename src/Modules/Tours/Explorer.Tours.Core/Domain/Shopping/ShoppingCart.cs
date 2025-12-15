@@ -37,4 +37,9 @@ public class ShoppingCart : AggregateRoot
 
         _items.Remove(item);
     }
+    
+    public void Clear()
+    {
+        _items.Clear();
+    }
 }
