@@ -184,6 +184,9 @@ public class TourService : ITourService
 
     public TransportTimeDto AddTransportTime(long tourId, TransportTimeDto timeDto, long authorId)
     {
+        if (timeDto.Type == TransportTypeDto.Unknown)
+            throw new ArgumentException("Transport type cannot be unknown.");
+            
         var tour = _tourRepository.Get(tourId);
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add transport time to someone else's tour");
@@ -194,6 +197,9 @@ public class TourService : ITourService
     }
     public TransportTimeDto UpdateTransportTime(long tourId, TransportTimeDto timeDto, long authorId)
     {
+        if (timeDto.Type == TransportTypeDto.Unknown)
+            throw new ArgumentException("Transport type cannot be unknown.");
+
         var tour = _tourRepository.Get(tourId);
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update transport time from someone else's tour");
