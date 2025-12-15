@@ -1,4 +1,5 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.Stakeholders.API.Internal;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.Mappers;
@@ -33,6 +34,7 @@ public static class StakeholdersStartup
         services.AddScoped<IRatingsService, RatingsService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IUserLocationService, UserLocationService>();
+        services.AddScoped<IInternalPersonService, PersonService>();
         services.AddScoped<IProblemService, ProblemService>();
         services.AddScoped<IProblemMessageService, ProblemMessageService>();
         services.AddScoped<INotificationService, NotificationService>();

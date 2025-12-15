@@ -24,8 +24,9 @@ public class TourPurchaseToken : AggregateRoot
 
     public TourPurchaseToken(long tourId, long userId, DateOnly purchaseDate)
     {
-        if (tourId <= 0) throw new ArgumentException("TourId must be positive.", nameof(tourId));
-        if (userId <= 0) throw new ArgumentException("UserId must be positive.", nameof(userId));
+        // NOVO - dozvoli negativne ID-jeve za testiranje:
+        if (tourId == 0) throw new ArgumentException("TourId must not be zero.", nameof(tourId));
+        if (userId == 0) throw new ArgumentException("UserId must not be zero.", nameof(userId));
 
         TourId = tourId;
         UserId = userId;

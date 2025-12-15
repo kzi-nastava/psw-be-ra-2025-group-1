@@ -1,26 +1,23 @@
-﻿using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Domain.Shopping;
 using Explorer.Tours.Core.Domain.TourPurchaseTokens;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.API.Dtos;
 
-
 namespace Explorer.Tours.Core.UseCases
 {
-
     public class ShoppingCartService : IShoppingCartService
     {
         private readonly IShoppingCartRepository _cartRepo;
         private readonly ITourRepository _tourRepo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
 
-        public ShoppingCartService(IShoppingCartRepository cartRepo, ITourRepository tourRepo, ITourPurchaseTokenRepository tokenRepo )
+        public ShoppingCartService(IShoppingCartRepository cartRepo, ITourRepository tourRepo, ITourPurchaseTokenRepository tokenRepo)
         {
             _cartRepo = cartRepo;
             _tourRepo = tourRepo;
             _tokenRepo = tokenRepo;
-            
         }
 
         public void AddToCart(long touristId, long tourId)
@@ -34,23 +31,25 @@ namespace Explorer.Tours.Core.UseCases
             if (cart == null)
             {
                 cart = new ShoppingCart(touristId);
-                _cartRepo.Create(cart);
+                cart = _cartRepo.Create(cart);
             }
 
             cart.AddItem(tour.Id, tour.Title, (decimal)tour.Price);
             _cartRepo.Update(cart);
         }
 
-
         public ShoppingCartDto GetCart(long touristId)
         {
             var cart = _cartRepo.GetByTouristId(touristId);
-            if (cart == null) return new ShoppingCartDto
+            if (cart == null) 
             {
-                TouristId = touristId,
-                Items = new List<OrderItemDto>(),
-                TotalPrice = 0
-            };
+                return new ShoppingCartDto
+                {
+                    TouristId = touristId,
+                    Items = new List<OrderItemDto>(),
+                    TotalPrice = 0
+                };
+            }
 
             return new ShoppingCartDto
             {
@@ -121,6 +120,5 @@ namespace Explorer.Tours.Core.UseCases
                 IsValid = t.IsValid
             }).ToList();
         }
-
     }
 }
