@@ -99,6 +99,17 @@ VALUES (
 INSERT INTO tours."Tour"(
 	"Id", "CreatorId", "Title", "Description", "Difficulty", "Tags", "Status", "Price", "CreatedAt", "UpdatedAt", "PublishedAt", "ArchivedAt")
 	VALUES (-5, -1, 'Tour de Fruska', 'Best places in Fruska', 1, ARRAY['Vojvodina','Serbia','Fun'], 0, 0.0, '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z');
+
+-- Insert keypoint into tour
 INSERT INTO tours."Keypoints"(
 	"Id", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber", "TourId")
 	VALUES (-1, 'KP1', 'Description', '', '', 0, 0, 1, -5);
+
+-- Insert equipment into tour
+INSERT INTO tours."TourEquipment"(
+	"EquipmentId", "TourId")
+	VALUES (-1, -5);
+
+INSERT INTO tours."TourEquipment"(
+	"EquipmentId", "TourId")
+	VALUES (-4, -5);
