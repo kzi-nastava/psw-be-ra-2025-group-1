@@ -5,7 +5,7 @@ using Explorer.Tours.API.Dtos;
 
 namespace Explorer.API.Controllers.Tourist
 {
-    [Authorize]
+    [Authorize(Policy = "touristPolicy")]
     [Route("api/tourist/cart")]
     [ApiController]
     public class ShoppingCartController : ControllerBase
@@ -30,8 +30,6 @@ namespace Explorer.API.Controllers.Tourist
         {
             long touristId = long.Parse(User.FindFirst("id")!.Value);
             _service.AddToCart(touristId, tourId);
-
-
             var updatedCart = _service.GetCart(touristId);
             return Ok(updatedCart);
         }
@@ -41,18 +39,14 @@ namespace Explorer.API.Controllers.Tourist
         {
             long touristId = long.Parse(User.FindFirst("id")!.Value);
             _service.RemoveFromCart(touristId, tourId);
-
-            var updatedCart = _service.GetCart(touristId);
-            return Ok(updatedCart);
+            return Ok(new { message = "Tour removed from cart successfully" });
         }
-        
+
         [HttpPost("checkout")]
         public ActionResult<List<TourPurchaseTokenDto>> Checkout()
         {
             long touristId = long.Parse(User.FindFirst("id")!.Value);
-
             var tokens = _service.Checkout(touristId);
-
             return Ok(tokens);
         }
     }
