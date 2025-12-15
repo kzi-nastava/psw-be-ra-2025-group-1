@@ -17,12 +17,30 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
     {
     }
 
-    private static TourController CreateController(IServiceScope scope)
+    private static TourController CreateController(IServiceScope scope, string userId = "-1")
     {
         return new TourController(scope.ServiceProvider.GetRequiredService<ITourService>())
         {
-            ControllerContext = BuildContext("-1")
+            ControllerContext = BuildContext(userId)
         };
+    }
+
+    private Tour EnsureDraftTourExists(ToursContext dbContext, long creatorId)
+    {
+        // Try to find existing tour with matching creator
+        var tour = dbContext.Tour
+            .Include(t => t.TransportTimes)
+            .FirstOrDefault(t => t.Status == TourStatus.Draft && t.CreatorId == creatorId);
+        
+        if (tour == null)
+        {
+            // Create a new tour with matching creator ID
+            tour = new Tour(creatorId, "Test Tour", "Test Description", 5, new[] { "test" }, TourStatus.Draft, 100);
+            dbContext.Tour.Add(tour);
+            dbContext.SaveChanges();
+        }
+        
+        return tour;
     }
 
     [Fact]
@@ -30,18 +48,12 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         
-        var tour = dbContext.Tour.FirstOrDefault(t => t.Status == TourStatus.Draft);
-        if (tour == null)
-        {
-            // Fallback: create a tour if none exists
-             tour = new Tour(1, "Temp Tour", "Desc", 1, new[] { "tag" }, TourStatus.Draft, 100);
-             dbContext.Tour.Add(tour);
-             dbContext.SaveChanges();
-        }
-        var tourId = tour.Id;
+        // Use creator ID that matches the controller context
+        long creatorId = -1;
+        var tour = EnsureDraftTourExists(dbContext, creatorId);
+        var controller = CreateController(scope, creatorId.ToString());
 
         var newEntity = new TransportTimeDto
         {
@@ -50,7 +62,7 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         };
 
         // Act
-        var response = controller.AddTransportTime(tourId, newEntity);
+        var response = controller.AddTransportTime(tour.Id, newEntity);
         var result = (response.Result as ObjectResult)?.Value as TransportTimeDto;
 
         // Assert - Response
@@ -60,7 +72,9 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         result.Duration.ShouldBe(newEntity.Duration);
 
         // Assert - Database
-        var storedEntity = dbContext.TransportTime.FirstOrDefault(i => i.Duration == newEntity.Duration && i.Type == TransportType.Car);
+        var storedEntity = dbContext.TransportTime
+            .AsNoTracking()
+            .FirstOrDefault(i => i.Duration == newEntity.Duration && i.Type == TransportType.Car);
         storedEntity.ShouldNotBeNull();
         storedEntity.Duration.ShouldBe(result.Duration);
     }
@@ -70,20 +84,26 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         
-        var existingTransport = dbContext.TransportTime.FirstOrDefault();
-        if (existingTransport == null)
+        // Use creator ID that matches the controller context
+        long creatorId = -1;
+        var tour = EnsureDraftTourExists(dbContext, creatorId);
+        
+        // Ensure tour has a transport time to update
+        if (!tour.TransportTimes.Any())
         {
-             var wrapperTour = new Tour(1, "Temp Tour", "Desc", 1, new[] { "tag" }, TourStatus.Draft, 100);
-             dbContext.Tour.Add(wrapperTour);
-             var tt = wrapperTour.AddTransportTime(new TransportTime(TransportType.Foot, 10));
-             dbContext.SaveChanges();
-             existingTransport = tt;
+            var tt = tour.AddTransportTime(new TransportTime(TransportType.Foot, 10));
+            dbContext.SaveChanges();
         }
-
-        var tour = dbContext.Tour.Include(t => t.TransportTimes).First(t => t.TransportTimes.Any(tt => tt.Id == existingTransport.Id));
+        
+        // Refresh tour to get the transport time with ID
+        tour = dbContext.Tour
+            .Include(t => t.TransportTimes)
+            .First(t => t.Id == tour.Id);
+        
+        var existingTransport = tour.TransportTimes.First();
+        var controller = CreateController(scope, creatorId.ToString());
         
         var updatedEntity = new TransportTimeDto
         {
@@ -103,7 +123,9 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         result.Duration.ShouldBe(updatedEntity.Duration);
 
         // Assert - Database
-        var storedEntity = dbContext.TransportTime.AsNoTracking().FirstOrDefault(i => i.Id == existingTransport.Id);
+        var storedEntity = dbContext.TransportTime
+            .AsNoTracking()
+            .FirstOrDefault(i => i.Id == existingTransport.Id);
         storedEntity.ShouldNotBeNull();
         storedEntity.Duration.ShouldBe(updatedEntity.Duration);
         storedEntity.Type.ShouldBe(TransportType.Bike);
@@ -114,33 +136,39 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // Find a transport time to delete
-        var existingTransport = dbContext.TransportTime.FirstOrDefault();
-        if (existingTransport == null)
+        // Use creator ID that matches the controller context
+        long creatorId = -1;
+        var tour = EnsureDraftTourExists(dbContext, creatorId);
+        
+        // Ensure tour has a transport time to delete
+        if (!tour.TransportTimes.Any())
         {
-             var wrapperTour = new Tour(1, "Temp Tour", "Desc", 1, new[] { "tag" }, TourStatus.Draft, 100);
-             dbContext.Tour.Add(wrapperTour);
-             var tt = wrapperTour.AddTransportTime(new TransportTime(TransportType.Foot, 10));
-             dbContext.SaveChanges();
-             existingTransport = tt;
+            var tt = tour.AddTransportTime(new TransportTime(TransportType.Foot, 10));
+            dbContext.SaveChanges();
         }
         
-        var tour = dbContext.Tour.Include(t => t.TransportTimes).First(t => t.TransportTimes.Any(tt => tt.Id == existingTransport.Id));
+        // Refresh tour to get the transport time with ID
+        tour = dbContext.Tour
+            .Include(t => t.TransportTimes)
+            .First(t => t.Id == tour.Id);
+        
+        var existingTransport = tour.TransportTimes.First();
+        var controller = CreateController(scope, creatorId.ToString());
         var transportTimeId = existingTransport.Id;
 
         // Act
         var result = controller.DeleteTransportTime(tour.Id, transportTimeId) as OkResult;
-        dbContext.SaveChanges();
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.TransportTime.AsNoTracking().FirstOrDefault(i => i.Id == transportTimeId);
+        var storedEntity = dbContext.TransportTime
+            .AsNoTracking()
+            .FirstOrDefault(i => i.Id == transportTimeId);
         storedEntity.ShouldBeNull();
     }
 }
