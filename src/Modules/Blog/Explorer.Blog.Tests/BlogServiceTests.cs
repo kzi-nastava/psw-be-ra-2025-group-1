@@ -1,9 +1,12 @@
 using AutoMapper;
-using Explorer.Blog.API.Public;
+using Explorer.Blog.API.Dtos;
 using Explorer.Blog.Core.Domain;
 using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 using Explorer.Blog.Core.Mappers;
 using Explorer.Blog.Core.UseCases;
+using BlogEntity = Explorer.Blog.Core.Domain.Blog;
+using Explorer.Stakeholders.API.Internal;
+
 using Moq;
 using Shouldly;
 using Xunit;
@@ -15,6 +18,7 @@ public class BlogServiceTests
     private readonly Mock<IBlogRepository> _mockRepository;
     private readonly IMapper _mapper;
     private readonly BlogService _service;
+    private readonly IInternalPersonService _personRepository;
 
     public BlogServiceTests()
     {
@@ -27,7 +31,9 @@ public class BlogServiceTests
 
         _mockRepository = new Mock<IBlogRepository>();
 
-        _service = new BlogService(_mockRepository.Object, _mapper);
+        _personRepository = Mock.Of<IInternalPersonService>();
+
+        _service = new BlogService(_mockRepository.Object, _mapper, _personRepository);
     }
 
     [Fact]
@@ -172,4 +178,31 @@ public class BlogServiceTests
             _service.UpdateBlog(blogId, updateDto)
         );
     }
+
+    [Fact]
+    public void GetVisibleBlogs_FiltersOutOtherUsersDrafts()
+    {
+        var userId = 1L;
+
+        var myDraft = new BlogEntity(userId, "My draft", "desc", null);   // konstruktor postavlja Status = Draft
+
+        var myPublished = new BlogEntity(userId, "My published", "desc", null);
+        myPublished.Publish();   // kroz metodu menjamo u Published
+
+        var otherDraft = new BlogEntity(2, "Other draft", "desc", null);   // Draft po defaultu
+
+        var blogs = new List<BlogEntity> { myDraft, myPublished, otherDraft };
+
+        _mockRepository
+            .Setup(r => r.GetVisibleForUser(userId))
+            .Returns(blogs.Where(b => b.Status != BlogStatus.Draft || b.UserId == userId).ToList());
+
+        var result = _service.GetVisibleBlogs(userId);
+
+        result.Count.ShouldBe(2);
+        result.Any(b => b.Title == "Other draft").ShouldBeFalse();
+    }
+
+
+
 }

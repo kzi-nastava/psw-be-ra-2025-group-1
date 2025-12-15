@@ -1,4 +1,4 @@
-namespace Explorer.Blog.API.Public;
+namespace Explorer.Blog.API.Dtos;
 
 public class BlogCreateDto
 {
