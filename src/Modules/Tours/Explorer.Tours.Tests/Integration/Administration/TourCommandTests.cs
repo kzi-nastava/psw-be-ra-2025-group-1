@@ -190,10 +190,10 @@ public class TourCommandTests : BaseToursIntegrationTest
     
 
     [Theory] 
-    [InlineData("-1", -1,-1, "Updated OK", 200)] // Valid
-    [InlineData("-1", -1, -1, "", 400)] // Invalid, empty title
+    [InlineData("-1", -5,-1, "Updated OK", 200)] // Valid
+    [InlineData("-1", -5, -1, "", 400)] // Invalid, empty title
     [InlineData("-1", -19, 1, "Title", 403)] // Invalid, unauthorized
-    [InlineData("-1", -1, 77, "Title", 404)] // Invalid, keypoint not found
+    [InlineData("-1", -5, 77, "Title", 404)] // Invalid, keypoint not found
     [InlineData("-1", -77, -1, "Title", 404)] // Invalid, tour not found
     public void Updates_keypoint(
         string authorId,
@@ -251,9 +251,9 @@ public class TourCommandTests : BaseToursIntegrationTest
     }
 
     [Theory]
-    [InlineData("-1", -1, -1, 200)] // Valid
+    [InlineData("-1", -5, -1, 200)] // Valid
     [InlineData("-2", -15, -1, 403)] // Invalid, unauthorized
-    [InlineData("-1", -1, 77, 404)] // Invalid, keypoint not found
+    [InlineData("-1", -5, 77, 404)] // Invalid, keypoint not found
     [InlineData("-1", -77, -1, 404)] // Invalid, tour not found
     public void Deletes_keypoint(string authorId, long tourId, long keypointId, int expectedStatus)
     {
@@ -288,10 +288,10 @@ public class TourCommandTests : BaseToursIntegrationTest
     }
 
     [Theory]
-    [InlineData("-1", -1, -1, 200)] // Valid
-    [InlineData("-2", -1, -2, 403)] // Invalid, unathorizted
-    [InlineData("-1", -1, -1, 403)] // Invalid, already exists
-    [InlineData("-1", -1, -9999999, 404)] // Invalid, equipment doesn't exist
+    [InlineData("-1", -5, -2, 200)] // Valid
+    [InlineData("-2", -5, -3, 403)] // Invalid, unathorizted
+    [InlineData("-1", -5, -4, 403)] // Invalid, already exists
+    [InlineData("-1", -5, -9999999, 404)] // Invalid, equipment doesn't exist
     [InlineData("-1", -9999999, -1, 404)] // Invalid, tour doesn't exist
     public void Adds_equipment_to_tour(string authorId, long tourId, long equipmentId, int expectedStatus)
     {
@@ -329,9 +329,9 @@ public class TourCommandTests : BaseToursIntegrationTest
     }
 
     [Theory]
-    [InlineData("-1", -1, -1, 200)]        // Valid
-    [InlineData("-1", -1, -1, 403)]        // Invalid, equipment not on tour
-    [InlineData("-1", -1, -9999999, 404)]  // Invalid, equipment doesn't exist
+    [InlineData("-1", -5, -1, 200)]        // Valid
+    [InlineData("-1", -5, -1, 403)]        // Invalid, equipment not on tour
+    [InlineData("-1", -5, -9999999, 404)]  // Invalid, equipment doesn't exist
     [InlineData("-1", -9999999, -1, 404)]  // Invalid, tour doesn't exist
     public void Removes_equipment_from_tour(string authorId, long tourId, long equipmentId, int expectedStatus)
     {
