@@ -167,6 +167,10 @@ public class Tour : AggregateRoot
     {
         if (Status != TourStatus.Draft)
             throw new InvalidOperationException("Can only add transport times to tour in draft status");
+
+        if (TransportTimes.Any(t => t.Type == transportTime.Type))
+            throw new ArgumentException("A transport time for this type already exists.");
+
         TransportTimes.Add(transportTime);
         return transportTime;
     }
@@ -174,6 +178,9 @@ public class Tour : AggregateRoot
     {
         if (Status != TourStatus.Draft)
             throw new InvalidOperationException("Can only add transport times to tour in draft status");
+
+        if (TransportTimes.Any(t => t.Type == updatedTime.Type && t.Id != updatedTime.Id))
+            throw new ArgumentException("A transport time for this type already exists.");
 
         var tt = TransportTimes.FirstOrDefault(k => k.Id == updatedTime.Id) ?? throw new NotFoundException("TransportTime not found");
 
