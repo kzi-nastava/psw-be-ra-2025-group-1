@@ -1,5 +1,4 @@
 using Explorer.BuildingBlocks.Core.Domain;
-using Explorer.Blog.API.Dtos;
 
 namespace Explorer.Blog.Core.Domain;
 
@@ -13,7 +12,7 @@ public class Vote : Entity
 
     public DateTime CreationTime { get; private set; }
 
-    public Vote(long userId, VoteType voteType)
+    public Vote(long userId, VoteType voteType) 
     {
         UserId = userId;
         VoteType = voteType;
