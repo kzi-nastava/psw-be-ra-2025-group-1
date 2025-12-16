@@ -40,7 +40,6 @@ builder.Services.ConfigureCors(corsPolicy);
 builder.Services.ConfigureAuth();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
-builder.Services.AddScoped<ITourExecutionService, TourExecutionService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<Explorer.Tours.Core.Domain.RepositoryInterfaces.IUserLocationRepository, UserLocationAdapter>(); // So there is no link between modules
 builder.Services.AddScoped<DemoSeeder>();
