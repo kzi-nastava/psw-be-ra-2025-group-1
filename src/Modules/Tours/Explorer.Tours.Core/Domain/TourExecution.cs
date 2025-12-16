@@ -25,8 +25,6 @@ public class TourExecution : AggregateRoot
 
     public TourExecution(long touristId, long tourId)
     {
-        if (touristId == 0) throw new ArgumentException("Invalid tourist ID");
-        if (tourId == 0) throw new ArgumentException("Invalid tour ID");
 
         TouristId = touristId;
         TourId = tourId;

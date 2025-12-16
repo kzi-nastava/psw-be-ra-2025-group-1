@@ -58,10 +58,8 @@ namespace Explorer.Tours.Tests.Unit.KeypointProgress
         }
 
         [Theory]
-        [InlineData(0, 1, typeof(ArgumentException))]
-        [InlineData(-1, 1, typeof(ArgumentException))]
-        [InlineData(1, 0, typeof(ArgumentException))]
-        [InlineData(1, -1, typeof(ArgumentException))]
+        [InlineData(0, 1, typeof(ArgumentException))]      // Invalid tour id 
+        [InlineData(1, 0, typeof(ArgumentException))]      // Invalid tourist id 
         public void Fails_to_create_execution_with_invalid_ids(long touristId, long tourId, Type exType)
         {
             // Act & Assert

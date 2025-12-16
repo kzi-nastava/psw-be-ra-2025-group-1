@@ -257,13 +257,14 @@ INSERT INTO tours."TourExecutions"(
     "StartTime", 
     "EndTime", 
     "LastActivity", 
-    "PercentageCompleted"
+    "PercentageCompleted",
+	"CurrentKeypointSequence"
 )
 VALUES 
     -- Completed tour for tourist -22 (can leave review - 100% completed)
-    (-1, -22, -1, 1, '2024-01-18T09:00:00Z', '2024-01-18T15:00:00Z', '2024-12-10T15:00:00Z', 100.0),
+    (-1, -22, -1, 1, '2024-01-18T09:00:00Z', '2024-01-18T15:00:00Z', '2024-12-10T15:00:00Z', 100.0, 0),
     -- Abandoned tour for tourist -23
-    (-2, -23, -1, 2, '2024-01-16T08:00:00Z', '2024-01-16T10:00:00Z', '2024-01-16T10:00:00Z', 20.0);
+    (-2, -23, -1, 2, '2024-01-16T08:00:00Z', '2024-01-16T10:00:00Z', '2024-01-16T10:00:00Z', 20.0, 0);
 
 INSERT INTO tours."TourEquipment"(
 	"EquipmentId", "TourId")
