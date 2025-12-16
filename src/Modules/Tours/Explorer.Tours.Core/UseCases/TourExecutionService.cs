@@ -12,7 +12,7 @@ public class TourExecutionService : ITourExecutionService
 {
     private readonly ITourExecutionRepository _tourExecutionRepository;
     private readonly ITourRepository _tourRepository;
-    private readonly IUserLocationRepository _userLocationService;
+    private readonly IUserLocationRepository _userLocationRepository;
     private readonly ITourPurchaseTokenRepository _tourPurchaseTokenRepository;
     private readonly IMapper _mapper;
 
@@ -25,7 +25,7 @@ public class TourExecutionService : ITourExecutionService
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
-        _userLocationService = userLocationService;
+        _userLocationRepository = userLocationService;
         _tourPurchaseTokenRepository = tourPurchaseTokenRepository;
         _mapper = mapper;
     }
@@ -110,7 +110,7 @@ public class TourExecutionService : ITourExecutionService
     public bool TryReachKeypoint(long touristId, long executionId)
     {
         var execution = _tourExecutionRepository.Get(executionId);
-        var userLocation = _userLocationService.GetByUserId(touristId);
+        var userLocation = _userLocationRepository.GetByUserId(touristId);
 
         // ---------- Checks ---------
         if (userLocation == null)
