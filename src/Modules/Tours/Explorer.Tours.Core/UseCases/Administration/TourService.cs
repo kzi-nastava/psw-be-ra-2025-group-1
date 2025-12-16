@@ -86,10 +86,11 @@ public class TourService : ITourService
     public bool Publish(long id)
     {
         Tour? tourToUpdate = _tourRepository.Get(id);
-
+        // No logic implemented yet
         //Additional validation for transport time
-        List<TransportTime> transportTimes = _timeRepository.GetByTourId(id).ToList();
-        if (tourToUpdate != null && transportTimes.Count >= 2)
+        //List<TransportTime> transportTimes = _timeRepository.GetByTourId(id).ToList();
+        //if (tourToUpdate != null && transportTimes.Count >= 2)
+        if (tourToUpdate != null)
         {
             if (tourToUpdate.Publish())
             { 

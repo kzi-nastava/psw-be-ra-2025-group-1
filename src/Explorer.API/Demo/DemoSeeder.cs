@@ -404,6 +404,9 @@ namespace Explorer.API.Demo
             long tour1Id = 1;
             long tourist2Id = 2;
 
+            var t1 = _tourService.GetById(tour1Id);
+            _tourService.Publish(t1.Id);
+
             TourExecutionDto tourExecution = new TourExecutionDto()
             {
                 TouristId = tourist2Id,
