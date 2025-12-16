@@ -19,7 +19,6 @@ public interface ITourService
     TourDto Create(CreateTourDto tour);
     TourDto Update(long id, TourDto tour, long authorId);
     void Delete(long id, long authorId);
-
     KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto, long authorId);
     KeypointDto UpdateKeypoint(long tourId, KeypointDto keypointDto, long authorId);
     void DeleteKeypoint(long tourId, long keypointId, long authorId);

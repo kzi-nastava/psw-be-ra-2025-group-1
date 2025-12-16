@@ -1,5 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Tours.API.Dtos.Enums;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,10 +69,12 @@ public class Tour : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void Publish()
+    public bool Publish()
     {
+        if (!ValidateToPublish()) return false;  
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
+        return true;
     }
     public void Archive()
     {
@@ -116,5 +120,15 @@ public class Tour : AggregateRoot
     private int GenerateKeypointSequenceNumber()
     {
         return Keypoints.Count + 1;
+    }
+
+    private bool ValidateToPublish()
+    {
+        if (Status == TourStatus.Published) return false;
+        if (Title.Length <= 0) return false;
+        if (Description.Length <= 0) return false;
+        if (Difficulty < 1 || Difficulty > 10) return false;
+        if (Tags.Length <= 0) return false;
+        return true;
     }
 }
