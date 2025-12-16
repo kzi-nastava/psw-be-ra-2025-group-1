@@ -1,0 +1,10 @@
+namespace Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+
+public interface IProblemMessageRepository
+{
+    ProblemMessage Add(ProblemMessage message);
+    IEnumerable<ProblemMessage> GetByProblemId(long problemId);
+    ProblemMessage? Get(long id);
+    ProblemMessage Update(ProblemMessage message);
+    void Delete(ProblemMessage message);
+}

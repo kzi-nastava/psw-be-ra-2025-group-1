@@ -11,6 +11,7 @@
 	  <None Remove="TestData\b-users.sql" />
 	  <None Remove="TestData\c-people.sql" />
 	  <None Remove="TestData\d-messaging.sql" />
+	  <None Remove="TestData\e-problem.sql" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Content Include="TestData\a-delete.sql">
@@ -28,6 +29,9 @@
         <Content Include="TestData\e-journals.sql">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+	  <Content Include="TestData\e-problem.sql">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -48,5 +52,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\BuildingBlocks\Explorer.BuildingBlocks.Tests\Explorer.BuildingBlocks.Tests.csproj" />
 		<ProjectReference Include="..\..\..\Explorer.API\Explorer.API.csproj" />
+		<ProjectReference Include="..\..\Tours\Explorer.Tours.Infrastructure\Explorer.Tours.Infrastructure.csproj" />
 	</ItemGroup>
 </Project>

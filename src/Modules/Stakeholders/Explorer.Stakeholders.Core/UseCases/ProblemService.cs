@@ -1,0 +1,218 @@
+using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.API.Dtos;
+using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+using DomainProblemStatus = Explorer.Stakeholders.Core.Domain.ProblemStatus;
+using DtoProblemStatus = Explorer.Stakeholders.API.Dtos.ProblemStatus;
+using DomainProblemCategory = Explorer.Stakeholders.Core.Domain.ProblemCategory;
+
+namespace Explorer.Stakeholders.Core.UseCases;
+
+public class ProblemService : IProblemService
+{
+    private readonly IProblemRepository _problemRepository;
+    private readonly INotificationService _notificationService;
+    private readonly IMapper _mapper;
+
+    public ProblemService(
+        IProblemRepository repository, 
+        INotificationService notificationService,
+        IMapper mapper)
+    {
+        _problemRepository = repository;
+        _notificationService = notificationService;
+        _mapper = mapper;
+    }
+
+    public PagedResult<ProblemDto> GetPaged(int page, int pageSize)
+    {
+        var result = _problemRepository.GetPaged(page, pageSize);
+        var items = result.Results.Select(_mapper.Map<ProblemDto>).ToList();
+        return new PagedResult<ProblemDto>(items, result.TotalCount);
+    }
+
+    public PagedResult<ProblemDto> GetByCreator(long creatorId, int page, int pageSize)
+    {
+        var result = _problemRepository.GetByCreatorId(creatorId, page, pageSize);
+        var items = result.Results.Select(_mapper.Map<ProblemDto>).ToList();
+        return new PagedResult<ProblemDto>(items, result.TotalCount);
+    }
+
+    public PagedResult<ProblemDto> GetByAuthor(long authorId, int page, int pageSize)
+    {
+        Console.WriteLine($"🔍 GetByAuthor called with authorId={authorId}");
+        var result = _problemRepository.GetByAuthorId(authorId, page, pageSize);
+        Console.WriteLine($"🔍 Found {result.Results.Count} problems for author {authorId}");
+        
+        foreach (var problem in result.Results)
+        {
+            Console.WriteLine($"   - Problem Id={problem.Id}, TourId={problem.TourId}, AuthorId={problem.AuthorId}, CreatorId={problem.CreatorId}");
+        }
+        
+        var items = result.Results.Select(_mapper.Map<ProblemDto>).ToList();
+        return new PagedResult<ProblemDto>(items, result.TotalCount);
+    }
+
+    public ProblemDto Get(long id, long userId)
+    {
+        var problem = _problemRepository.Get(id);
+
+        if (userId != problem.CreatorId && userId != problem.AuthorId)
+            throw new UnauthorizedAccessException("Only participants can view this problem.");
+
+        return _mapper.Map<ProblemDto>(problem);
+    }
+
+    public ProblemDto GetByIdForAdmin(long id)
+    {
+        var problem = _problemRepository.Get(id);
+        return _mapper.Map<ProblemDto>(problem);
+    }
+
+    public ProblemDto Create(ProblemDto problemDto)
+    {
+        // AuthorId mora biti postavljen pre poziva ovog servisa (npr. u kontroleru)
+        if (problemDto.AuthorId == 0)
+        {
+            throw new ArgumentException("AuthorId must be set before creating a problem.");
+        }
+        
+        Console.WriteLine($"🔍 Creating problem for TourId={problemDto.TourId}, CreatorId={problemDto.CreatorId}, AuthorId={problemDto.AuthorId}");
+        
+        var problem = _mapper.Map<Problem>(problemDto);
+        Console.WriteLine($"🔍 Mapped problem - AuthorId in domain: {problem.AuthorId}");
+        
+        var result = _problemRepository.Create(problem);
+        Console.WriteLine($"🔍 Saved problem with Id={result.Id}, AuthorId={result.AuthorId}");
+        
+        return _mapper.Map<ProblemDto>(result);
+    }
+
+    public ProblemDto Update(ProblemDto problemDto)
+    {
+        var problem = _problemRepository.Get(problemDto.Id);
+        var category = _mapper.Map<DomainProblemCategory>(problemDto.Category);
+        problem.Update(problemDto.Priority, problemDto.Description, category);
+        var result = _problemRepository.Update(problem);
+        return _mapper.Map<ProblemDto>(result);
+    }
+
+    public void Delete(long id)
+    {
+        _problemRepository.Delete(id);
+    }
+
+    public ProblemDto ChangeProblemStatus(long problemId, long touristId, DtoProblemStatus newStatus, string? comment)
+    {
+        var problem = _problemRepository.Get(problemId);
+
+        if (problem.CreatorId != touristId)
+            throw new UnauthorizedAccessException("Only the tourist who reported the problem can change its status.");
+
+        switch (newStatus)
+        {
+            case DtoProblemStatus.ResolvedByTourist:
+                problem.MarkAsResolvedByTourist(comment);
+                break;
+            case DtoProblemStatus.Unresolved:
+                problem.MarkAsUnresolved(comment);
+                break;
+            default:
+                throw new ArgumentException($"Cannot change status to {newStatus}.");
+        }
+
+        var result = _problemRepository.Update(problem);
+        return _mapper.Map<ProblemDto>(result);
+    }
+
+    public ProblemDto SetAdminDeadline(long problemId, DateTime deadline)
+    {
+        var problem = _problemRepository.Get(problemId);
+        problem.SetAdminDeadline(deadline);
+        
+        // Notifikacija autoru ture o postavljenom roku
+        _notificationService.Create(
+            problem.AuthorId,
+            $"Administrator has set a deadline of {deadline:yyyy-MM-dd HH:mm} for problem #{problemId}.",
+            NotificationTypeDto.ProblemReportDeadline,
+            problemId
+        );
+        
+        var result = _problemRepository.Update(problem);
+        return _mapper.Map<ProblemDto>(result);
+    }
+
+    public List<ProblemDto> GetUnresolvedOlderThan(int days = 5)
+    {
+        var problems = _problemRepository.GetUnresolvedOlderThan(days);
+        return problems.Select(_mapper.Map<ProblemDto>).ToList();
+    }
+
+    // Admin akcije
+    public ProblemDto CloseProblemAsAdmin(long problemId, long adminId, string? comment = null)
+    {
+        var problem = _problemRepository.Get(problemId);
+        
+        // Admin moze da zatvori problem bez obzira na trenutni status
+        problem.CloseByAdmin(comment);
+        
+        var result = _problemRepository.Update(problem);
+        
+        // Notifikacija turistu
+        _notificationService.Create(
+            problem.CreatorId,
+            $"Administrator has closed problem #{problemId}. {(comment != null ? $"Comment: {comment}" : "")}",
+            NotificationTypeDto.ProblemClosedByAdmin,
+            problemId
+        );
+        
+        // Notifikacija autoru
+        _notificationService.Create(
+            problem.AuthorId,
+            $"Administrator has closed problem #{problemId}. {(comment != null ? $"Comment: {comment}" : "")}",
+            NotificationTypeDto.ProblemClosedByAdmin,
+            problemId
+        );
+        
+        return _mapper.Map<ProblemDto>(result);
+    }
+
+    public void PenalizeAuthor(long problemId, long adminId)
+    {
+        var problem = _problemRepository.Get(problemId);
+        
+        // Zatvori problem - arhiviranje ture će biti obavljeno na nivou kontrolera
+        problem.CloseByAdmin($"Tour archived by administrator as penalty for unresolved problem.");
+        _problemRepository.Update(problem);
+        
+        // Notifikacija autoru o penalizaciji
+        _notificationService.Create(
+            problem.AuthorId,
+            $"Your tour has been archived as a penalty for not resolving problem #{problemId} within the deadline.",
+            NotificationTypeDto.AuthorPenalized,
+            problemId
+        );
+    }
+
+    public void CheckAndNotifyExpiredDeadlines(long adminId)
+    {
+        // Dobavi sve probleme koji imaju istekao deadline
+        var allProblems = _problemRepository.GetPaged(1, int.MaxValue).Results;
+        
+        foreach (var problem in allProblems)
+        {
+            if (problem.HasMissedAdminDeadline())
+            {
+                _notificationService.Create(
+                    problem.AuthorId,
+                    $"The deadline for problem #{problem.Id} has expired. Please resolve it as soon as possible.",
+                    NotificationTypeDto.ProblemDeadlineExpired,
+                    problem.Id
+                );
+            }
+        }
+    }
+}

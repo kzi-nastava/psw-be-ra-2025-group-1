@@ -23,7 +23,7 @@ public class FacilityCommandTests : BaseToursIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         var newEntity = new FacilityDto
         {
-            Name = "Museum Parking Lot",
+            Name = "New Test Facility " + Guid.NewGuid().ToString().Substring(0, 8),
             Latitude = 40.779437,
             Longitude = -73.963244,
             Category = API.Dtos.FacilityCategory.Parking
@@ -65,21 +65,39 @@ public class FacilityCommandTests : BaseToursIntegrationTest
     }
 
     [Fact]
-    public void Create_fails_invalid_coordinates()
+    public void Create_fails_invalid_latitude()
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
-        var invalidLatitude = new FacilityDto
+        var invalidEntity = new FacilityDto
         {
-            Name = "Invalid Facility",
-            Latitude = 95.0, // Invalid latitude
+            Name = "Test Facility",
+            Latitude = 100.0, // Invalid: exceeds valid range
             Longitude = -73.963244,
-            Category = API.Dtos.FacilityCategory.WC
+            Category = API.Dtos.FacilityCategory.Restaurant
         };
 
         // Act & Assert
-        Should.Throw<ArgumentException>(() => controller.Create(invalidLatitude));
+        Should.Throw<ArgumentException>(() => controller.Create(invalidEntity));
+    }
+
+    [Fact]
+    public void Create_fails_invalid_longitude()
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope);
+        var invalidEntity = new FacilityDto
+        {
+            Name = "Test Facility",
+            Latitude = 40.779437,
+            Longitude = 200.0, // Invalid: exceeds valid range
+            Category = API.Dtos.FacilityCategory.Restaurant
+        };
+
+        // Act & Assert
+        Should.Throw<ArgumentException>(() => controller.Create(invalidEntity));
     }
 
     [Fact]
@@ -88,12 +106,13 @@ public class FacilityCommandTests : BaseToursIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
-        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         
-        // First, create a facility
+        var uniqueName = "Unique Test Facility " + Guid.NewGuid().ToString().Substring(0, 8);
+        
+        // First, create a facility with a unique name
         var originalEntity = new FacilityDto
         {
-            Name = "Unique Test Facility",
+            Name = uniqueName,
             Latitude = 40.779437,
             Longitude = -73.963244,
             Category = API.Dtos.FacilityCategory.WC
@@ -103,7 +122,7 @@ public class FacilityCommandTests : BaseToursIntegrationTest
         // Now try to create a duplicate
         var duplicateEntity = new FacilityDto
         {
-            Name = "Unique Test Facility", // Same name
+            Name = uniqueName, // Same name
             Latitude = 41.0,
             Longitude = -74.0,
             Category = API.Dtos.FacilityCategory.Restaurant
@@ -120,13 +139,25 @@ public class FacilityCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        
+        // First create a facility to update
+        var originalEntity = new FacilityDto
+        {
+            Name = "Original Facility " + Guid.NewGuid().ToString().Substring(0, 8),
+            Latitude = 40.779437,
+            Longitude = -73.963244,
+            Category = API.Dtos.FacilityCategory.WC
+        };
+        var created = ((ObjectResult)controller.Create(originalEntity).Result)?.Value as FacilityDto;
+        
+        // Now update it
         var updatedEntity = new FacilityDto
         {
-            Id = -1,
-            Name = "Updated Central Park WC",
+            Id = created.Id,
+            Name = "Updated Facility " + Guid.NewGuid().ToString().Substring(0, 8),
             Latitude = 40.785091,
             Longitude = -73.968285,
-            Category = API.Dtos.FacilityCategory.WC
+            Category = API.Dtos.FacilityCategory.Restaurant
         };
 
         // Act
@@ -134,12 +165,12 @@ public class FacilityCommandTests : BaseToursIntegrationTest
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(-1);
+        result.Id.ShouldBe(created.Id);
         result.Name.ShouldBe(updatedEntity.Name);
         result.UpdatedAt.ShouldNotBeNull();
 
         // Assert - Database
-        var storedEntity = dbContext.Facility.FirstOrDefault(i => i.Id == -1);
+        var storedEntity = dbContext.Facility.FirstOrDefault(i => i.Id == created.Id);
         storedEntity.ShouldNotBeNull();
         storedEntity.Name.ShouldBe(updatedEntity.Name);
         storedEntity.UpdatedAt.ShouldNotBeNull();
@@ -171,16 +202,26 @@ public class FacilityCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        
+        // First create a facility to delete
+        var entityToDelete = new FacilityDto
+        {
+            Name = "Facility To Delete " + Guid.NewGuid().ToString().Substring(0, 8),
+            Latitude = 40.779437,
+            Longitude = -73.963244,
+            Category = API.Dtos.FacilityCategory.Other
+        };
+        var created = ((ObjectResult)controller.Create(entityToDelete).Result)?.Value as FacilityDto;
 
         // Act
-        var result = (OkResult)controller.Delete(-3);
+        var result = (OkResult)controller.Delete(created.Id);
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.Facility.FirstOrDefault(i => i.Id == -3);
+        var storedEntity = dbContext.Facility.FirstOrDefault(i => i.Id == created.Id);
         storedEntity.ShouldBeNull();
     }
     
