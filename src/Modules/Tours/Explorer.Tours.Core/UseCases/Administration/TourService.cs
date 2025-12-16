@@ -12,12 +12,14 @@ public class TourService : ITourService
 {
     private readonly ITourRepository _tourRepository;
     private readonly ITransportTimeRepository _timeRepository;
+    private readonly IEquipmentRepository _equipmentRepository;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, ITransportTimeRepository timeRepository, IMapper mapper)
+    public TourService(ITourRepository tourRepository, ITransportTimeRepository timeRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
     {
         _tourRepository = tourRepository;
         _timeRepository = timeRepository;
+        _equipmentRepository = equipmentRepository;
         _mapper = mapper;
     }
 
@@ -68,7 +70,9 @@ public class TourService : ITourService
 
     public TourDto GetById(long id)
     {
-        return _mapper.Map<TourDto>(_tourRepository.Get(id));
+        var tour = _tourRepository.Get(id);
+        var dto = _mapper.Map<TourDto>(tour);
+        return dto;
     }
 
     public PagedResult<TourDto> GetPaged(int page, int pageSize)
@@ -113,6 +117,11 @@ public class TourService : ITourService
         return _mapper.Map<TourDto>(result);
     }
 
+    public void ArchiveTour(long tourId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        tour.Archive();
+    }
     public KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
@@ -142,5 +151,26 @@ public class TourService : ITourService
             throw new InvalidOperationException("Can't delete keypoint from someone else's tour");
         tour.DeleteKeypoint(keypointId);
         var result = _tourRepository.Update(tour);
+    }
+
+    public TourDto AddEquipment(long id, long equipmentId, long authorId)
+    {
+        var tour = _tourRepository.Get(id);
+        var equip = _equipmentRepository.Get(equipmentId);
+        if(tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't add equipment to someone else's tour");
+        tour.AddEquipment(equip);
+        var result = _tourRepository.Update(tour);
+        return _mapper.Map<TourDto>(result);
+    }
+    public TourDto RemoveEquipment(long id, long equipmentId, long authorId)
+    {
+        var tour = _tourRepository.Get(id);
+        var equip = _equipmentRepository.Get(equipmentId);
+        if(tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't remove equipment from someone else's tour");
+        tour.RemoveEquipment(equip);
+        var result = _tourRepository.Update(tour);
+        return _mapper.Map<TourDto>(result);
     }
 }

@@ -8,7 +8,7 @@ public enum TourExecutionStatus
     Abandoned
 }
 
-public class TourExecution : Entity
+public class TourExecution : AggregateRoot
 {
     public long TouristId { get; private set; }
     public long TourId { get; private set; }
@@ -25,8 +25,8 @@ public class TourExecution : Entity
 
     public TourExecution(long touristId, long tourId)
     {
-        if (touristId <= 0) throw new ArgumentException("Invalid tourist ID");
-        if (tourId <= 0) throw new ArgumentException("Invalid tour ID");
+        if (touristId == 0) throw new ArgumentException("Invalid tourist ID");
+        if (tourId == 0) throw new ArgumentException("Invalid tour ID");
 
         TouristId = touristId;
         TourId = tourId;
@@ -40,8 +40,8 @@ public class TourExecution : Entity
 
     private void Validate()
     {
-        if (TouristId <= 0) throw new ArgumentException("Invalid tourist ID");
-        if (TourId <= 0) throw new ArgumentException("Invalid tour ID");
+        if (TouristId == 0) throw new ArgumentException("Invalid tourist ID");
+        if (TourId == 0) throw new ArgumentException("Invalid tour ID");
     }
 
     public void UpdateLastActivity()

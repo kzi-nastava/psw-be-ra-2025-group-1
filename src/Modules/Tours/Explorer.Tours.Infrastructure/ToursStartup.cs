@@ -35,12 +35,12 @@ public static class ToursStartup
         services.AddScoped<IMeetUpService, MeetUpService>();
         services.AddScoped<IPersonEquipmentService, PersonEquipmentService>();
         services.AddScoped<ITransportTimeService, TransportTimeService>();
-        services.AddScoped<IPersonEquipmentService, PersonEquipmentService>(); //dodala sam
         services.AddScoped<ITourBrowsingService, TourBrowsingService>();
-
+        services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
         services.AddScoped<IShoppingCartService, ShoppingCartService>();
+        services.AddScoped<ITourExecutionService, TourExecutionService>();
     }
-
+    
     private static void SetupInfrastructure(IServiceCollection services)
     {
         services.AddScoped<IEquipmentRepository, EquipmentDbRepository>();
@@ -50,11 +50,9 @@ public static class ToursStartup
         services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>();
         services.AddScoped<ITransportTimeRepository, TransportTimeRepository>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
-        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); //dodala sam
         services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
-
-
-
+        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+        
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();

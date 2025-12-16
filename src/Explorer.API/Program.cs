@@ -45,6 +45,7 @@ builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<Explorer.Tours.Core.Domain.RepositoryInterfaces.IUserLocationRepository, UserLocationAdapter>(); // So there is no link between modules
 builder.Services.AddScoped<DemoSeeder>();
 
+
 builder.Services.RegisterModules();
 
 var app = builder.Build();

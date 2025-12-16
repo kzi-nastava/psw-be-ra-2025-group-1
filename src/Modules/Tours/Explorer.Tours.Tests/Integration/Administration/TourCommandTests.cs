@@ -4,6 +4,7 @@ using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Dtos.Enums;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -71,7 +72,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         // Added logic to check if the object exists
         // THis is usefull so that the test passes even when ran with other test or by it's own
         var stored = dbContext.Tour.FirstOrDefault(i => i.Title == "New Tour");
-        if(stored == null)
+        if (stored == null)
         {
             var newEntity = new CreateTourDto { CreatorId = 1, Title = "To Update", Description = "Will be updated", Difficulty = 2, Tags = new[] { "t1" }, Status = TourStatusDto.Draft, Price = 50.0 };
 
@@ -186,14 +187,14 @@ public class TourCommandTests : BaseToursIntegrationTest
                 ex.ShouldBeOfType<NotFoundException>();   // tour not found
         }
     }
-    
 
-    [Theory] 
-    [InlineData("-1", -1,-1, "Updated OK", 200)] // Valid
-    [InlineData("-1", -1, -1, "", 400)] // Invalid, empty title
-    [InlineData("-1", -19, 1, "Title", 403)] // Invalid, unauthorized
-    [InlineData("-1", -1, 77, "Title", 404)] // Invalid, keypoint not found
-    [InlineData("-1", -77, -1, "Title", 404)] // Invalid, tour not found
+
+    [Theory]
+    [InlineData("-1", -15, -2, "Updated OK", 200)] // Valid - using Draft tour -15 and keypoint -2
+    [InlineData("-1", -15, -2, "", 400)] // Invalid, empty title
+    [InlineData("-1", -19, -2, "Title", 403)] // Invalid, unauthorized
+    [InlineData("-1", -15, 77, "Title", 404)] // Invalid, keypoint not found
+    [InlineData("-1", -77, -2, "Title", 404)] // Invalid, tour not found
     public void Updates_keypoint(
         string authorId,
         long tourId,
@@ -230,11 +231,11 @@ public class TourCommandTests : BaseToursIntegrationTest
             kp.ShouldNotBeNull();
             kp.Title.ShouldBe(newTitle);
         }
-        else 
+        else
         {
             var ex = Should.Throw<Exception>(() => controller.UpdateKeypoint(tourId, keypointId, updated));
 
-            if(expectedStatus == 400)
+            if (expectedStatus == 400)
             {
                 ex.ShouldBeOfType<ArgumentException>();
             }
@@ -242,7 +243,7 @@ public class TourCommandTests : BaseToursIntegrationTest
             {
                 ex.ShouldBeOfType<InvalidOperationException>();
             }
-            else if(expectedStatus == 404)
+            else if (expectedStatus == 404)
             {
                 ex.ShouldBeOfType<NotFoundException>();
             }
@@ -250,10 +251,10 @@ public class TourCommandTests : BaseToursIntegrationTest
     }
 
     [Theory]
-    [InlineData("-1", -1, -1, 200)] // Valid
-    [InlineData("-2", -15, -1, 403)] // Invalid, unauthorized
-    [InlineData("-1", -1, 77, 404)] // Invalid, keypoint not found
-    [InlineData("-1", -77, -1, 404)] // Invalid, tour not found
+    [InlineData("-1", -15, -2, 200)] // Valid - using Draft tour -15 and keypoint -2
+    [InlineData("-2", -15, -2, 403)] // Invalid, unauthorized
+    [InlineData("-1", -15, 77, 404)] // Invalid, keypoint not found
+    [InlineData("-1", -77, -2, 404)] // Invalid, tour not found
     public void Deletes_keypoint(string authorId, long tourId, long keypointId, int expectedStatus)
     {
         // Arrange
@@ -275,14 +276,107 @@ public class TourCommandTests : BaseToursIntegrationTest
         {
             var ex = Should.Throw<Exception>(() => controller.DeleteKeypoint(tourId, keypointId));
 
-            if(expectedStatus == 403)
+            if (expectedStatus == 403)
             {
                 ex.ShouldBeOfType<InvalidOperationException>();
             }
-            else if(expectedStatus == 404)
+            else if (expectedStatus == 404)
             {
                 ex.ShouldBeOfType<NotFoundException>();
             }
         }
     }
+
+    [Theory]
+    [InlineData("-1", -5, -2, 200)] // Valid
+    [InlineData("-2", -5, -3, 403)] // Invalid, unathorizted
+    [InlineData("-1", -5, -4, 403)] // Invalid, already exists
+    [InlineData("-1", -5, -9999999, 404)] // Invalid, equipment doesn't exist
+    [InlineData("-1", -9999999, -1, 404)] // Invalid, tour doesn't exist
+    public void Adds_equipment_to_tour(string authorId, long tourId, long equipmentId, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+
+        if (expectedStatus == 200)
+        {
+            // Act
+            var response = controller.AddEquipment(tourId, equipmentId);
+
+
+            // Assert – Database
+            var stored = dbContext.Tour
+                .Include(t => t.Equipment)
+                .First(t => t.Id == tourId);
+            stored.Equipment.ShouldContain(e => e.Id == equipmentId);
+        }
+        else
+        {
+            var ex = Should.Throw<Exception>(() => controller.AddEquipment(tourId, equipmentId));
+
+            if (expectedStatus == 403)
+            {
+                ex.ShouldBeOfType<InvalidOperationException>();
+            }
+            else if (expectedStatus == 404)
+            {
+                ex.ShouldBeOfType<NotFoundException>();
+            }
+        }
+    }
+
+    [Theory]
+    [InlineData("-1", -5, -1, 200)]        // Valid
+    [InlineData("-1", -5, -1, 403)]        // Invalid, equipment not on tour
+    [InlineData("-1", -5, -9999999, 404)]  // Invalid, equipment doesn't exist
+    [InlineData("-1", -9999999, -1, 404)]  // Invalid, tour doesn't exist
+    public void Removes_equipment_from_tour(string authorId, long tourId, long equipmentId, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        if (expectedStatus == 200)
+        {
+            // Ensure the tour actually has the equipment before removing it
+            var tour = dbContext.Tour
+                .Include(t => t.Equipment)
+                .First(t => t.Id == tourId);
+
+            if (!tour.Equipment.Any(e => e.Id == equipmentId))
+            {
+                var equipment = dbContext.Equipment.First(e => e.Id == equipmentId);
+                tour.Equipment.Add(equipment);
+                dbContext.SaveChanges();
+            }
+
+            // Act
+            var response = controller.RemoveEquipment(tourId, equipmentId);
+
+            // Assert – Database
+            var stored = dbContext.Tour
+                .Include(t => t.Equipment)
+                .First(t => t.Id == tourId);
+
+            stored.Equipment.ShouldNotContain(e => e.Id == equipmentId);
+        }
+        else
+        {
+            var ex = Should.Throw<Exception>(() => controller.RemoveEquipment(tourId, equipmentId));
+
+            if (expectedStatus == 403)
+            {
+                ex.ShouldBeOfType<InvalidOperationException>(); // trying to remove something not assigned
+            }
+            else if (expectedStatus == 404)
+            {
+                ex.ShouldBeOfType<NotFoundException>();
+            }
+        }
+    }
+
 }

@@ -11,15 +11,19 @@ namespace Explorer.Tours.API.Public.Administration;
 public interface ITourService
 {
     PagedResult<TourDto> GetPaged(int page, int pageSize);
-    TourDto GetById(long id);
+    TourDto GetById(long tourId);
     List<TourDto> GetAll();
     PagedResult<TourDto> GetByCreator(long creatorId, int page, int pageSize);
-    public bool Publish(long id);
-    public bool Archive(long id);
+    void ArchiveTour(long tourId);
+    public bool Publish(long tourId);
+    public bool Archive(long tourId);
     TourDto Create(CreateTourDto tour);
-    TourDto Update(long id, TourDto tour, long authorId);
-    void Delete(long id, long authorId);
+    TourDto Update(long tourId, TourDto tour, long authorId);
+    void Delete(long tourId, long authorId);
+
     KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto, long authorId);
     KeypointDto UpdateKeypoint(long tourId, KeypointDto keypointDto, long authorId);
     void DeleteKeypoint(long tourId, long keypointId, long authorId);
+    TourDto AddEquipment(long tourId, long equipmentId, long authorId);
+    TourDto RemoveEquipment(long tourId, long equipmentId, long authorId);
 }
