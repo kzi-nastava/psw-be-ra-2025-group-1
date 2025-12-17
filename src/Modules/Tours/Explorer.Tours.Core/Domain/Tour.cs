@@ -186,6 +186,7 @@ public class Tour : AggregateRoot
         var tt = TransportTimes.FirstOrDefault(k => k.Id == transportTimeId) ?? throw new NotFoundException("TransportTime not found");
         TransportTimes.Remove(tt);
         return tt;
+    }
     private bool ValidateToPublish()
     {
         if (Status == TourStatus.Published) return false;
