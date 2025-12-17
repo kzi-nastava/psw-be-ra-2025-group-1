@@ -15,7 +15,7 @@ public class ToursProfile : Profile
         CreateMap<MeetUpDto, MeetUp>().ReverseMap();
         CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap(); //dodala sam
         CreateMap<TourPurchaseTokenDto, TourPurchaseToken>().ReverseMap();
-        CreateMap<CreateTourDto, Tour>().ForMember(dest => dest.Keypoints, opt => opt.Ignore());
+        CreateMap<CreateTourDto, Tour>().ForMember(dest => dest.Keypoints, opt => opt.Ignore()).ForMember(dest => dest.Equipment, opt => opt.Ignore());
         CreateMap<KeypointDto, Keypoint>().ReverseMap();
         CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();
         CreateMap<TransportTimeDto, TransportTime>().ReverseMap();

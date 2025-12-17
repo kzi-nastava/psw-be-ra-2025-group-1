@@ -18,5 +18,6 @@ public class TourDto
     public TourStatusDto Status { get; init; }= TourStatusDto.Draft;
     public double Price { get; init; } = -1;
     public List<KeypointDto> Keypoints { get; init; }
+    public List<EquipmentDto> Equipment { get; init; }
 }
 

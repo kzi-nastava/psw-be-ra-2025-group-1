@@ -1,6 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.UseCases;
@@ -24,7 +25,7 @@ namespace Explorer.API.Controllers.Tourist
         [HttpGet]
         public ActionResult<UserLocationDto> Get()
         {
-            long userId = long.Parse(User.Claims.First(i => i.Type == "id").Value);
+            long userId = User.PersonId();
             var result = _locationService.GetByUserId(userId);
             return Ok(result);
         }
@@ -32,7 +33,7 @@ namespace Explorer.API.Controllers.Tourist
         [HttpPost]
         public ActionResult<UserLocationDto> Create([FromBody] UserLocationDto userLocation)
         {
-            long userId = long.Parse(User.Claims.First(i => i.Type == "id").Value);
+            long userId = User.PersonId();
             userLocation.UserId = userId;
             return Ok(_locationService.Create(userLocation));
         }
@@ -40,6 +41,8 @@ namespace Explorer.API.Controllers.Tourist
         [HttpPut]
         public ActionResult<UserLocationDto> Update([FromBody] UserLocationDto userLocation)
         {
+            long userId = User.PersonId();
+            userLocation.UserId = userId;
             return Ok(_locationService.Update(userLocation));
         }
 
