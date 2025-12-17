@@ -26,6 +26,8 @@ public class ToursProfile : Profile
         CreateMap<Monument, MonumentDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
 
+        CreateMap<KeypointProgressDto, KeypointProgress>().ReverseMap();
+
         // TourExecution mappings with explicit enum conversion
         CreateMap<TourExecution, TourExecutionDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (TourExecutionStatusDto)src.Status));

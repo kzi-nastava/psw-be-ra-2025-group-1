@@ -1,6 +1,7 @@
 ﻿using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
+using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
 
 namespace Explorer.API.Demo
@@ -12,14 +13,16 @@ namespace Explorer.API.Demo
         private readonly IFacilityService _facilityService;
         private readonly ITourService _tourService;
         private readonly IUserLocationService _userLocationService;
+        private readonly ITourExecutionService _tourExecutionService;
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService)
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
             _facilityService = facilityService;
             _tourService = tourService;
             _userLocationService = userLocationService;
+            _tourExecutionService = tourExecution;
         }
 
         public void Seed()
@@ -30,8 +33,9 @@ namespace Explorer.API.Demo
             SeedEquipment();
             SeedFacilities();
             SeedTours();
-            //SeedKeypoints();
             SeedUserLocation();
+            SeedKeypoints();
+            SeedTourExecution();
         }
 
         private void SeedAdmin()
@@ -409,6 +413,27 @@ namespace Explorer.API.Demo
                     Longitude = 19.8451
                 });
             }
+        }
+        private void SeedTourExecution()
+        {
+            long tour1Id = 1;
+            long tourist2Id = 2;
+
+            var t1 = _tourService.GetById(tour1Id);
+            _tourService.Publish(t1.Id);
+
+            TourExecutionDto tourExecution = new TourExecutionDto()
+            {
+                TouristId = tourist2Id,
+                TourId = tour1Id,
+                Status = TourExecutionStatusDto.InProgress,
+                StartTime = DateTime.UtcNow.AddHours(-2), // Started 2 hours ago
+                EndTime = null,
+                LastActivity = DateTime.UtcNow.AddMinutes(-15), // Last activity 15 minutes ago
+                PercentageCompleted = 33.33 // Completed 1 out of 3 keypoints
+            };
+
+            _tourExecutionService.Create(tourExecution);
         }
     }
 }
