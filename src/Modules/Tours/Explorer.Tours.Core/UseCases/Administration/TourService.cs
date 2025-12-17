@@ -86,33 +86,20 @@ public class TourService : ITourService
 
     public bool Publish(long id)
     {
-        var tour = GetById(id);
-        bool canPublish = true;
-
-        if (tour == null) return false;
-
-
-        if (tour.Status == TourStatusDto.Published) return false;
-
-        if (tour.Title.Length <= 0) canPublish = false;
-        if (tour.Description.Length <= 0) canPublish = false;
-        if (tour.Difficulty < 1 || tour.Difficulty > 10) canPublish = false;
-        if (tour.Tags.Length <= 0) canPublish = false;
-
-        //Additional validation needed for two keypoints or more
-        List<TransportTimeDto> transportTimes = tour.TransportTimes;
-        if (transportTimes.Count < 1) canPublish = false;
-
-        if (canPublish)
+        Tour? tourToUpdate = _tourRepository.Get(id);
+        // No logic implemented yet
+        //Additional validation for transport time
+        //List<TransportTime> transportTimes = _timeRepository.GetByTourId(id).ToList();
+        //if (tourToUpdate != null && transportTimes.Count >= 2)
+        if (tourToUpdate != null)
         {
-            Tour? tourToUpdate = _tourRepository.Get(id);
-            if (tourToUpdate != null)
-            {
-                tourToUpdate.Publish();
+            if (tourToUpdate.Publish())
+            { 
                 _tourRepository.Update(tourToUpdate);
+                return true;    
             }
         }
-        return canPublish;
+        return false;
     }
 
     public TourDto Update(long id, TourDto tourDto, long authorId)

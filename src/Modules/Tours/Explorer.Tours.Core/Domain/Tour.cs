@@ -1,5 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Tours.API.Dtos.Enums;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -58,6 +60,10 @@ public class Tour : AggregateRoot
         Price = price;
         CreatorId = creatorId;
         Keypoints = [];
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        PublishedAt = DateTime.MinValue;
+        ArchivedAt = DateTime.MinValue;
         Equipment = [];
         TransportTimes = [];
     }
@@ -74,12 +80,12 @@ public class Tour : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-
-
-    public void Publish()
+    public bool Publish()
     {
+        if (!ValidateToPublish()) return false;  
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
+        return true;
     }
     public void Archive()
     {
@@ -180,5 +186,15 @@ public class Tour : AggregateRoot
         var tt = TransportTimes.FirstOrDefault(k => k.Id == transportTimeId) ?? throw new NotFoundException("TransportTime not found");
         TransportTimes.Remove(tt);
         return tt;
+    }
+
+    private bool ValidateToPublish()
+    {
+        if (Status == TourStatus.Published) return false;
+        if (Title.Length <= 0) return false;
+        if (Description.Length <= 0) return false;
+        if (Difficulty < 1 || Difficulty > 10) return false;
+        if (Tags.Length <= 0) return false;
+        return true;
     }
 }

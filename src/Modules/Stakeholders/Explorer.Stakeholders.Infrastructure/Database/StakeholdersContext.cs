@@ -12,6 +12,8 @@ public class StakeholdersContext : DbContext
     public DbSet<TourPreference> TourPreferences { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Rating> Ratings { get; set; }
+    public DbSet<Journal> Journals { get; set; }
+    
     public DbSet<UserLocation> UserLocations { get; set; }
     public DbSet<Problem> Problems { get; set; }
     public DbSet<ProblemMessage> ProblemMessages { get; set; }
