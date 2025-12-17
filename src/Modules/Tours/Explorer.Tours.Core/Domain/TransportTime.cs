@@ -1,9 +1,4 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Explorer.Tours.Core.Domain
 {
@@ -21,6 +16,9 @@ namespace Explorer.Tours.Core.Domain
 
     public class TransportTime : Entity
     {
+        /// <summary>
+        /// Gets the transport type used by this instance.
+        /// </summary>
         public TransportType Type { get; private set; }
 
         /// <summary>
@@ -28,23 +26,34 @@ namespace Explorer.Tours.Core.Domain
         /// </summary>
         public int Duration { get; private set; }
 
-        public long TourId { get; private set; }
-        public Tour Tour { get; private set; }
         public TransportTime()
         {
             Type = TransportType.Foot;
             Duration = 0;
-            Tour = null!;
         }
 
-        public TransportTime(TransportType type, int duration, Tour tour)
+        public TransportTime(TransportType type, int duration)
         {
-            if (duration < 0) throw new ArgumentException("Duration cannot be negative.");
             Type = type;
             Duration = duration;
-            Tour = tour;
-            TourId = tour.Id;
+            Validate();
         }
 
+        public TransportTime Update(TransportTime time)
+        {
+            Duration=time.Duration;
+            Type=time.Type;
+
+            Validate();
+            return this;
+        }
+
+
+        private bool Validate()
+        {
+            if (Duration < 0) throw new ArgumentException("Duration cannot be negative.");
+            if(Type == TransportType.Unknown) throw new ArgumentException("Transport type cannot be unknown.");
+            return true;
+        }
     }
 }

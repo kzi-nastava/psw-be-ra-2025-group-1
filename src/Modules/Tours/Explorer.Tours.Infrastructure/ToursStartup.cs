@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Explorer.Tours.Core.UseCases;
-using Explorer.Tours.Core.Domain;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.UseCases.Tourist;
 
@@ -34,7 +33,6 @@ public static class ToursStartup
         services.AddScoped<IFacilityService, FacilityService>();
         services.AddScoped<IMeetUpService, MeetUpService>();
         services.AddScoped<IPersonEquipmentService, PersonEquipmentService>();
-        services.AddScoped<ITransportTimeService, TransportTimeService>();
         services.AddScoped<ITourBrowsingService, TourBrowsingService>();
         services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
         services.AddScoped<IShoppingCartService, ShoppingCartService>();
@@ -48,9 +46,8 @@ public static class ToursStartup
         services.AddScoped<ITourRepository, TourDbRepository>();
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
-        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>();
-        services.AddScoped<ITransportTimeRepository, TransportTimeRepository>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
+        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); 
         services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
         services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
         services.AddScoped<IMonumentRepository, MonumentDbRepository>();

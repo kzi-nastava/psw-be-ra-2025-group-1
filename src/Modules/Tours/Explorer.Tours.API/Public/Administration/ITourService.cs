@@ -26,4 +26,9 @@ public interface ITourService
     void DeleteKeypoint(long tourId, long keypointId, long authorId);
     TourDto AddEquipment(long tourId, long equipmentId, long authorId);
     TourDto RemoveEquipment(long tourId, long equipmentId, long authorId);
+
+
+    TransportTimeDto AddTransportTime(long tourId, TransportTimeDto transportTimeDto, long authorId);
+    TransportTimeDto UpdateTransportTime(long tourId, TransportTimeDto transportTimeDto, long authorId);
+    void DeleteTransportTime(long tourId, long transportTimeId, long authorId);
 }

@@ -2,8 +2,10 @@
 using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Cryptography;
 
 namespace Explorer.API.Controllers.Author;
 
@@ -14,12 +16,10 @@ namespace Explorer.API.Controllers.Author;
 public class TourController : ControllerBase
 {
     private readonly ITourService _tourService;
-    private readonly ITransportTimeService _transportTimeService;
 
-    public TourController(ITourService tourService, ITransportTimeService transportTimeService)
+    public TourController(ITourService tourService)
     {
         _tourService = tourService;
-        _transportTimeService = transportTimeService;
     }
 
     [Authorize(Policy = "authorPolicy")]
@@ -69,32 +69,29 @@ public class TourController : ControllerBase
         return Ok();
     }
 
-    [AllowAnonymous]
-    [HttpGet("{id:long}/transport-times")]
-    public ActionResult<List<TransportTimeDto>> GetTransportTime(long id)
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPost("{tourId:long}/transport-times")]
+    public ActionResult<TransportTimeDto> AddTransportTime(long tourId, [FromBody] TransportTimeDto transport)
     {
-        return Ok(_transportTimeService.GetByTourId(id));
+        long authorId = User.PersonId();
+        return Ok(_tourService.AddTransportTime(tourId, transport, authorId));
     }
 
     [Authorize(Policy = "authorPolicy")]
-    [HttpPost("{id:long}/transport-times")]
-    public ActionResult<TransportTimeDto> CreateTransportTime([FromBody] TransportTimeDto transport)
+    [HttpPut("{tourId:long}/transport-times/{transportId:long}")]
+    public ActionResult<TransportTimeDto> UpdateTransportTime(long tourId,long transportId,[FromBody] TransportTimeDto transport)
     {
-        return Ok(_transportTimeService.Create(transport));
+        transport.Id = transportId;
+        long authorId = User.PersonId();
+        return Ok(_tourService.UpdateTransportTime(tourId, transport, authorId));
     }
 
     [Authorize(Policy = "authorPolicy")]
-    [HttpPut("{id:long}/transport-times/{transportId:long}")]
-    public ActionResult<TransportTimeDto> UpdateTransportTime([FromBody] TransportTimeDto transport)
+    [HttpDelete("{tourId:long}/transport-times/{transportId:long}")]
+    public ActionResult DeleteTransportTime(long tourId, long transportId)
     {
-        return Ok(_transportTimeService.Update(transport));
-    }
-
-    [Authorize(Policy = "authorPolicy")]
-    [HttpDelete("{id:long}/transport-times/{transportId:long}")]
-    public ActionResult<TransportTimeDto> DeleteTransportTime(long id)
-    {
-        _transportTimeService.Delete(id);
+        long authorId = User.PersonId();
+        _tourService.DeleteTransportTime(tourId, transportId, authorId);
         return Ok();
     }
 
