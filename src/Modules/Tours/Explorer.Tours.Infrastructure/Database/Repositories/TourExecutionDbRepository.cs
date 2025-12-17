@@ -39,12 +39,15 @@ public class TourExecutionDbRepository : ITourExecutionRepository
 
     public TourExecution? Get(long id)
     {
-        return _dbSet.Find(id);
+        return _dbSet
+            .Include(te => te.KeypointProgresses)
+            .FirstOrDefault(te => te.Id == id);
     }
 
     public TourExecution? GetActiveTourByTourist(long touristId)
     {
         return _dbSet
+            .Include(te => te.KeypointProgresses)
             .Where(te => te.TouristId == touristId && te.Status == TourExecutionStatus.InProgress)
             .OrderByDescending(te => te.StartTime)
             .FirstOrDefault();
@@ -53,6 +56,7 @@ public class TourExecutionDbRepository : ITourExecutionRepository
     public List<TourExecution> GetByTourist(long touristId)
     {
         return _dbSet
+            .Include(te => te.KeypointProgresses)
             .Where(te => te.TouristId == touristId)
             .OrderByDescending(te => te.StartTime)
             .ToList();
@@ -61,6 +65,7 @@ public class TourExecutionDbRepository : ITourExecutionRepository
     public TourExecution? GetLastExecutionForTour(long touristId, long tourId)
     {
         return _dbSet
+            .Include(te => te.KeypointProgresses)
             .Where(te => te.TouristId == touristId && te.TourId == tourId)
             .OrderByDescending(te => te.StartTime)
             .FirstOrDefault();
