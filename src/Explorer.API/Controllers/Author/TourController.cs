@@ -114,12 +114,20 @@ public class TourController : ControllerBase
     [HttpPut("{id:long}/publish")]
     public ActionResult Publish(long id)
     {
-        bool result = _tourService.Publish(id);
-        if (result)
+        try
         {
-            return Ok();
+            bool result = _tourService.Publish(id);
+            if (result)
+            {
+                return Ok();
+            }
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
         }
         return BadRequest("Tour could not be published.");
+
     }
 
     [Authorize(Policy = "authorPolicy")]
