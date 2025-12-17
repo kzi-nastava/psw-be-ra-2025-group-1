@@ -42,7 +42,7 @@ namespace Explorer.API.Controllers.Administrator.Administration
 
         [HttpPost]
         [Authorize(Policy = "administratorPolicy")]
-        public ActionResult<MonumentDto> Create([FromBody] MonumentDto monument)
+        public ActionResult<MonumentDto> Create([FromBody] CreateMonumentDto monument)
         {
             return Ok(_monumentService.Create(monument));
         }

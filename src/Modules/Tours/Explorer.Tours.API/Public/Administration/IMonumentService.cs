@@ -13,7 +13,7 @@ namespace Explorer.Tours.API.Public.Administration
         PagedResult<MonumentDto> GetPaged(int page, int pageSize);
         List<MonumentDto> GetAll();
         MonumentDto GetById(long id);
-        MonumentDto Create(MonumentDto meetup);
+        MonumentDto Create(CreateMonumentDto meetup);
         MonumentDto Update(MonumentDto meetup);
         void Delete(long id);
     }

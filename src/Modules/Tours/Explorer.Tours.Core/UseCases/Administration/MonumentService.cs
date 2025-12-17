@@ -37,9 +37,9 @@ namespace Explorer.Tours.Core.UseCases.Administration
             return _mapper.Map<MonumentDto>(monument);
         }
 
-        public MonumentDto Create(MonumentDto monumentDto)
+        public MonumentDto Create(CreateMonumentDto monumentDto)
         {
-            var monument = _mapper.Map<Monument>(monumentDto);
+            var monument = new Monument(monumentDto.Name, monumentDto.Description, monumentDto.Longitude, monumentDto.Latitude);
             var createdMonument = _monumentRepository.Create(monument);
             return _mapper.Map<MonumentDto>(createdMonument);
         }
