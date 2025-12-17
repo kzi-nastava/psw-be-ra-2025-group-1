@@ -39,6 +39,7 @@ public static class ToursStartup
         services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
         services.AddScoped<IShoppingCartService, ShoppingCartService>();
         services.AddScoped<ITourExecutionService, TourExecutionService>();
+        services.AddScoped<IMonumentService, MonumentService>();
     }
     
     private static void SetupInfrastructure(IServiceCollection services)
@@ -52,7 +53,8 @@ public static class ToursStartup
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
         services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
-        
+        services.AddScoped<IMonumentRepository, MonumentDbRepository>();
+
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();
