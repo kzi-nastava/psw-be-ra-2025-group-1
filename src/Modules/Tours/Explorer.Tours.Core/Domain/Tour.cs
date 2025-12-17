@@ -195,6 +195,7 @@ public class Tour : AggregateRoot
         if (Description.Length <= 0) return false;
         if (Difficulty < 1 || Difficulty > 10) return false;
         if (Tags.Length <= 0) return false;
+        if (TransportTimes.Count < 1) return false;
         return true;
     }
 }
