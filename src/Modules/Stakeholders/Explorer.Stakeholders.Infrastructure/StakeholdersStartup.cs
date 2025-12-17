@@ -31,6 +31,8 @@ public static class StakeholdersStartup
         services.AddScoped<ITourPreferenceService, TourPreferenceService>();
         services.AddScoped<ITokenGenerator, JwtGenerator>();
         services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IJournalService, JournalService>();
+
         services.AddScoped<IRatingsService, RatingsService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IUserLocationService, UserLocationService>();
@@ -48,6 +50,7 @@ public static class StakeholdersStartup
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<IRatingRepository, RatingDbRepository>();
+        services.AddScoped<IJournalRepository, JournalDbRepository>();
         services.AddScoped<IUserLocationRepository, UserLocationDbRepository>();
         services.AddScoped<IProblemRepository, ProblemDbRepository>();
         services.AddScoped<IProblemMessageRepository, ProblemMessageDbRepository>();

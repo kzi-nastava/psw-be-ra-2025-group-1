@@ -1,8 +1,11 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Tours.API.Dtos.Enums;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,6 +32,7 @@ public class Tour : AggregateRoot
     public DateTime ArchivedAt { get; private set; }
     public List<Keypoint> Keypoints { get; private set; }
     public List<Equipment> Equipment { get; private set; }
+    public List<TransportTime> TransportTimes { get; private set; }
 
     public Tour()
     {
@@ -41,6 +45,8 @@ public class Tour : AggregateRoot
         PublishedAt = DateTime.MinValue;
         ArchivedAt = DateTime.MinValue;
         Keypoints = [];
+        Equipment = [];
+        TransportTimes = [];
     }
     public Tour(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status = TourStatus.Draft, double price = 0)
     {
@@ -54,6 +60,12 @@ public class Tour : AggregateRoot
         Price = price;
         CreatorId = creatorId;
         Keypoints = [];
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+        PublishedAt = DateTime.MinValue;
+        ArchivedAt = DateTime.MinValue;
+        Equipment = [];
+        TransportTimes = [];
     }
 
     public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
@@ -68,8 +80,9 @@ public class Tour : AggregateRoot
         UpdatedAt = DateTime.UtcNow;
     }
 
-    public void Publish()
+    public bool Publish()
     {
+        if (!ValidateToPublish()) return false;  
         if(Keypoints.Count < 2)
         {
             throw new InvalidOperationException("Can't publish tour with less than 2 keypoints");
@@ -77,6 +90,7 @@ public class Tour : AggregateRoot
 
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
+        return true;
     }
     public void Archive()
     {
@@ -154,5 +168,49 @@ public class Tour : AggregateRoot
             throw new InvalidOperationException("Cannot remove equipment from an archived tour");
 
         Equipment.Remove(equipment);
+    }
+
+    public TransportTime AddTransportTime(TransportTime transportTime)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only add transport times to tour in draft status");
+
+        if (TransportTimes.Any(t => t.Type == transportTime.Type))
+            throw new ArgumentException("A transport time for this type already exists.");
+
+        TransportTimes.Add(transportTime);
+        return transportTime;
+    }
+    public TransportTime UpdateTransportTime(TransportTime updatedTime)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only add transport times to tour in draft status");
+
+        if (TransportTimes.Any(t => t.Type == updatedTime.Type && t.Id != updatedTime.Id))
+            throw new ArgumentException("A transport time for this type already exists.");
+
+        var tt = TransportTimes.FirstOrDefault(k => k.Id == updatedTime.Id) ?? throw new NotFoundException("TransportTime not found");
+
+        return tt.Update(updatedTime);
+    }
+
+    public TransportTime DeleteTransportTime(long transportTimeId)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only delete transport times from tour in draft status");
+        var tt = TransportTimes.FirstOrDefault(k => k.Id == transportTimeId) ?? throw new NotFoundException("TransportTime not found");
+        TransportTimes.Remove(tt);
+        return tt;
+    }
+
+    private bool ValidateToPublish()
+    {
+        if (Status == TourStatus.Published) return false;
+        if (Title.Length <= 0) return false;
+        if (Description.Length <= 0) return false;
+        if (Difficulty < 1 || Difficulty > 10) return false;
+        if (Tags.Length <= 0) return false;
+        if (TransportTimes.Count < 1) return false;
+        return true;
     }
 }

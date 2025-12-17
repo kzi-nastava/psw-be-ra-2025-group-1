@@ -22,6 +22,5 @@ namespace Explorer.Tours.API.Dtos
         public long Id { get; set; }
         public TransportTypeDto Type { get; set; }
         public int Duration { get; set; }
-        public long TourId { get; set; }
     }
 }
