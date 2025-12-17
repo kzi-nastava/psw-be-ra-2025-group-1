@@ -17,6 +17,7 @@ public class TourExecutionDto
     public DateTime? EndTime { get; set; }
     public DateTime LastActivity { get; set; }
     public double PercentageCompleted { get; set; }
+    public int CurrentKeypointSequence { get; private set; }
 }
 
 public class StartTourDto

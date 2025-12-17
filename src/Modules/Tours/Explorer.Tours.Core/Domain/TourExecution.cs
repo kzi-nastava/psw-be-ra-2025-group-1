@@ -17,7 +17,7 @@ public class TourExecution : AggregateRoot
     public DateTime? EndTime { get; private set; }
     public DateTime LastActivity { get; private set; }
     public double PercentageCompleted { get; private set; }
-    public int CurrentKeypointSequence { get; private set; }
+    public int CurrentKeypointSequence { get; private set; } = 1;
     public List<KeypointProgress> KeypointProgresses { get; private set; } = new();
 
     // For EF Core
