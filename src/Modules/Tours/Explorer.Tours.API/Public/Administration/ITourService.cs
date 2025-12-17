@@ -17,6 +17,7 @@ public interface ITourService
     void ArchiveTour(long tourId);
     public bool Publish(long tourId);
     public bool Archive(long tourId);
+    public bool Activate(long tourId);  
     TourDto Create(CreateTourDto tour);
     TourDto Update(long tourId, TourDto tour, long authorId);
     void Delete(long tourId, long authorId);

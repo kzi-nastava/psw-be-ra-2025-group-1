@@ -79,6 +79,16 @@ public class Tour : AggregateRoot
         ArchivedAt = DateTime.UtcNow;
     }
 
+    public void Activate()
+    {
+        if(Status != TourStatus.Archived)
+        {
+            throw new InvalidOperationException("Can only activate archived tour");
+        }
+        Status = TourStatus.Published;
+        // Da li promeniti i PublishedAt?
+    }
+
     public Keypoint AddKeypoint(Keypoint keypoint)
     {
         if (Status != TourStatus.Draft)
