@@ -131,7 +131,7 @@ public class TourController : ControllerBase
         {
             return Ok();
         }
-        return BadRequest("Tour could not be published.");
+        return BadRequest("Tour could not be activated.");
     }
 
     [Authorize(Policy = "authorPolicy")]
