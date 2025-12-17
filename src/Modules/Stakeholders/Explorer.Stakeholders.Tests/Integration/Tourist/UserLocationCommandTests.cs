@@ -29,6 +29,15 @@ namespace Explorer.Stakeholders.Tests.Integration.Tourist
                 Timestamp = DateTime.UtcNow
             };
 
+            // Logging in fake user
+            var identity = new ClaimsIdentity(new[]
+    {
+                new Claim("id", "-21"),
+                new Claim("personId", "-21"),
+                new Claim(ClaimTypes.Role, "tourist")
+            }, "TestAuthentication");
+            controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
+
             // Act
             var result = ((ObjectResult)controller.Create(newEntity).Result)?.Value as UserLocationDto;
 
@@ -60,6 +69,15 @@ namespace Explorer.Stakeholders.Tests.Integration.Tourist
                 Timestamp = DateTime.UtcNow
             };
 
+            // Logging in fake user
+            var identity = new ClaimsIdentity(new[]
+    {
+                new Claim("id", "-21"),
+                new Claim("personId", "-21"),
+                new Claim(ClaimTypes.Role, "tourist")
+            }, "TestAuthentication");
+            controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
+
             // Act
             var result = ((ObjectResult)controller.Update(updatedEntity).Result)?.Value as UserLocationDto;
 
@@ -83,6 +101,15 @@ namespace Explorer.Stakeholders.Tests.Integration.Tourist
             var controller = CreateController(scope);
             var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
 
+            // Logging in fake user
+            var identity = new ClaimsIdentity(new[]
+    {
+                new Claim("id", "-21"),
+                new Claim("personId", "-21"),
+                new Claim(ClaimTypes.Role, "tourist")
+            }, "TestAuthentication");
+            controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
+
             // Act
             var result = ((ObjectResult)controller.Get().Result)?.Value as UserLocationDto;
 
@@ -92,7 +119,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Tourist
             result.Latitude.ShouldBe(45); // From e-userlocations.sql
         }
 
-        private static UserLocationController CreateController(IServiceScope scope)
+        private static UserLocationController CreateController(IServiceScope scope) // Iz nekog razloga nije radio login sa ovim
         {
             var controller = new UserLocationController(scope.ServiceProvider.GetRequiredService<IUserLocationService>());
             var claims = new[]

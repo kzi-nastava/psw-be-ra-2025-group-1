@@ -21,7 +21,8 @@ public class TourDto
     public DateTime UpdatedAt { get; init; }
     public DateTime PublishedAt { get; init; }
     public DateTime ArchivedAt { get; init; }
-    public List<KeypointDto> Keypoints { get; init; } = [];
     public List<TransportTimeDto> TransportTimes { get; init; } = [];
+    public List<KeypointDto> Keypoints { get; init; }
+    public List<EquipmentDto> Equipment { get; init; }
 }
 

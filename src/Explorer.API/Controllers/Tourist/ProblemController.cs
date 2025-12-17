@@ -1,6 +1,8 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
+using Explorer.Stakeholders.Infrastructure.Authentication;
+using Explorer.Tours.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -13,10 +15,12 @@ namespace Explorer.API.Controllers.Tourist;
 public class TouristProblemController : ControllerBase
 {
     private readonly IProblemService _problemService;
+    private readonly ITourService _tourService;
 
-    public TouristProblemController(IProblemService problemService)
+    public TouristProblemController(IProblemService problemService, ITourService tourService)
     {
         _problemService = problemService;
+        _tourService = tourService;
     }
 
     [HttpGet]
@@ -28,23 +32,63 @@ public class TouristProblemController : ControllerBase
     [HttpGet("my-problems")]
     public ActionResult<PagedResult<ProblemDto>> GetMyProblems([FromQuery] int page, [FromQuery] int pageSize)
     {
-        var creatorId = GetPersonId();
+        var creatorId = User.UserId();
         var result = _problemService.GetByCreator(creatorId, page, pageSize);
         return Ok(result);
+    }
+
+    [HttpGet("{id:long}")]
+    public ActionResult<ProblemDto> GetById(long id)
+    {
+        try
+        {
+            var touristId = User.UserId();
+            var problem = _problemService.Get(id, touristId);
+            return Ok(problem);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
     }
 
     [HttpPost]
     public ActionResult<ProblemDto> Create([FromBody] ProblemDto problem)
     {
-        problem.CreatorId = GetPersonId();
-        problem.CreationTime = DateTime.UtcNow;
-        return Ok(_problemService.Create(problem));
+        try
+        {
+            problem.CreatorId = User.UserId();
+            problem.CreationTime = DateTime.UtcNow;
+            
+            // Get AuthorId from Tour (cross-module operation at controller level)
+            var tour = _tourService.GetById(problem.TourId);
+            if (tour == null)
+            {
+                return NotFound(new { error = $"Tour with ID {problem.TourId} does not exist." });
+            }
+            
+            problem.AuthorId = tour.CreatorId;
+            
+            return Ok(_problemService.Create(problem));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id:long}")]
     public ActionResult<ProblemDto> Update([FromBody] ProblemDto problem)
     {
-        problem.CreatorId = GetPersonId();
+        problem.CreatorId = User.UserId();
         return Ok(_problemService.Update(problem));
     }
 
@@ -55,9 +99,22 @@ public class TouristProblemController : ControllerBase
         return Ok();
     }
 
-    private long GetPersonId()
+    [HttpPut("{id:long}/status")]
+    public ActionResult<ProblemDto> ChangeStatus(long id, [FromBody] ChangeProblemStatusDto dto)
     {
-        var personIdClaim = User.FindFirst("personId")?.Value;
-        return long.Parse(personIdClaim ?? "0");
+        try
+        {
+            var touristId = User.UserId();
+            var problem = _problemService.ChangeProblemStatus(id, touristId, dto.Status, dto.Comment);
+            return Ok(problem);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }

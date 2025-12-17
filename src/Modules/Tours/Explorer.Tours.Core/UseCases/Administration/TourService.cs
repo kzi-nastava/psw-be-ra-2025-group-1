@@ -71,7 +71,9 @@ public class TourService : ITourService
 
     public TourDto GetById(long id)
     {
-        return _mapper.Map<TourDto>(_tourRepository.Get(id));
+        var tour = _tourRepository.Get(id);
+        var dto = _mapper.Map<TourDto>(tour);
+        return dto;
     }
 
     public PagedResult<TourDto> GetPaged(int page, int pageSize)
@@ -130,6 +132,11 @@ public class TourService : ITourService
         return _mapper.Map<TourDto>(result);
     }
 
+    public void ArchiveTour(long tourId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        tour.Archive();
+    }
     public KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
