@@ -70,6 +70,11 @@ public class Tour : AggregateRoot
 
     public void Publish()
     {
+        if(Keypoints.Count < 2)
+        {
+            throw new InvalidOperationException("Can't publish tour with less than 2 keypoints");
+        }
+
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
     }
