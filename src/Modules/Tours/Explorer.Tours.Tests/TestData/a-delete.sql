@@ -5,3 +5,5 @@ DELETE FROM tours."PersonEquipment";
 DELETE FROM tours."Tour";
 DELETE FROM tours."Facility";
 DELETE FROM tours."MeetUp";
+DELETE FROM tours."Keypoint";
+DELETE FROM tours."KeypointProgress";

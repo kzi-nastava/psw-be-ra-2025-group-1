@@ -1,4 +1,8 @@
-﻿-- Tour 1: Used by problems -1, -3, -4, -5, -7 (CreatorId = -11 = AuthorId in problems)
+﻿-- ============================================================================
+-- TEST TOURS
+-- ============================================================================
+
+-- Tour 1: Used by problems -1, -3, -4, -5, -7 (CreatorId = -11 = AuthorId in problems)
 INSERT INTO tours."Tour"(
 	"Id", "CreatorId", "Title", "Description", "Difficulty", "Tags", "Status", "Price", "CreatedAt", "UpdatedAt", "PublishedAt", "ArchivedAt")
 	VALUES (-1, -11, 'Mountain Adventure Tour', 'Explore the beautiful mountains', 3, ARRAY['nature','adventure','hiking'], 1, 150.0, '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z', '2024-03-01T14:15:00Z');
@@ -154,6 +158,66 @@ VALUES (
     '2024-01-01T00:00:00Z'
 );
 
+-- Tour 1: Main test tour with 3 keypoints (ID: -10800)
+INSERT INTO tours."Tour"(
+    "Id", "CreatorId", "Title", "Description", "Difficulty", "Tags", "Status", "Price", "CreatedAt", "UpdatedAt", "PublishedAt", "ArchivedAt")
+    VALUES (-10800, -12, 'Test Tour', 'Description for test tour', 2, ARRAY['tag1'], 1, 50.0, '2024-01-01T10:00:00Z', '2024-01-01T10:00:00Z', '2024-01-01T10:00:00Z', '2024-01-01T12:00:00Z');
+
+-- Tour 2: For percentage calculation tests (ID: -10801)
+INSERT INTO tours."Tour"(
+    "Id", "CreatorId", "Title", "Description", "Difficulty", "Tags", "Status", "Price", "CreatedAt", "UpdatedAt", "PublishedAt", "ArchivedAt")
+    VALUES (-10801, -12, 'Percentage Test Tour', 'For testing progress calculations', 2, ARRAY['progress'], 1, 40.0, '2024-01-01T11:00:00Z', '2024-01-01T11:00:00Z', '2024-01-01T11:00:00Z',  '2024-01-01T12:00:00Z');
+
+-- Tour 3: For multiple keypoint tests (ID: -10802)
+INSERT INTO tours."Tour"(
+    "Id", "CreatorId", "Title", "Description", "Difficulty", "Tags", "Status", "Price", "CreatedAt", "UpdatedAt", "PublishedAt", "ArchivedAt")
+    VALUES (-10802, -12, 'Multi Keypoint Tour', 'For testing multiple keypoint progression', 1, ARRAY['multi'], 1, 30.0, '2024-01-01T12:00:00Z', '2024-01-01T12:00:00Z', '2024-01-01T12:00:00Z', '2024-01-01T12:00:00Z');
+
+
+
+-- ============================================================================
+-- KEYPOINTS FOR TEST TOURS
+-- ============================================================================
+
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10800, -10800, 'KP1', 'First keypoint', NULL, NULL, 1.0, 1.0, 1);
+
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10801, -10800, 'KP2', 'Second keypoint', NULL, NULL, 5.0, 5.0, 2);
+
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10802, -10800, 'KP3', 'Third keypoint', NULL, NULL, 18.0, 18.0, 3);
+
+-- Keypoints for Tour -10801
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10803, -10801, 'Percentage KP1', 'First keypoint', NULL, NULL, 2.0, 2.0, 1);
+
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10804, -10801, 'Percentage KP2', 'Second keypoint', NULL, NULL, 6.0, 6.0, 2);
+
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10805, -10801, 'Percentage KP3', 'Third keypoint', NULL, NULL, 10.0, 10.0, 3);
+
+-- Keypoints for Tour -10802
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10806, -10802, 'Multi KP1', 'First keypoint', NULL, NULL, 3.0, 3.0, 1);
+
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10807, -10802, 'Multi KP2', 'Second keypoint', NULL, NULL, 7.0, 7.0, 2);
+
+INSERT INTO tours."Keypoints"(
+    "Id", "TourId", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber")
+    VALUES (-10808, -10802, 'Multi KP3', 'Third keypoint', NULL, NULL, 11.0, 11.0, 3);
+
+
 -- Keypoint for Tour -1 (Published tour - used in TourExecution tests)
 INSERT INTO tours."Keypoints"(
     "Id", 
@@ -247,7 +311,11 @@ VALUES
     (-4, -2, -21, '2024-02-10', 'Active'),
     (-5, -2, -22, '2024-02-10', 'Active');
 
--- TourExecutions for testing
+    
+-- ============================================================================
+-- TOUR EXECUTIONS
+-- ============================================================================
+
 -- Status: 0 = InProgress, 1 = Completed, 2 = Abandoned
 INSERT INTO tours."TourExecutions"(
     "Id",
@@ -273,3 +341,57 @@ INSERT INTO tours."TourEquipment"(
 INSERT INTO tours."TourEquipment"(
 	"EquipmentId", "TourId")
 	VALUES (-4, -5);
+
+-- Tour Execution 1: In progress on Tour -10800 (ID: -10810)
+INSERT INTO tours."TourExecutions"(
+    "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
+    VALUES (-10810, -11, -10800, 0, '2024-01-15T10:00:00Z', NULL, '2024-01-15T10:00:00Z', 0.0, 1);
+
+-- Tour Execution 2: Completed tour (ID: -10811)
+INSERT INTO tours."TourExecutions"(
+    "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
+    VALUES (-10811, -11, -10800, 1, '2024-01-14T09:00:00Z', '2024-01-14T12:00:00Z', '2024-01-14T12:00:00Z', 100.0, 3);
+
+-- Tour Execution 3: Abandoned tour (ID: -10812)
+INSERT INTO tours."TourExecutions"(
+    "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
+    VALUES (-10812, -11, -10801, 2, '2024-01-13T14:00:00Z', '2024-01-13T15:00:00Z', '2024-01-13T14:20:00Z', 33.33, 1);
+
+-- Tour Execution 4: Partially completed (1 keypoint reached) (ID: -10813)
+INSERT INTO tours."TourExecutions"(
+    "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
+    VALUES (-10813, -11, -10801, 0, '2024-01-16T11:00:00Z', NULL, '2024-01-16T11:15:00Z', 33.33, 2);
+
+-- Tour Execution 5: For multiple keypoint progression tests (ID: -10814)
+INSERT INTO tours."TourExecutions"(
+    "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
+    VALUES (-10814, -11, -10802, 0, '2024-01-17T08:00:00Z', NULL, '2024-01-17T08:00:00Z', 0.0, 1);
+
+
+
+-- ============================================================================
+-- KEYPOINT PROGRESS (Reached keypoints)
+-- ============================================================================
+
+-- Progress for completed execution -10811 (all 3 keypoints)
+INSERT INTO tours."KeypointProgress"(
+    "Id", "TourExecutionId", "KeypointId", "ReachedAt", "CompletedAt")
+    VALUES (-10820, -10811, -10800, '2024-01-14T09:30:00Z', '2024-01-14T09:30:00Z');
+
+INSERT INTO tours."KeypointProgress"(
+    "Id", "TourExecutionId", "KeypointId", "ReachedAt", "CompletedAt")
+    VALUES (-10821, -10811, -10801, '2024-01-14T10:30:00Z', '2024-01-14T10:30:00Z');
+
+INSERT INTO tours."KeypointProgress"(
+    "Id", "TourExecutionId", "KeypointId", "ReachedAt", "CompletedAt")
+    VALUES (-10822, -10811, -10802, '2024-01-14T11:30:00Z', '2024-01-14T11:30:00Z');
+
+-- Progress for abandoned execution -10812 (1 keypoint before abandoning)
+INSERT INTO tours."KeypointProgress"(
+    "Id", "TourExecutionId", "KeypointId", "ReachedAt", "CompletedAt")
+    VALUES (-10823, -10812, -10803, '2024-01-13T14:20:00Z', '2024-01-13T14:20:00Z');
+
+-- Progress for partially completed execution -10813 (1 keypoint)
+INSERT INTO tours."KeypointProgress"(
+    "Id", "TourExecutionId", "KeypointId", "ReachedAt", "CompletedAt")
+    VALUES (-10824, -10813, -10803, '2024-01-16T11:15:00Z', '2024-01-16T11:15:00Z');

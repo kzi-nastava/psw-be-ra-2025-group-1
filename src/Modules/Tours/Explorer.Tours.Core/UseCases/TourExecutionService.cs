@@ -107,7 +107,7 @@ public class TourExecutionService : ITourExecutionService
         return lastExecution.CanLeaveReview();
     }
 
-    public bool TryReachKeypoint(long touristId, long executionId)
+    public bool TryReachKeypoint(long touristId, long executionId, long keypointId)
     {
         var execution = _tourExecutionRepository.Get(executionId);
         var userLocation = _userLocationRepository.GetByUserId(touristId);
@@ -129,29 +129,32 @@ public class TourExecutionService : ITourExecutionService
         if (tour == null)
             throw new NotFoundException("Tour not found");
 
-        // Get the next keypoint based on CurrentKeypointSequence
-        var nextKeypoint = tour.Keypoints
-            .FirstOrDefault(k => k.SequenceNumber == execution.CurrentKeypointSequence);
+        KeypointDto keypoint = _mapper.Map<KeypointDto>(tour.Keypoints.FirstOrDefault(kp => kp.Id == keypointId));
 
-        if (nextKeypoint == null)
-            return false; // No more keypoints to reach
+        if (keypoint == null)
+            throw new NotFoundException("Keypoint not found");
+
+        KeypointProgressDto reached = _mapper.Map<KeypointProgressDto>(execution.KeypointProgresses.FirstOrDefault(kp => kp.KeypointId == keypoint.Id));
+
+        if (reached != null)
+            return true; // Already reached
 
         const double nearbyDistance = 0.00018; // approximately 20 meters
-        double longDiff = Math.Abs(userLocation.Longitude - nextKeypoint.Longitude);
-        double latDiff = Math.Abs(userLocation.Latitude - nextKeypoint.Latitude);
+        double longDiff = Math.Abs(userLocation.Longitude - keypoint.Longitude);
+        double latDiff = Math.Abs(userLocation.Latitude - keypoint.Latitude);
 
         if (Math.Sqrt(longDiff * longDiff - latDiff * latDiff) < nearbyDistance)
         {
             // Mark keypoint as reached and create a new Keypoint Progress for it
-            execution.ReachKeypoint(nextKeypoint.Id, tour.Keypoints.Count);
+            execution.ReachKeypoint(keypoint.Id, tour.Keypoints.Count);
             _tourExecutionRepository.Update(execution);
             return true;
         }
 
-        return false;
+        return false;   // Not close enough
     }
 
-    public KeypointDto UnlockKeypoint(long executionId)
+    public KeypointDto UnlockKeypoint(long executionId, long keypointId)
     {
         if (executionId == null)
             throw new InvalidOperationException("Execution not found.");
@@ -159,24 +162,20 @@ public class TourExecutionService : ITourExecutionService
         var execution = _tourExecutionRepository.Get(executionId);
         var tour = _tourRepository.Get(execution.TourId);
 
-        var keypoint = tour.Keypoints
-         .FirstOrDefault(kp => kp.SequenceNumber == execution.CurrentKeypointSequence);
+        KeypointDto keypoint = _mapper.Map<KeypointDto>(tour.Keypoints.FirstOrDefault(kp => kp.Id == keypointId));
 
         if (keypoint == null)
-            throw new InvalidOperationException("No keypoint available to unlock");
+            throw new NotFoundException("Keypoint not found");
 
-        var keypointProgress = execution.KeypointProgresses.FirstOrDefault(progress => progress.KeypointId == keypoint.Id);
+        KeypointProgress reached = execution.KeypointProgresses.FirstOrDefault(kp => kp.KeypointId == keypoint.Id);
 
         // Check if there is a KeypointProgress for the reached keypoint
-        if (keypointProgress == null)
+        if (reached == null)
             throw new InvalidOperationException("Keypoint wasn't reached yet!");
 
         // Check if that keypoint is already unlocked
-        if (keypointProgress.IsCompleted())
-            throw new InvalidOperationException("Keypoint was already unlocked!");
-
-        // Else
-        keypointProgress.MarkCompleted();
+        if (!reached.IsCompleted())
+            reached.MarkCompleted();
 
         return new KeypointDto
         {

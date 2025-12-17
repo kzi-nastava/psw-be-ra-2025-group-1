@@ -10,8 +10,8 @@ public interface ITourExecutionService
     TourExecutionDto AbandonTour(long touristId, long executionId);
     List<TourExecutionDto> GetTouristHistory(long touristId);
     bool CanLeaveReview(long touristId, long tourId);
-    bool TryReachKeypoint(long touristId, long executionId);
-    KeypointDto UnlockKeypoint(long executionId);
+    bool TryReachKeypoint(long touristId, long executionId, long keypointId);
+    KeypointDto UnlockKeypoint(long executionId, long keypointId);
     KeypointViewDto GetNextKeypointInfo(TourExecutionDto executionDto);
     TourExecutionDto Create(TourExecutionDto tourExecutionDto);
 }

@@ -2,6 +2,7 @@ using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
+using Explorer.Tours.Core.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -41,12 +42,12 @@ public class TourExecutionController : ControllerBase
 
     // If the location is near the next keypoint, mark it as reached
     [HttpPost("{executionId:long}/check-location")]
-    public ActionResult<bool> CheckTouristLocation(long executionId)
+    public ActionResult<bool> CheckTouristLocation(long executionId, [FromBody] long keypointId)
     {
         var touristId = GetTouristId();
         try
         {
-            bool result = _tourExecutionService.TryReachKeypoint(touristId, executionId);
+            bool result = _tourExecutionService.TryReachKeypoint(touristId, executionId, keypointId);
             return Ok(result);
         }
         catch (NotFoundException ex)
@@ -141,13 +142,13 @@ public class TourExecutionController : ControllerBase
         return long.Parse(personIdClaim);
     }
 
-    [HttpPost("unlock-keypoint")]
-    public ActionResult<KeypointDto> UnlockKeypoint([FromBody] long tourExecutionId)
+    [HttpPost("unlock-keypoint/{keypointId:long}")]
+    public ActionResult<KeypointDto> UnlockKeypoint(long keypointId, [FromBody] long tourExecutionId)
     {
         var touristId = GetTouristId();
         try
         {
-            var keypointInfo = _tourExecutionService.UnlockKeypoint(tourExecutionId);
+            var keypointInfo = _tourExecutionService.UnlockKeypoint(tourExecutionId, keypointId);
             return Ok(keypointInfo);
         }
         catch (NotFoundException ex)
