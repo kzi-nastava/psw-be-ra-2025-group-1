@@ -12,14 +12,16 @@ namespace Explorer.API.Demo
         private readonly IEquipmentService _equipmentService;
         private readonly IFacilityService _facilityService;
         private readonly ITourService _tourService;
+        private readonly IUserLocationService _userLocationService;
         private readonly ITourExecutionService _tourExecutionService;
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, ITourExecutionService tourExecution)
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
             _facilityService = facilityService;
             _tourService = tourService;
+            _userLocationService = userLocationService;
             _tourExecutionService = tourExecution;
         }
 
@@ -31,6 +33,7 @@ namespace Explorer.API.Demo
             SeedEquipment();
             SeedFacilities();
             SeedTours();
+            SeedUserLocation();
             SeedKeypoints();
             SeedTourExecution();
         }
@@ -202,7 +205,7 @@ namespace Explorer.API.Demo
             _facilityService.Create(facility5);
             _facilityService.Create(facility6);
         }
-        
+
         private void SeedTours()
         {
             // Currently hardcoded - would be less error-prone to fetch authors from PersonService/UserService and then get someone's ID
@@ -399,6 +402,18 @@ namespace Explorer.API.Demo
             _tourService.AddKeypoint(tour6Id, t6_kp1, author3Id);
         }
 
+        private void SeedUserLocation()
+        {
+            for (int i = 2; i <= 4; i++)
+            {
+                _userLocationService.Create(new UserLocationDto
+                {
+                    UserId = i,
+                    Latitude = 43.6582,
+                    Longitude = 19.8451
+                });
+            }
+        }
         private void SeedTourExecution()
         {
             long tour1Id = 1;

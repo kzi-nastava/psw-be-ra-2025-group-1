@@ -19,6 +19,13 @@ public class ToursProfile : Profile
         CreateMap<KeypointDto, Keypoint>().ReverseMap();
         CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();
         CreateMap<TransportTimeDto, TransportTime>().ReverseMap();
+
+        CreateMap<MonumentDto, Monument>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<MonumentStatus>(src.Status)));
+
+        CreateMap<Monument, MonumentDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
         CreateMap<KeypointProgressDto, KeypointProgress>().ReverseMap();
 
         // TourExecution mappings with explicit enum conversion
