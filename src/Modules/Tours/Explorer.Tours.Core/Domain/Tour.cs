@@ -83,6 +83,11 @@ public class Tour : AggregateRoot
     public bool Publish()
     {
         if (!ValidateToPublish()) return false;  
+        if(Keypoints.Count < 2)
+        {
+            throw new InvalidOperationException("Can't publish tour with less than 2 keypoints");
+        }
+
         Status = TourStatus.Published;
         PublishedAt = DateTime.UtcNow;
         return true;
@@ -91,6 +96,16 @@ public class Tour : AggregateRoot
     {
         Status = TourStatus.Archived;
         ArchivedAt = DateTime.UtcNow;
+    }
+
+    public void Activate()
+    {
+        if(Status != TourStatus.Archived)
+        {
+            throw new InvalidOperationException("Can only activate archived tour");
+        }
+        Status = TourStatus.Published;
+        // Da li promeniti i PublishedAt?
     }
 
     public Keypoint AddKeypoint(Keypoint keypoint)

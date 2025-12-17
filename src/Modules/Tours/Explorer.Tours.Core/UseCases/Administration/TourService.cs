@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Dtos.Enums;
@@ -38,6 +39,20 @@ public class TourService : ITourService
             _tourRepository.Update(tourToUpdate);
         }
         return true;
+    }
+
+    public bool Activate(long id)
+    {
+        var tour = _tourRepository.Get(id);
+        if(tour == null)
+        {
+            throw new NotFoundException("Tour not found");
+        }
+        tour.Activate();
+        _tourRepository.Update(tour);
+
+        return true;
+        
     }
 
     public TourDto Create(CreateTourDto createTourDto)

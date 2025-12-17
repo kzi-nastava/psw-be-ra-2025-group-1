@@ -38,7 +38,7 @@ public class TourController : ControllerBase
             : NotFound();
     }
 
-    [AllowAnonymous]
+    [Authorize(Policy = "authorPolicy")]
     [HttpGet("my")]
     public ActionResult<PagedResult<TourDto>> GetMyToursPaged([FromQuery] int page, [FromQuery] int pageSize)
     {
@@ -111,12 +111,32 @@ public class TourController : ControllerBase
     [HttpPut("{id:long}/publish")]
     public ActionResult Publish(long id)
     {
-        bool result = _tourService.Publish(id);
+        try
+        {
+            bool result = _tourService.Publish(id);
+            if (result)
+            {
+                return Ok();
+            }
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        return BadRequest("Tour could not be published.");
+
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPut("{id:long}/activate")]
+    public ActionResult Activate(long id)
+    {
+        bool result = _tourService.Activate(id);
         if (result)
         {
             return Ok();
         }
-        return BadRequest("Tour could not be published.");
+        return BadRequest("Tour could not be activated.");
     }
 
     [Authorize(Policy = "authorPolicy")]
