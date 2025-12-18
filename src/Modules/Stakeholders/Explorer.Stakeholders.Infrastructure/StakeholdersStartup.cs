@@ -1,4 +1,5 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.Stakeholders.API.Internal;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.Mappers;
@@ -30,10 +31,15 @@ public static class StakeholdersStartup
         services.AddScoped<ITourPreferenceService, TourPreferenceService>();
         services.AddScoped<ITokenGenerator, JwtGenerator>();
         services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IJournalService, JournalService>();
 
         services.AddScoped<IRatingsService, RatingsService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<IUserLocationService, UserLocationService>();
+        services.AddScoped<IInternalPersonService, PersonService>();
+        services.AddScoped<IProblemService, ProblemService>();
+        services.AddScoped<IProblemMessageService, ProblemMessageService>();
+        services.AddScoped<INotificationService, NotificationService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -41,14 +47,14 @@ public static class StakeholdersStartup
         services.AddScoped<IPersonRepository, PersonDbRepository>();
         services.AddScoped<ITourPreferenceRepository, TourPreferenceDbRepository>();
         services.AddScoped<IUserRepository, UserDbRepository>();
-
-
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IConversationRepository, ConversationRepository>();
-
         services.AddScoped<IRatingRepository, RatingDbRepository>();
+        services.AddScoped<IJournalRepository, JournalDbRepository>();
         services.AddScoped<IUserLocationRepository, UserLocationDbRepository>();
-
+        services.AddScoped<IProblemRepository, ProblemDbRepository>();
+        services.AddScoped<IProblemMessageRepository, ProblemMessageDbRepository>();
+        services.AddScoped<INotificationRepository, NotificationDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("stakeholders"));
         dataSourceBuilder.EnableDynamicJson();

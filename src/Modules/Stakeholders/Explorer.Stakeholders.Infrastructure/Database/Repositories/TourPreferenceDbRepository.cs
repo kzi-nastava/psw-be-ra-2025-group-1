@@ -50,7 +50,7 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
         {
             var entity = _dbSet.FirstOrDefault(p => p.UserId == userId);
             if (entity == null)
-                throw new NotFoundException($"Person with UserId {userId} not found.");
+                throw new NotFoundException($"TourPreference with UserId {userId} not found.");
             return entity;
         }
     }

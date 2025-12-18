@@ -1,4 +1,5 @@
-﻿using Explorer.BuildingBlocks.Core.UseCases;
+﻿using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
@@ -37,12 +38,21 @@ public class TourDbRepository : ITourRepository
 
     public Tour? Get(long id)
     {
-        return _dbSet.Find(id);
+        return _dbSet
+            .Include(t => t.Keypoints)
+            .Include(t => t.Equipment)
+            .Include(t => t.TransportTimes)
+            .FirstOrDefault(t => t.Id == id)
+            ?? throw new NotFoundException($"Tour {id} not found");
     }
 
     public PagedResult<Tour> GetByCreatorId(long creatorId, int page, int pageSize)
     {
-        var query = _dbSet.Where(t => t.CreatorId == creatorId);
+        var query = _dbSet
+            .Include(t => t.Keypoints)
+            .Include(t => t.Equipment)
+            .Include(t => t.TransportTimes)
+            .Where(t => t.CreatorId == creatorId);
         var task = query.GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;
@@ -50,7 +60,11 @@ public class TourDbRepository : ITourRepository
 
     public PagedResult<Tour> GetPaged(int page, int pageSize)
     {
-        var task = _dbSet.GetPagedById(page, pageSize);
+        var task = _dbSet
+            .Include(t => t.Keypoints)
+            .Include(t => t.Equipment)
+            .Include(t => t.TransportTimes)
+            .GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;
     }
@@ -61,4 +75,22 @@ public class TourDbRepository : ITourRepository
         dbContext.SaveChanges();
         return tour;
     }
+
+    public PagedResult<Tour> GetPublished(int page, int pageSize)
+    {
+        var query = _dbSet.Where(t => t.Status == TourStatus.Published);
+
+        var task = query.GetPaged(page, pageSize);
+        task.Wait();
+
+        return task.Result;
+    }
+
+
+    public Tour? GetPublishedById(long id)
+    {
+        return _dbSet
+            .FirstOrDefault(t => t.Id == id && t.Status == TourStatus.Published);
+    }
+
 }

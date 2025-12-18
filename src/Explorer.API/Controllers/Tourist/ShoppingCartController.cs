@@ -1,0 +1,53 @@
+﻿using Explorer.Tours.API.Public.Tourist;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Explorer.Tours.API.Dtos;
+
+namespace Explorer.API.Controllers.Tourist
+{
+    [Authorize(Policy = "touristPolicy")]
+    [Route("api/tourist/cart")]
+    [ApiController]
+    public class ShoppingCartController : ControllerBase
+    {
+        private readonly IShoppingCartService _service;
+
+        public ShoppingCartController(IShoppingCartService service)
+        {
+            _service = service;
+        }
+
+        [HttpGet]
+        public IActionResult GetCart()
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            var cart = _service.GetCart(touristId);
+            return Ok(cart);
+        }
+
+        [HttpPost("add/{tourId}")]
+        public IActionResult AddToCart(long tourId)
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            _service.AddToCart(touristId, tourId);
+            var updatedCart = _service.GetCart(touristId);
+            return Ok(updatedCart);
+        }
+
+        [HttpDelete("remove/{tourId}")]
+        public IActionResult RemoveFromCart(long tourId)
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            _service.RemoveFromCart(touristId, tourId);
+            return Ok(new { message = "Tour removed from cart successfully" });
+        }
+
+        [HttpPost("checkout")]
+        public ActionResult<List<TourPurchaseTokenDto>> Checkout()
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            var tokens = _service.Checkout(touristId);
+            return Ok(tokens);
+        }
+    }
+}

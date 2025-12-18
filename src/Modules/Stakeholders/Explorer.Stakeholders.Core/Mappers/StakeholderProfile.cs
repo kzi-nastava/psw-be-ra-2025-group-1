@@ -29,7 +29,34 @@ public class StakeholderProfile : Profile
         CreateMap<Rating, RatingDto>();     //domain -> dto
         CreateMap<RatingCreateDto, Rating>();
         CreateMap<RatingUpdateDto, Rating>();
-        CreateMap<UserLocationDto, UserLocation>().ReverseMap();
+        
+        CreateMap<Journal, JournalDto>();
+        CreateMap<JournalCreateDto, Journal>();
+        CreateMap<JournalUpdateDto, Journal>();
 
+        
+        CreateMap<UserLocationDto, UserLocation>().ReverseMap();
+        
+        CreateMap<ProblemDto, Problem>()
+            .ConstructUsing(dto => new Problem(
+                dto.Priority,
+                dto.Description,
+                (Core.Domain.ProblemCategory)dto.Category,
+                dto.TourId,
+                dto.CreatorId,
+                dto.AuthorId
+            ));
+        
+        CreateMap<Problem, ProblemDto>()
+            .ForMember(dest => dest.LateFlag, opt => opt.MapFrom(src => src.IsOverdue()));
+        
+        CreateMap<Core.Domain.ProblemStatus, API.Dtos.ProblemStatus>().ReverseMap();
+        CreateMap<Core.Domain.ProblemCategory, API.Dtos.ProblemCategory>().ReverseMap();
+        
+        // Mapiranje ProblemMessage
+        CreateMap<ProblemMessage, ProblemMessageDto>().ReverseMap();
+        
+        CreateMap<Notification, NotificationDto>().ReverseMap();
+        CreateMap<NotificationTypeDto, NotificationType>().ReverseMap();
     }
 }

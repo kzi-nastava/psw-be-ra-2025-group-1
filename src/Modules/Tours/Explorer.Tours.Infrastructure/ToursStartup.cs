@@ -1,7 +1,6 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
-using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
 using Explorer.Tours.Core.UseCases.Administration;
@@ -11,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Explorer.Tours.Core.UseCases;
+using Explorer.Tours.API.Public.Tourist;
+using Explorer.Tours.Core.UseCases.Tourist;
 
 namespace Explorer.Tours.Infrastructure;
 
@@ -28,21 +29,28 @@ public static class ToursStartup
     private static void SetupCore(IServiceCollection services)
     {
         services.AddScoped<IEquipmentService, EquipmentService>();
-        services.AddScoped<IProblemService, ProblemService>();
         services.AddScoped<ITourService, TourService>();
         services.AddScoped<IFacilityService, FacilityService>();
         services.AddScoped<IMeetUpService, MeetUpService>();
-        services.AddScoped<IPersonEquipmentService, PersonEquipmentService>(); //dodala sam
+        services.AddScoped<IPersonEquipmentService, PersonEquipmentService>();
+        services.AddScoped<ITourBrowsingService, TourBrowsingService>();
+        services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
+        services.AddScoped<IShoppingCartService, ShoppingCartService>();
+        services.AddScoped<ITourExecutionService, TourExecutionService>();
+        services.AddScoped<IMonumentService, MonumentService>();
     }
-
+    
     private static void SetupInfrastructure(IServiceCollection services)
     {
         services.AddScoped<IEquipmentRepository, EquipmentDbRepository>();
-        services.AddScoped<IProblemRepository, ProblemDbRepository>();
         services.AddScoped<ITourRepository, TourDbRepository>();
         services.AddScoped<IFacilityRepository, FacilityDbRepository>();
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
-        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); //dodala sam
+        services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
+        services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); 
+        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
+        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+        services.AddScoped<IMonumentRepository, MonumentDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
