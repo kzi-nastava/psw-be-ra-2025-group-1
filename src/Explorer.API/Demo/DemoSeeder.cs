@@ -418,8 +418,18 @@ namespace Explorer.API.Demo
         {
             long tour1Id = 1;
             long tourist2Id = 2;
+            long author1Id = 5;
 
             var t1 = _tourService.GetById(tour1Id);
+
+            // Add transport time 
+            TransportTimeDto tt = new TransportTimeDto()
+            {
+                Type = TransportTypeDto.Car,
+                Duration = 5
+            };
+
+            _tourService.AddTransportTime(tour1Id, tt, author1Id);
             _tourService.Publish(t1.Id);
 
             TourExecutionDto tourExecution = new TourExecutionDto()
