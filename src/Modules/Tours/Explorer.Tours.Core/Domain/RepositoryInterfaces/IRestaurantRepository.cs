@@ -6,4 +6,5 @@ public interface IRestaurantRepository
 {
     List<Restaurant> GetAll();
     Restaurant Get(long id);
+    Restaurant Create(Restaurant restaurant);
 }

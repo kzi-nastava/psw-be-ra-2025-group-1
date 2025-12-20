@@ -29,4 +29,11 @@ public class RestaurantDbRepository : IRestaurantRepository
         if (entity == null) throw new NotFoundException("Restaurant not found: " + id);
         return entity;
     }
+
+    public Restaurant Create(Restaurant restaurant)
+    {
+        _dbSet.Add(restaurant);
+        _dbContext.SaveChanges();
+        return restaurant;
+    }
 }

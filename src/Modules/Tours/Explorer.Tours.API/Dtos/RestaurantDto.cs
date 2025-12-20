@@ -12,4 +12,5 @@ public class RestaurantDto
     public double AverageRating { get; set; }
     public int ReviewCount { get; set; }
     public string RecommendedDishes { get; set; } = "";
+    public double DistanceKm { get; set; }
 }

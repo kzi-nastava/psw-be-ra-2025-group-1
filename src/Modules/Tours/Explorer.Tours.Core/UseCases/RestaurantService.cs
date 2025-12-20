@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoMapper;
 using Explorer.Tours.API.Dtos;
-using Explorer.Tours.API.Public.Tourist;
+using Explorer.Tours.API.Public;
+using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 
 namespace Explorer.Tours.Core.UseCases.Social;
@@ -63,4 +64,23 @@ public class RestaurantService : IRestaurantService
     }
 
     private static double ToRadians(double angle) => Math.PI * angle / 180.0;
+
+
+    public RestaurantDto Create(RestaurantDto dto)
+    {
+        var restaurant = new Restaurant(
+            dto.Name,
+            dto.Description,
+            dto.Latitude,
+            dto.Longitude,
+            dto.City,
+            dto.CuisineType,
+            dto.AverageRating,
+            dto.ReviewCount,
+            dto.RecommendedDishes
+        );
+
+        var saved = _restaurantRepository.Create(restaurant);
+        return _mapper.Map<RestaurantDto>(saved);
+    }
 }

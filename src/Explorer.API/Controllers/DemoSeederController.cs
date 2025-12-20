@@ -13,9 +13,9 @@ namespace Explorer.API.Controllers
     {
         private readonly DemoSeeder _demoSeeder;
 
-        public DemoSeederController(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocation, ITourExecutionService tourExecution)
+        public DemoSeederController(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocation, ITourExecutionService tourExecution, IRestaurantService restaurantService)
         {
-            _demoSeeder = new DemoSeeder(authenticationService, equipmentService, facilityService, tourService, userLocation, tourExecution);
+            _demoSeeder = new DemoSeeder(authenticationService, equipmentService, facilityService, tourService, userLocation, tourExecution, restaurantService);
         }
 
         [HttpPost]

@@ -14,8 +14,9 @@ namespace Explorer.API.Demo
         private readonly ITourService _tourService;
         private readonly IUserLocationService _userLocationService;
         private readonly ITourExecutionService _tourExecutionService;
+        private readonly IRestaurantService _restaurantService;
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution)
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, IRestaurantService restaurantService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -23,6 +24,7 @@ namespace Explorer.API.Demo
             _tourService = tourService;
             _userLocationService = userLocationService;
             _tourExecutionService = tourExecution;
+            _restaurantService = restaurantService;
         }
 
         public void Seed()
@@ -36,6 +38,7 @@ namespace Explorer.API.Demo
             SeedUserLocation();
             SeedKeypoints();
             SeedTourExecution();
+            SeedRestaurants();
         }
 
         private void SeedAdmin()
@@ -445,5 +448,52 @@ namespace Explorer.API.Demo
 
             _tourExecutionService.Create(tourExecution);
         }
+
+        private void SeedRestaurants()
+        {
+            var r1 = new RestaurantDto
+            {
+                Name = "Project 72 Wine & Deli",
+                Description = "Moderan restoran sa lokalnim i internacionalnim jelima.",
+                Latitude = 45.2550,
+                Longitude = 19.8450,
+                City = "Novi Sad",
+                CuisineType = "srpska / internacionalna",
+                AverageRating = 4.7,
+                ReviewCount = 320,
+                RecommendedDishes = "Teleći obrazi; domaći hleb; lokalna vina"
+            };
+
+            var r2 = new RestaurantDto
+            {
+                Name = "Zaista dobra klopa",
+                Description = "Tradicionalna vojvođanska kuhinja u opuštenom ambijentu.",
+                Latitude = 45.2535,
+                Longitude = 19.8380,
+                City = "Novi Sad",
+                CuisineType = "vojvođanska / domaća",
+                AverageRating = 4.5,
+                ReviewCount = 180,
+                RecommendedDishes = "Paprikaš; gulaš; domaće knedle"
+            };
+
+            var r3 = new RestaurantDto
+            {
+                Name = "Street Food Corner",
+                Description = "Brza hrana sa fokusom na gurmanske burgere.",
+                Latitude = 45.2510,
+                Longitude = 19.8425,
+                City = "Novi Sad",
+                CuisineType = "street food",
+                AverageRating = 4.3,
+                ReviewCount = 95,
+                RecommendedDishes = "Gurmanski burger; pulled pork sendvič"
+            };
+
+            _restaurantService.Create(r1);
+            _restaurantService.Create(r2);
+            _restaurantService.Create(r3);
+        }
+
     }
 }
