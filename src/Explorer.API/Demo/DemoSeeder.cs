@@ -454,8 +454,8 @@ namespace Explorer.API.Demo
             var r1 = new RestaurantDto
             {
                 Name = "Project 72 Wine & Deli",
-                Description = "Moderan restoran sa lokalnim i internacionalnim jelima.",
-                Latitude = 45.2550,
+                Description = "Moderan restoran sa lokalnim i internacionalnim jelima i velikim izborom vina.",
+                Latitude = 45.2551,
                 Longitude = 19.8450,
                 City = "Novi Sad",
                 CuisineType = "srpska / internacionalna",
@@ -466,33 +466,61 @@ namespace Explorer.API.Demo
 
             var r2 = new RestaurantDto
             {
-                Name = "Zaista dobra klopa",
-                Description = "Tradicionalna vojvođanska kuhinja u opuštenom ambijentu.",
-                Latitude = 45.2535,
-                Longitude = 19.8380,
+                Name = "Fish & Zelenish",
+                Description = "Poznat po ribljim specijalitetima i kreativnim kombinacijama sa povrćem.",
+                Latitude = 45.2557,
+                Longitude = 19.8443,
                 City = "Novi Sad",
-                CuisineType = "vojvođanska / domaća",
-                AverageRating = 4.5,
-                ReviewCount = 180,
-                RecommendedDishes = "Paprikaš; gulaš; domaće knedle"
+                CuisineType = "mediteranska / riblja",
+                AverageRating = 4.8,
+                ReviewCount = 410,
+                RecommendedDishes = "Filet brancina; riblja čorba; domaći deserti"
             };
 
             var r3 = new RestaurantDto
             {
-                Name = "Street Food Corner",
-                Description = "Brza hrana sa fokusom na gurmanske burgere.",
-                Latitude = 45.2510,
+                Name = "Veliki",
+                Description = "Restoran u staroj kući sa fokusom na vojvođansku kuhinju.",
+                Latitude = 45.2559,
+                Longitude = 19.8457,
+                City = "Novi Sad",
+                CuisineType = "vojvođanska / domaća",
+                AverageRating = 4.6,
+                ReviewCount = 290,
+                RecommendedDishes = "Perkelt; domaće knedle; štrudla s makom"
+            };
+
+            var r4 = new RestaurantDto
+            {
+                Name = "Savoca",
+                Description = "Italijanski restoran poznat po picama iz peći na drva i pastama.",
+                Latitude = 45.2537,
+                Longitude = 19.8468,
+                City = "Novi Sad",
+                CuisineType = "italijanska",
+                AverageRating = 4.5,
+                ReviewCount = 350,
+                RecommendedDishes = "Pizza Savoca; pasta carbonara; tiramisu"
+            };
+
+            var r5 = new RestaurantDto
+            {
+                Name = "Zak",
+                Description = "Fine dining restoran sa modernim pristupom lokalnim namirnicama.",
+                Latitude = 45.2530,
                 Longitude = 19.8425,
                 City = "Novi Sad",
-                CuisineType = "street food",
-                AverageRating = 4.3,
-                ReviewCount = 95,
-                RecommendedDishes = "Gurmanski burger; pulled pork sendvič"
+                CuisineType = "fine dining / moderna kuhinja",
+                AverageRating = 4.9,
+                ReviewCount = 210,
+                RecommendedDishes = "Degustacioni meni; steak; deserti od lokalnog voća"
             };
 
             _restaurantService.Create(r1);
             _restaurantService.Create(r2);
             _restaurantService.Create(r3);
+            _restaurantService.Create(r4);
+            _restaurantService.Create(r5);
         }
 
     }
