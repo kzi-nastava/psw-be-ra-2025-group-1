@@ -96,6 +96,7 @@ public class ModulesTests : BaseArchitecturalTests
         new object[]
         {
             "Tours"
-        }
+        },
+        new object[] { "Payments" }
     };
 }
