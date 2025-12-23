@@ -27,7 +27,7 @@ public class MeetUpQueryTests : BaseToursIntegrationTest
 
         // Assert
         result.ShouldNotBeNull();
-        result.Results.Count.ShouldBe(4);
+        result.Results.Count.ShouldBe(4); 
         result.TotalCount.ShouldBe(4);
     }
 
