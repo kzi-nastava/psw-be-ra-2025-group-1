@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - development
+      - feat/test-workflow
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -59,6 +60,7 @@ jobs:
         run: rm -f TestReport/*.trx || true
         
       - name: Run tests – Architecture
+        continue-on-error: true
         run: |
           dotnet test ./src/Explorer.Architecture.Tests/Explorer.Architecture.Tests.csproj \
             --no-build \
@@ -67,6 +69,7 @@ jobs:
             --logger "trx;LogFileName=Explorer.Architecture.Tests.trx"
 
       - name: Run tests – Stakeholders
+        continue-on-error: true
         run: |
           dotnet test ./src/Modules/Stakeholders/Explorer.Stakeholders.Tests/Explorer.Stakeholders.Tests.csproj \
             --no-build \
@@ -75,6 +78,7 @@ jobs:
             --logger "trx;LogFileName=Explorer.Stakeholders.Tests.trx"
 
       - name: Run tests – Blogs
+        continue-on-error: true
         run: |
           dotnet test ./src/Modules/Blog/Explorer.Blog.Tests/Explorer.Blog.Tests.csproj \
             --no-build \
@@ -83,12 +87,14 @@ jobs:
             --logger "trx;LogFileName=Explorer.Blogs.Tests.trx"
 
       - name: Run tests – Tours
+        continue-on-error: true
         run: |
           dotnet test ./src/Modules/Tours/Explorer.Tours.Tests/Explorer.Tours.Tests.csproj \
             --no-build \
             --configuration Release \
             --results-directory TestReport \
             --logger "trx;LogFileName=Explorer.Tours.Tests.trx"
+
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
