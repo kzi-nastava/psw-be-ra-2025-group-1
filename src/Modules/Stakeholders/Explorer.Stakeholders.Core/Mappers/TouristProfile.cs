@@ -9,6 +9,6 @@ namespace Explorer.Stakeholders.Core.Mappers
         public TouristProfile()
         {
             CreateMap<TourPreferenceDto, TourPreference>().ReverseMap();
-        }
+        }  
     }
 }
