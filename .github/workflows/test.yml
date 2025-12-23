@@ -9,7 +9,6 @@ on:
     branches:
       - main
       - development
-      - feat/test-workflow
   pull_request:
     types: [opened, synchronize, reopened]
 
