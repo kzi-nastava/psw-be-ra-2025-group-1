@@ -1,0 +1,111 @@
+name: Test
+
+permissions:
+  checks: write
+  contents: read
+  
+on:
+  push:
+    branches:
+      - main
+      - development
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    env:
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_SCHEMA: explorer-v1-test
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: root
+      DATABASE_POOLING: true
+  
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: root
+          POSTGRES_DB: explorer-v1-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Install .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Restore dependencies
+        run: dotnet restore ./src/Explorer.sln
+
+      - name: Build solution
+        run: dotnet build ./src/Explorer.sln --no-incremental --configuration Release
+
+      - name: Clean TestReport
+        run: rm -f TestReport/*.trx || true
+        
+      - name: Run tests – Architecture
+        run: |
+          dotnet test ./src/Explorer.Architecture.Tests/Explorer.Architecture.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --results-directory TestReport \
+            --logger "trx;LogFileName=Explorer.Architecture.Tests.trx"
+
+      - name: Run tests – Stakeholders
+        run: |
+          dotnet test ./src/Modules/Stakeholders/Explorer.Stakeholders.Tests/Explorer.Stakeholders.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --results-directory TestReport \
+            --logger "trx;LogFileName=Explorer.Stakeholders.Tests.trx"
+
+      - name: Run tests – Blogs
+        run: |
+          dotnet test ./src/Modules/Blog/Explorer.Blog.Tests/Explorer.Blog.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --results-directory TestReport \
+            --logger "trx;LogFileName=Explorer.Blogs.Tests.trx"
+
+      - name: Run tests – Tours
+        run: |
+          dotnet test ./src/Modules/Tours/Explorer.Tours.Tests/Explorer.Tours.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --results-directory TestReport \
+            --logger "trx;LogFileName=Explorer.Tours.Tests.trx"
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: TestReport
+
+      - name: List test report files
+        run: ls -R TestReport
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: Test results
+          path: TestReport/**/*.trx
+          reporter: dotnet-trx
+          report-title: 'Test results'
+          list-tests: 'all'
+          list-suites: 'failed'
