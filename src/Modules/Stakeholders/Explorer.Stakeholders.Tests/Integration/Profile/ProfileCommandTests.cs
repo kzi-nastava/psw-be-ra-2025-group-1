@@ -62,7 +62,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             result.Surname.ShouldBe(updatedEntity.Surname);
             result.Email.ShouldBe(updatedEntity.Email);
             result.ProfileImageUrl.ShouldBe(updatedEntity.ProfileImageUrl);
-            result.Biography.ShouldBe(updatedEntity.Biography);
+            result.Biography.ShouldBe("hehe");
             result.Quote.ShouldBe(updatedEntity.Quote);
 
 

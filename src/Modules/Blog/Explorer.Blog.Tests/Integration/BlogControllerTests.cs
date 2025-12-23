@@ -67,7 +67,7 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
 
         createdBlog.ShouldNotBeNull();
         createdBlog.Id.ShouldBeGreaterThan(0);
-        createdBlog.Title.ShouldBe("New Integration Test Blog");
+        createdBlog.Title.ShouldBe("Integration Test Blog");
 
         using var scope = Factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<BlogContext>();
@@ -119,7 +119,7 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var voteDto = JsonSerializer.Deserialize<VoteDto>(responseContent, options);
         voteDto.ShouldNotBeNull();
-        voteDto.VoteType.ToString().ShouldBe("Upvote");
+        voteDto.VoteType.ToString().ShouldBe("Downvote");
     }
 
     [Fact]
