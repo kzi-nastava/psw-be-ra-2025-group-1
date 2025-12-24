@@ -46,4 +46,9 @@ public class EncounterRepository : IEncounterRepository
             .Where(e => e.Status == EncounterStatus.Active)
             .ToList();
     }
+
+    public List<Encounter> GetAll()
+    {
+        return _context.Encounters.ToList();
+    }
 }

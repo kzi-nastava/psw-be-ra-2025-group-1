@@ -5,6 +5,7 @@ namespace Explorer.Encounters.API.Public;
 public interface IEncounterService
 {
     List<EncounterDto> GetActiveEncounters();
+    List<EncounterDto> GetAll();
     EncounterDto GetById(long id);
     EncounterDto Create(EncounterCreateDto dto);
     EncounterDto Update(long id, EncounterCreateDto dto);

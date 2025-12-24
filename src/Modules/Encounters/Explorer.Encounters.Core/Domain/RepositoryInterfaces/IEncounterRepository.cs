@@ -9,4 +9,5 @@ public interface IEncounterRepository
     void Delete(long encounterId);
     Encounter GetById(long id);
     List<Encounter> GetActive();
+    List<Encounter> GetAll();
 }

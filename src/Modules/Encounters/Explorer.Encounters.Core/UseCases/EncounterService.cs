@@ -22,6 +22,11 @@ public class EncounterService : IEncounterService
         return _mapper.Map<List<EncounterDto>>(_repository.GetActive());
     }
 
+    public List<EncounterDto> GetAll()
+    {
+        return _mapper.Map<List<EncounterDto>>(_repository.GetAll());
+    }
+
     public EncounterDto GetById(long id)
     {
         var encounter = _repository.GetById(id);
@@ -33,7 +38,8 @@ public class EncounterService : IEncounterService
         var encounter = new Encounter(
             dto.Title,
             dto.Description,
-            dto.Location,
+            dto.Longitude,
+            dto.Latitude,
             dto.Xp,
             Enum.Parse<EncounterType>(dto.Type)
         );
@@ -46,7 +52,7 @@ public class EncounterService : IEncounterService
     {
         var encounter = _repository.GetById(id);
         
-        encounter.Update(dto.Title, dto.Description, dto.Location, dto.Xp, Enum.Parse<EncounterType>(dto.Type));
+        encounter.Update(dto.Title, dto.Description, dto.Longitude, dto.Latitude, dto.Xp, Enum.Parse<EncounterType>(dto.Type));
         var updated = _repository.Update(encounter);
         return _mapper.Map<EncounterDto>(updated);
     }

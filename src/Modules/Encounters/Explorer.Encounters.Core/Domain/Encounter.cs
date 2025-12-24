@@ -1,4 +1,6 @@
 using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.BuildingBlocks.Core.Exceptions;
+using System.Xml.Linq;
 
 namespace Explorer.Encounters.Core.Domain;
 
@@ -6,24 +8,32 @@ public class Encounter : Entity
 {
     public string Title { get; private set; } = "";
     public string Description { get; private set; } = "";
-    public string Location { get; private set; } = "";
+    public double Longitude { get; private set; }
+    public double Latitude { get; private set; }
     public int Xp { get; private set; }
     public EncounterStatus Status { get; private set; }
     public EncounterType Type { get; private set; }
 
-    public Encounter(string title, string description, string location, int xp, EncounterType type)
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type)
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title is required.");
-        if (xp <= 0)
-            throw new ArgumentException("XP must be > 0.");
-
         Title = title;
         Description = description;
-        Location = location;
+        Longitude = longitude;
+        Latitude = latitude;
         Xp = xp;
         Type = type;
         Status = EncounterStatus.Draft;
+
+        Validate();
+    }
+
+    private void Validate()
+    {
+        if (string.IsNullOrEmpty(Title)) throw new EntityValidationException("Title cannot be empty.");
+        if (string.IsNullOrEmpty(Description)) throw new EntityValidationException("Description cannot be empty.");
+        if (Longitude < -180 || Longitude > 180) throw new EntityValidationException("Invalid longitude.");
+        if (Latitude < -90 || Latitude > 90) throw new EntityValidationException("Invalid latitude.");
+        if (Xp <= 0) throw new ArgumentException("XP must be > 0.");
     }
 
     private Encounter() { }
@@ -42,20 +52,18 @@ public class Encounter : Entity
         Status = EncounterStatus.Archived;
     }
 
-    public void Update(string title, string description, string location, int xp, EncounterType type)
+    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type)
     {
         if (Status != EncounterStatus.Draft)
             throw new InvalidOperationException("Only draft encounters can be updated.");
 
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title is required.");
-        if (xp <= 0)
-            throw new ArgumentException("XP must be greater than 0.");
-
         Title = title;
         Description = description;
-        Location = location;
+        Longitude = longitude;
+        Latitude = latitude;
         Xp = xp;
         Type = type;
+
+        Validate();
     }
 }
