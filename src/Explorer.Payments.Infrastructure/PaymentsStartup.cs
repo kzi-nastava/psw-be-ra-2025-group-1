@@ -5,6 +5,7 @@ using Explorer.Payments.Core.Mappers;
 using Explorer.Payments.Core.UseCases; // AutoMapper profil
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Payments.Infrastructure.Database.Repositories;
+using Explorer.Payments.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -28,6 +29,9 @@ namespace Explorer.Payments.Infrastructure
             // npr. services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
             services.AddScoped<IShoppingCartService, ShoppingCartService>();
+            services.AddScoped<ICouponRepository, CouponRepository>();
+            services.AddScoped<ICouponRedemptionRepository, CouponRedemptionRepository>();
+
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourPurchaseTokenChecker,
                 Explorer.Payments.Core.Services.TourPurchaseTokenChecker>();
 

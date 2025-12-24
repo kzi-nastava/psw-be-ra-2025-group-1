@@ -1,5 +1,6 @@
 ﻿
 using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,9 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<TourPurchase> TourPurchases { get; set; }
+        public DbSet<Coupon> Coupons { get; set; }
+        public DbSet<CouponRedemption> CouponRedemptions { get; set; }
+
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         
         public PaymentsContext(DbContextOptions<PaymentsContext> options)

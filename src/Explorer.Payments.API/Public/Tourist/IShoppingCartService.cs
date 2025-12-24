@@ -10,5 +10,8 @@ namespace Explorer.Payments.API.Public.Tourist
         void RemoveFromCart(long touristId, long tourId);
         ShoppingCartDto GetCart(long touristId);
         List<TourPurchaseTokenDto> Checkout(long touristId);
+        void ApplyCoupon(long touristId, string code);
+        void RemoveCoupon(long touristId);
+
     }
 }
