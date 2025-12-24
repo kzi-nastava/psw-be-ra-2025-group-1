@@ -1,7 +1,8 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Tours.API.Dtos;
+using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Dtos.ShoppingCart;
 
-namespace Explorer.Tours.API.Public.Tourist
+namespace Explorer.Payments.API.Public.Tourist
 {
     public interface IShoppingCartService
     {

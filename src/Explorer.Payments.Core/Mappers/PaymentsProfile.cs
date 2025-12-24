@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
+using Explorer.Payments.API.Dtos;
+using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 
-namespace Explorer.Payments.Core.Mappers
+namespace Explorer.Payments.Core.Mappers;
+
+public class PaymentsProfile : Profile
 {
-    public class PaymentsProfile : Profile
+    public PaymentsProfile()
     {
-        public PaymentsProfile()
-        {
-
-        }
+        CreateMap<TourPurchaseTokenDto, TourPurchaseToken>().ReverseMap();
     }
 }

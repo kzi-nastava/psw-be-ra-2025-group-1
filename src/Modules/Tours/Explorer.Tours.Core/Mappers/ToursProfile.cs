@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.TourPurchaseTokens;
 
 namespace Explorer.Tours.Core.Mappers;
 
@@ -14,7 +13,6 @@ public class ToursProfile : Profile
         CreateMap<FacilityDto, Facility>().ReverseMap();
         CreateMap<MeetUpDto, MeetUp>().ReverseMap();
         CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap(); //dodala sam
-        CreateMap<TourPurchaseTokenDto, TourPurchaseToken>().ReverseMap();
         CreateMap<CreateTourDto, Tour>().ForMember(dest => dest.Keypoints, opt => opt.Ignore()).ForMember(dest => dest.Equipment, opt => opt.Ignore());
         CreateMap<KeypointDto, Keypoint>().ReverseMap();
         CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();

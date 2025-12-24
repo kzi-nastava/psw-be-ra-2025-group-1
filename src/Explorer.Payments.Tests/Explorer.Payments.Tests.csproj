@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <Folder Include="Integration\" />
-    <Folder Include="TestData\" />
+    <Folder Include="Unit\" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
 
-namespace Explorer.Tours.Core.Domain.Shopping;
+namespace Explorer.Payments.Core.Domain.Shopping;
 
 public class OrderItem : ValueObject
 {

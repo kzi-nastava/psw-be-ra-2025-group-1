@@ -9,10 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\BuildingBlocks\Explorer.BuildingBlocks.Infrastructure\Explorer.BuildingBlocks.Infrastructure.csproj" />
     <ProjectReference Include="..\Explorer.Payments.Core\Explorer.Payments.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Database\Repositories\" />
+    <ProjectReference Include="..\Modules\Tours\Explorer.Tours.Infrastructure\Explorer.Tours.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Explorer.Tours.API.Dtos;
+using Explorer.Payments.API.Dtos;
 
-namespace Explorer.Tours.API.Public.Tourist
+namespace Explorer.Payments.API.Public.Tourist
 {
     public interface ITourPurchaseTokenService
     {

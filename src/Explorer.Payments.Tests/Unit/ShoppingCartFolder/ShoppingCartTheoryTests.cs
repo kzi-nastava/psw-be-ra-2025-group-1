@@ -1,9 +1,9 @@
-﻿using Explorer.Tours.Core.Domain.Shopping;
-using Explorer.Tours.Core.Domain.Shopping;
-using Shouldly;
-using Xunit;
+﻿
 
-namespace Explorer.Tours.Tests.Unit.ShoppingCartFolder
+using Explorer.Payments.Core.Domain.Shopping;
+using Shouldly;
+
+namespace Explorer.Payments.Tests.Unit.ShoppingCartFolder
 {
     public class ShoppingCartTheoryTests
     {

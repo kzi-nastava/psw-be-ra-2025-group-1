@@ -1,11 +1,13 @@
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using Explorer.Tours.Core.Domain.Shopping;
-using Explorer.Tours.Core.Domain.TourPurchaseTokens;
+using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Dtos.ShoppingCart;
+using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Domain.RepositoryInterfaces;
+using Explorer.Payments.Core.Domain.Shopping;
+using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 using Explorer.Tours.Core.Domain;
-using Explorer.Tours.API.Public.Tourist;
-using Explorer.Tours.API.Dtos;
+using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 
-namespace Explorer.Tours.Core.UseCases
+namespace Explorer.Payments.Core.UseCases
 {
     public class ShoppingCartService : IShoppingCartService
     {
