@@ -1,6 +1,7 @@
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Dtos.ShoppingCart;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
@@ -14,13 +15,20 @@ namespace Explorer.Payments.Core.UseCases
         private readonly IShoppingCartRepository _cartRepo;
         private readonly ITourRepository _tourRepo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
+        private readonly ISaleRepository _saleRepository;
 
-        public ShoppingCartService(IShoppingCartRepository cartRepo, ITourRepository tourRepo, ITourPurchaseTokenRepository tokenRepo)
+        public ShoppingCartService(
+            IShoppingCartRepository cartRepo,
+            ITourRepository tourRepo,
+            ITourPurchaseTokenRepository tokenRepo,
+            ISaleRepository saleRepository)
         {
             _cartRepo = cartRepo;
             _tourRepo = tourRepo;
             _tokenRepo = tokenRepo;
+            _saleRepository = saleRepository;
         }
+
 
         public void AddToCart(long touristId, long tourId)
         {
@@ -75,7 +83,7 @@ namespace Explorer.Payments.Core.UseCases
             cart.RemoveItem(tourId);
             _cartRepo.Update(cart);
         }
-        
+
         public List<TourPurchaseTokenDto> Checkout(long touristId)
         {
             var cart = _cartRepo.GetByTouristId(touristId);
@@ -83,6 +91,10 @@ namespace Explorer.Payments.Core.UseCases
                 throw new InvalidOperationException("Shopping cart is empty.");
 
             var createdTokens = new List<TourPurchaseToken>();
+
+            // Kreiranje Sale (istorija prodaje)
+            var sale = Sale.CreateFromCart(cart);
+            _saleRepository.Add(sale); // ← ovo ti treba da registruješ u DI
 
             foreach (var item in cart.Items)
             {
@@ -95,7 +107,7 @@ namespace Explorer.Payments.Core.UseCases
 
                 if (tour.Status != TourStatus.Published)
                     throw new InvalidOperationException("Only published tours can be purchased.");
-                
+
                 if (_tokenRepo.ExistsForUserAndTour(touristId, item.TourId))
                     continue; // već kupljena
 
@@ -108,10 +120,12 @@ namespace Explorer.Payments.Core.UseCases
                 _tokenRepo.Create(token);
                 createdTokens.Add(token);
             }
-            
+
+            // Prazni korpu
             cart.Clear();
             _cartRepo.Update(cart);
 
+            // Mapiranje tokena u DTO
             return createdTokens.Select(t => new TourPurchaseTokenDto
             {
                 Id = t.Id,
@@ -122,5 +136,6 @@ namespace Explorer.Payments.Core.UseCases
                 IsValid = t.IsValid
             }).ToList();
         }
+
     }
 }
