@@ -7,7 +7,7 @@ using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using Explorer.Payments.Core.Domain.Coupons;
+
 
 namespace Explorer.Payments.Core.UseCases
 {
