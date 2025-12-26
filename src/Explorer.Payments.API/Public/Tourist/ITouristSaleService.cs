@@ -3,7 +3,7 @@ using Explorer.Payments.API.Dtos.ShoppingCart;
 
 namespace Explorer.Payments.API.Public.Tourist;
 
-public interface ISaleService
+public interface ITouristSaleService
 {
     List<SaleDto> GetByTouristId(long touristId);
 }

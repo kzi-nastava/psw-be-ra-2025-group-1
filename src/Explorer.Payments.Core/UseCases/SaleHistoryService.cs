@@ -5,11 +5,11 @@ using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 
 namespace Explorer.Payments.Core.UseCases;
 
-public class SaleService : ISaleService
+public class SaleHistoryService : ITouristSaleService
 {
     private readonly ISaleHistoryRepository _saleRepository;
 
-    public SaleService(ISaleHistoryRepository saleRepository)
+    public SaleHistoryService(ISaleHistoryRepository saleRepository)
     {
         _saleRepository = saleRepository;
     }

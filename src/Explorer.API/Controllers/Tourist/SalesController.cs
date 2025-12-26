@@ -9,9 +9,9 @@ namespace Explorer.API.Controllers.Tourist;
 [ApiController]
 public class SalesController : ControllerBase
 {
-    private readonly ISaleService _saleService;
+    private readonly ITouristSaleService _saleService;
 
-    public SalesController(ISaleService saleService)
+    public SalesController(ITouristSaleService saleService)
     {
         _saleService = saleService;
     }

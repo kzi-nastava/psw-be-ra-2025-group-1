@@ -28,7 +28,7 @@ namespace Explorer.Payments.Infrastructure
             // npr. services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
             services.AddScoped<IShoppingCartService, ShoppingCartService>();
-            services.AddScoped<ISaleService, SaleService>();
+            services.AddScoped<ITouristSaleService, SaleHistoryService>();
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourPurchaseTokenChecker,
                 Explorer.Payments.Core.Services.TourPurchaseTokenChecker>();
 
