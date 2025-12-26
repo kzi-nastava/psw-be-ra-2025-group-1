@@ -23,6 +23,8 @@ public class ToursContext : DbContext
 
     public DbSet<PersonEquipment> PersonEquipment { get; set; } //dodala sam
 
+    public DbSet<Restaurant> Restaurants { get; set; }
+
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -65,5 +67,20 @@ public class ToursContext : DbContext
             .IsRequired()
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Restaurant>(cfg =>
+        {
+            cfg.ToTable("Restaurants");
+            cfg.HasKey(r => r.Id);
+
+            cfg.Property(r => r.Name).IsRequired();
+            cfg.Property(r => r.Latitude).IsRequired();
+            cfg.Property(r => r.Longitude).IsRequired();
+
+            cfg.Property(r => r.AverageRating)
+                .HasColumnType("double precision");
+
+            cfg.Property(r => r.ReviewCount);
+        });
     }
 }
