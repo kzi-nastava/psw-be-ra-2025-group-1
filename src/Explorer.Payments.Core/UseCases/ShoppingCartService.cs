@@ -15,13 +15,13 @@ namespace Explorer.Payments.Core.UseCases
         private readonly IShoppingCartRepository _cartRepo;
         private readonly ITourRepository _tourRepo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
-        private readonly ISaleRepository _saleRepository;
+        private readonly ISaleHistoryRepository _saleRepository;
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
             ITourRepository tourRepo,
             ITourPurchaseTokenRepository tokenRepo,
-            ISaleRepository saleRepository)
+            ISaleHistoryRepository saleRepository)
         {
             _cartRepo = cartRepo;
             _tourRepo = tourRepo;
@@ -93,7 +93,7 @@ namespace Explorer.Payments.Core.UseCases
             var createdTokens = new List<TourPurchaseToken>();
 
             // Kreiranje Sale (istorija prodaje)
-            var sale = Sale.CreateFromCart(cart);
+            var sale = SaleHistory.CreateFromCart(cart);
             _saleRepository.Add(sale); // ← ovo ti treba da registruješ u DI
 
             foreach (var item in cart.Items)

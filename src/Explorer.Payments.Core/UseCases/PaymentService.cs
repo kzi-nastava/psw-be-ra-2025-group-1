@@ -7,9 +7,9 @@ namespace Explorer.Payments.Core.UseCases;
 
 public class SaleService : ISaleService
 {
-    private readonly ISaleRepository _saleRepository;
+    private readonly ISaleHistoryRepository _saleRepository;
 
-    public SaleService(ISaleRepository saleRepository)
+    public SaleService(ISaleHistoryRepository saleRepository)
     {
         _saleRepository = saleRepository;
     }

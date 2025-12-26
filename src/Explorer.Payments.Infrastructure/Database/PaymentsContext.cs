@@ -10,8 +10,8 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
-        public DbSet<Sale> Sales { get; set; }
-        public DbSet<SaleItem> SaleItems { get; set; }
+        public DbSet<SaleHistory> SalesHistory { get; set; }
+        public DbSet<SaleHistoryItem> SaleHistoryItems { get; set; }
 
         public PaymentsContext(DbContextOptions<PaymentsContext> options)
             : base(options) { }
@@ -27,7 +27,7 @@ namespace Explorer.Payments.Infrastructure.Database
             });
 
             // Sale mapping
-            modelBuilder.Entity<Sale>(builder =>
+            modelBuilder.Entity<SaleHistory>(builder =>
             {
                 builder.HasKey(s => s.Id);
                 builder.Property(s => s.TouristId).IsRequired();
@@ -40,7 +40,7 @@ namespace Explorer.Payments.Infrastructure.Database
             });
 
             // SaleItem mapping
-            modelBuilder.Entity<SaleItem>(builder =>
+            modelBuilder.Entity<SaleHistoryItem>(builder =>
             {
                 builder.HasKey(si => si.Id);
                 builder.Property(si => si.TourId).IsRequired();

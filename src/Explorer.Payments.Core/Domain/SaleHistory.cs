@@ -6,20 +6,20 @@ using System.Linq;
 
 namespace Explorer.Payments.Core.Domain
 {
-    public class Sale : AggregateRoot
+    public class SaleHistory : AggregateRoot
     {
         public long TouristId { get; private set; }
         public DateTime PurchasedAt { get; private set; }
         public decimal TotalPrice { get; private set; }
 
         // virtual property, EF Core koristi direktno
-        public virtual List<SaleItem> Items { get; set; } = new();
+        public virtual List<SaleHistoryItem> Items { get; set; } = new();
 
-        protected Sale() { }
+        protected SaleHistory() { }
 
-        public static Sale CreateFromCart(ShoppingCart cart)
+        public static SaleHistory CreateFromCart(ShoppingCart cart)
         {
-            var sale = new Sale
+            var sale = new SaleHistory
             {
                 TouristId = cart.TouristId,
                 PurchasedAt = DateTime.UtcNow,
@@ -28,7 +28,7 @@ namespace Explorer.Payments.Core.Domain
 
             foreach (var item in cart.Items)
             {
-                sale.Items.Add(new SaleItem(item.TourId, item.TourName, item.Price, item.Quantity));
+                sale.Items.Add(new SaleHistoryItem(item.TourId, item.TourName, item.Price, item.Quantity));
             }
 
             return sale;

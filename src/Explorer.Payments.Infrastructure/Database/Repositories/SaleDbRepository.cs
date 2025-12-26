@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Payments.Infrastructure.Database.Repositories
 {
-    public class SaleDbRepository : ISaleRepository
+    public class SaleDbRepository : ISaleHistoryRepository
     {
         private readonly PaymentsContext _context;
 
@@ -13,23 +13,23 @@ namespace Explorer.Payments.Infrastructure.Database.Repositories
             _context = context;
         }
 
-        public Sale Add(Sale sale)
+        public SaleHistory Add(SaleHistory sale)
         {
-            _context.Sales.Add(sale);
+            _context.SalesHistory.Add(sale);
             _context.SaveChanges();
             return sale;
         }
 
-        public Sale? GetById(long id)
+        public SaleHistory? GetById(long id)
         {
-            return _context.Sales
+            return _context.SalesHistory
                 .Include(s => s.Items)
                 .FirstOrDefault(s => s.Id == id);
         }
 
-        public List<Sale> GetByTouristId(long touristId)
+        public List<SaleHistory> GetByTouristId(long touristId)
         {
-            return _context.Sales
+            return _context.SalesHistory
                 .Include(s => s.Items)
                 .Where(s => s.TouristId == touristId)
                 .ToList();

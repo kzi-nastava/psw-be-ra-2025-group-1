@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Explorer.Payments.Core.Domain
 {
-    public class SaleItem : ValueObject
+    public class SaleHistoryItem : ValueObject
     {
         public long Id { get; private set; }
         public long TourId { get; private set; }
@@ -11,9 +11,9 @@ namespace Explorer.Payments.Core.Domain
         public decimal Price { get; private set; }
         public int Quantity { get; private set; }
 
-        protected SaleItem() { }
+        protected SaleHistoryItem() { }
 
-        public SaleItem(long tourId, string tourName, decimal price, int quantity)
+        public SaleHistoryItem(long tourId, string tourName, decimal price, int quantity)
         {
             TourId = tourId;
             TourName = tourName;
