@@ -1,5 +1,5 @@
--- TourPurchaseTokens za Tours integration testove
--- Omogu?avaju turistima -21, -22, -23 da pokrenu ture -1 i -2
+﻿-- TourPurchaseTokens iz Payments modula
+-- Potrebni za TourExecution testove (provera da li turista ima token)
 
 INSERT INTO payments."TourPurchaseTokens"(
     "Id", 

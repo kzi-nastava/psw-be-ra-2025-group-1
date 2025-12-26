@@ -1,6 +1,8 @@
 ﻿using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
+using Explorer.Payments.Core.Domain.Sales;  
 using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Payments.Infrastructure.Database
@@ -12,6 +14,11 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public DbSet<SaleHistory> SalesHistory { get; set; }
         public DbSet<SaleHistoryItem> SaleHistoryItems { get; set; }
+
+        public DbSet<Coupon> Coupons { get; set; }
+        public DbSet<CouponRedemption> CouponRedemptions { get; set; }
+        public DbSet<Sale> Sales { get; set; }
+
 
         public PaymentsContext(DbContextOptions<PaymentsContext> options)
             : base(options) { }
@@ -26,7 +33,6 @@ namespace Explorer.Payments.Infrastructure.Database
                       .HasConversion<string>();
             });
 
-            // Sale mapping
             modelBuilder.Entity<SaleHistory>(builder =>
             {
                 builder.HasKey(s => s.Id);
@@ -48,6 +54,8 @@ namespace Explorer.Payments.Infrastructure.Database
                 builder.Property(si => si.Price).IsRequired();
                 builder.Property(si => si.Quantity).IsRequired();
             });
+           
+            modelBuilder.ApplyConfiguration(new SaleConfiguration());
 
             base.OnModelCreating(modelBuilder);
         }
