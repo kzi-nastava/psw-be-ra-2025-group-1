@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Payments.Infrastructure.Database.Repositories
 {
-    public class SaleDbRepository : ISaleHistoryRepository
+    public class SaleHistoryDbRepository : ISaleHistoryRepository
     {
         private readonly PaymentsContext _context;
 
-        public SaleDbRepository(PaymentsContext context)
+        public SaleHistoryDbRepository(PaymentsContext context)
         {
             _context = context;
         }
