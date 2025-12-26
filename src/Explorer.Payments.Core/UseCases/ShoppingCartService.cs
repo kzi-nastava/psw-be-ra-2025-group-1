@@ -1,13 +1,12 @@
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Dtos.ShoppingCart;
 using Explorer.Payments.API.Public.Tourist;
-using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using Explorer.Payments.Core.Domain.Coupons;
+using Explorer.Payments.Core.Domain.Cupons;
 
 namespace Explorer.Payments.Core.UseCases
 {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Explorer.Payments.Core.Domain.Coupons;
+﻿namespace Explorer.Payments.Core.Domain.Cupons;
 
 public enum CouponDiscountType
 {

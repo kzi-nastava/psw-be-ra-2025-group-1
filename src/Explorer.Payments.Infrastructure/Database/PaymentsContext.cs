@@ -1,6 +1,6 @@
 ﻿
 using Explorer.Payments.Core.Domain;
-using Explorer.Payments.Core.Domain.Coupons;
+using Explorer.Payments.Core.Domain.Cupons;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 using Microsoft.EntityFrameworkCore;
