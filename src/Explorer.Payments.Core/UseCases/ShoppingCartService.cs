@@ -1,13 +1,13 @@
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Dtos.ShoppingCart;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-
 
 namespace Explorer.Payments.Core.UseCases
 {
@@ -16,7 +16,7 @@ namespace Explorer.Payments.Core.UseCases
         private readonly IShoppingCartRepository _cartRepo;
         private readonly ITourRepository _tourRepo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
-
+        private readonly ISaleHistoryRepository _saleRepository;
         private readonly ICouponRepository _couponRepo;
         private readonly ICouponRedemptionRepository _couponRedemptionRepo;
 
@@ -24,13 +24,14 @@ namespace Explorer.Payments.Core.UseCases
             IShoppingCartRepository cartRepo,
             ITourRepository tourRepo,
             ITourPurchaseTokenRepository tokenRepo,
+            ISaleHistoryRepository saleRepository,
             ICouponRepository couponRepo,
             ICouponRedemptionRepository couponRedemptionRepo)
         {
             _cartRepo = cartRepo;
             _tourRepo = tourRepo;
             _tokenRepo = tokenRepo;
-
+            _saleRepository = saleRepository;
             _couponRepo = couponRepo;
             _couponRedemptionRepo = couponRedemptionRepo;
         }
@@ -51,7 +52,6 @@ namespace Explorer.Payments.Core.UseCases
 
             cart.AddItem(tour.Id, tour.Title, (decimal)tour.Price);
 
-            // (opciono) ako želiš da popust uvek bude “fresh” kad se menja korpa:
             RecalculateCouponDiscountIfApplied(cart);
 
             _cartRepo.Update(cart);
@@ -76,12 +76,10 @@ namespace Explorer.Payments.Core.UseCases
             return new ShoppingCartDto
             {
                 TouristId = cart.TouristId,
-
                 Subtotal = cart.Subtotal,
                 CouponCode = cart.AppliedCouponCode,
                 CouponDiscount = cart.TotalDiscount,
                 TotalPrice = cart.TotalPrice,
-
                 Items = cart.Items.Select(i => new OrderItemDto
                 {
                     TourId = i.TourId,
@@ -98,12 +96,12 @@ namespace Explorer.Payments.Core.UseCases
             if (cart == null) return;
 
             cart.RemoveItem(tourId);
-            
+
             RecalculateCouponDiscountIfApplied(cart);
 
             _cartRepo.Update(cart);
         }
-        
+
         public void ApplyCoupon(long touristId, string code)
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -123,7 +121,7 @@ namespace Explorer.Payments.Core.UseCases
 
             _cartRepo.Update(cart);
         }
-        
+
         public void RemoveCoupon(long touristId)
         {
             var cart = _cartRepo.GetByTouristId(touristId);
@@ -138,17 +136,19 @@ namespace Explorer.Payments.Core.UseCases
             var cart = _cartRepo.GetByTouristId(touristId);
             if (cart == null || !cart.Items.Any())
                 throw new InvalidOperationException("Shopping cart is empty.");
-            
+
             Coupon? coupon = null;
             if (!string.IsNullOrWhiteSpace(cart.AppliedCouponCode))
             {
                 coupon = ValidateCouponOrThrow(cart.AppliedCouponCode!, touristId);
-                
                 var discount = coupon.CalculateDiscount(cart.Subtotal);
                 cart.ApplyCoupon(coupon.Code, discount);
             }
 
             var createdTokens = new List<TourPurchaseToken>();
+
+            var sale = SaleHistory.CreateFromCart(cart);
+            _saleRepository.Add(sale);
 
             foreach (var item in cart.Items)
             {
@@ -174,7 +174,7 @@ namespace Explorer.Payments.Core.UseCases
                 _tokenRepo.Create(token);
                 createdTokens.Add(token);
             }
-            
+
             if (coupon != null)
             {
                 _couponRedemptionRepo.Create(new CouponRedemption(
@@ -183,7 +183,6 @@ namespace Explorer.Payments.Core.UseCases
                     null,
                     DateTime.UtcNow
                 ));
-
             }
 
             cart.Clear();
@@ -199,7 +198,6 @@ namespace Explorer.Payments.Core.UseCases
                 IsValid = t.IsValid
             }).ToList();
         }
-
 
         private Coupon ValidateCouponOrThrow(string code, long userId)
         {
@@ -230,13 +228,10 @@ namespace Explorer.Payments.Core.UseCases
             return coupon;
         }
 
-
         private void RecalculateCouponDiscountIfApplied(ShoppingCart cart)
         {
             if (string.IsNullOrWhiteSpace(cart.AppliedCouponCode)) return;
 
-            // ako kupon više nije validan, možeš ili da baciš grešku, ili da ga skineš.
-            // ovde ga samo osvežimo ako postoji, a ako ne postoji/istekao -> skidamo
             var normalized = Coupon.NormalizeCode(cart.AppliedCouponCode!);
             var coupon = _couponRepo.GetByCode(normalized);
 

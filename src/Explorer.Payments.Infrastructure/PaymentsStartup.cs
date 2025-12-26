@@ -30,12 +30,12 @@ namespace Explorer.Payments.Infrastructure
             // npr. services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
             services.AddScoped<IShoppingCartService, ShoppingCartService>();
+            services.AddScoped<ITouristSaleService, SaleHistoryService>();
             services.AddScoped<ICouponRepository, CouponRepository>();
             services.AddScoped<ICouponRedemptionRepository, CouponRedemptionRepository>();
             services.AddScoped<ISaleRepository, SaleRepository>();
             services.AddScoped<ISaleService, SaleService>();
             services.AddScoped<ISalePublicService, SalePublicService>();
-
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourPurchaseTokenChecker,
                 Explorer.Payments.Core.Services.TourPurchaseTokenChecker>();
 
@@ -45,7 +45,7 @@ namespace Explorer.Payments.Infrastructure
         {
             services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
             services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
-
+            services.AddScoped<ISaleHistoryRepository, SaleHistoryDbRepository>();
             var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
             dataSourceBuilder.EnableDynamicJson();
             var dataSource = dataSourceBuilder.Build();
