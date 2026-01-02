@@ -3,7 +3,7 @@ using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 using Shouldly;
 
 
-namespace Explorer.Tours.Tests.Unit.TourPurchaseTokensFolder
+namespace Explorer.Payments.Tests.Unit.Tokens
 {
     public class TourPurchaseTokenTests
     {
