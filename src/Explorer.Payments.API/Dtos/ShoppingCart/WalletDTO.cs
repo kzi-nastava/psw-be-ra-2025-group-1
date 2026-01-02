@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace Explorer.Payments.API.Dtos.ShoppingCart
 {
     public class WalletDto
     {
+        public long Id { get; set; }
+        public long TouristId { get; set; }
+        public decimal Balance { get; set; }
     }
 }
