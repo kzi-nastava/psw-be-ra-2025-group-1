@@ -11,6 +11,6 @@ namespace Explorer.Payments.API.Public.Tourist
         public WalletDto Create(long touristId);
         public WalletDto UpdateBalance(long walletId, double newBalance);
         public WalletDto ResetBalance(long walletId);
-
+        public WalletDto Delete(long walletId);
     }
 }
