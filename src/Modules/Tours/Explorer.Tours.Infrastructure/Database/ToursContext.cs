@@ -20,6 +20,9 @@ public class ToursContext : DbContext
     public DbSet<TourPurchase> TourPurchases { get; set; }
     public DbSet<Keypoint> Keypoints { get; set; }
     public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
+    public DbSet<TourRating> TourRatings { get; set; }
+    public DbSet<TourRatingReaction> TourRatingReactions { get; set; }
+
 
     public DbSet<PersonEquipment> PersonEquipment { get; set; } //dodala sam
 
@@ -65,5 +68,18 @@ public class ToursContext : DbContext
             .IsRequired()
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        // One-Many relationship between TourRating and TourRatingReaction
+        modelBuilder.Entity<TourRating>()
+            .HasMany<TourRatingReaction>()
+            .WithOne()
+            .HasForeignKey(r => r.TourRatingId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint: one reaction per user per rating
+        modelBuilder.Entity<TourRatingReaction>()
+            .HasIndex(r => new { r.TourRatingId, r.UserId })
+            .IsUnique();
     }
 }
