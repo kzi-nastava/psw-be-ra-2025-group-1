@@ -5,6 +5,6 @@ namespace Explorer.Payments.API.Dtos.ShoppingCart
     {
         public long Id { get; set; }
         public long TouristId { get; set; }
-        public decimal Balance { get; set; }
+        public double Balance { get; set; }
     }
 }

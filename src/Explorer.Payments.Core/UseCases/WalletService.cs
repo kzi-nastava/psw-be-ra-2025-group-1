@@ -33,25 +33,30 @@ namespace Explorer.Payments.Core.UseCases
 
         public WalletDto GetByTouristId(long touristId)
         {
-            var wallet = walletRepository.GetByTouristId(touristId);
+            Wallet? wallet;
+            
+            if (!walletRepository.ExistsByTouristId(touristId))
+                wallet = walletRepository.Create(new Wallet(touristId));
+            else
+                wallet = walletRepository.GetByTouristId(touristId);
+
+
             if (wallet == null) throw new KeyNotFoundException("Wallet not found for this tourist.");
             return _mapper.Map<WalletDto>(wallet);
         }
 
-        public WalletDto UpdateBalance(long walletId, double newBalance)
+        public WalletDto UpdateBalance(long walletId, WalletDto request)
         {
             var wallet = walletRepository.Get(walletId);
             if (wallet == null) throw new KeyNotFoundException("Wallet not found.");
 
-            wallet.Update(newBalance);
+            if(request.TouristId != wallet.TouristId)
+                throw new ArgumentException("TouristId cannot be changed.");
+
+            wallet.Update(request.Balance);
 
             var result = walletRepository.Update(wallet);
             return _mapper.Map<WalletDto>(wallet);
-        }
-
-        public WalletDto ResetBalance(long walletId)
-        {
-            return UpdateBalance(walletId, 0);
         }
 
         public WalletDto Delete(long walletId)

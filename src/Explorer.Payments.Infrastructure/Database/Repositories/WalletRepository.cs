@@ -35,6 +35,12 @@ namespace Explorer.Payments.Infrastructure.Database.Repositories
             dbContext.SaveChanges();
         }
 
+        public bool ExistsByTouristId(long touristId)
+        {
+            Wallet? entity= _dbSet.FirstOrDefault(w => w.TouristId == touristId);
+            return entity != null;
+        }
+
         public Wallet? Get(long id)
         {
             return _dbSet

@@ -9,6 +9,8 @@ namespace Explorer.Payments.Core.Domain.RepositoryInterfaces
         Wallet Update(Wallet tour);
         Wallet? Get(long id);
         Wallet? GetByTouristId(long touristId);
+
+        bool ExistsByTouristId(long touristId);
         void Delete(long id);
     }
 }

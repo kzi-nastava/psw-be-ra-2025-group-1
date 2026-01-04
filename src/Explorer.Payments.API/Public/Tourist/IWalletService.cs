@@ -9,8 +9,7 @@ namespace Explorer.Payments.API.Public.Tourist
         public WalletDto GetById(long walletId);
         public WalletDto GetByTouristId(long touristId);
         public WalletDto Create(long touristId);
-        public WalletDto UpdateBalance(long walletId, double newBalance);
-        public WalletDto ResetBalance(long walletId);
+        public WalletDto UpdateBalance(long walletId, WalletDto request);
         public WalletDto Delete(long walletId);
     }
 }
