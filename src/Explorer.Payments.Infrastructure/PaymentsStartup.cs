@@ -1,8 +1,9 @@
 ﻿using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Domain.External;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Mappers;
-using Explorer.Payments.Core.UseCases; // AutoMapper profil
+using Explorer.Payments.Core.UseCases;
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Payments.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;

@@ -4,16 +4,15 @@ using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
-using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Cupons;
+using Explorer.Payments.Core.Domain.External;
 
 namespace Explorer.Payments.Core.UseCases
 {
     public class ShoppingCartService : IShoppingCartService
     {
         private readonly IShoppingCartRepository _cartRepo;
-        private readonly ITourRepository _tourRepo;
+        private readonly ITourInfoService _tourRepo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
 
         private readonly ICouponRepository _couponRepo;
@@ -21,7 +20,7 @@ namespace Explorer.Payments.Core.UseCases
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
-            ITourRepository tourRepo,
+            ITourInfoService tourRepo,
             ITourPurchaseTokenRepository tokenRepo,
             ICouponRepository couponRepo,
             ICouponRedemptionRepository couponRedemptionRepo)
@@ -36,7 +35,7 @@ namespace Explorer.Payments.Core.UseCases
 
         public void AddToCart(long touristId, long tourId)
         {
-            var tour = _tourRepo.GetPublishedById(tourId);
+            var tour = _tourRepo.GetById(tourId);
             if (tour == null)
                 throw new ArgumentException("Tour does not exist or is not published.");
 
@@ -48,9 +47,8 @@ namespace Explorer.Payments.Core.UseCases
                 cart = _cartRepo.Create(cart);
             }
 
-            cart.AddItem(tour.Id, tour.Title, (decimal)tour.Price);
-
-            // (opciono) ako želiš da popust uvek bude “fresh” kad se menja korpa:
+            cart.AddItem(tour.Id, tour.Name, (decimal)tour.Price);
+            
             RecalculateCouponDiscountIfApplied(cart);
 
             _cartRepo.Update(cart);
@@ -151,14 +149,14 @@ namespace Explorer.Payments.Core.UseCases
 
             foreach (var item in cart.Items)
             {
-                var tour = _tourRepo.Get(item.TourId);
+                var tour = _tourRepo.GetById(item.TourId);
                 if (tour == null)
                     throw new InvalidOperationException("Tour does not exist.");
 
-                if (tour.Status == TourStatus.Archived)
+                if (tour.Status == TourPublishStatus.Archived)
                     throw new InvalidOperationException("Archived tour cannot be purchased.");
 
-                if (tour.Status != TourStatus.Published)
+                if (tour.Status != TourPublishStatus.Published)
                     throw new InvalidOperationException("Only published tours can be purchased.");
 
                 if (_tokenRepo.ExistsForUserAndTour(touristId, item.TourId))

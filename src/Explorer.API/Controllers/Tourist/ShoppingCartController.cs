@@ -64,8 +64,18 @@ namespace Explorer.API.Controllers.Tourist
         public ActionResult<List<TourPurchaseTokenDto>> Checkout()
         {
             long touristId = long.Parse(User.FindFirst("id")!.Value);
-            var tokens = _service.Checkout(touristId);
-            return Ok(tokens);
+
+            try
+            {
+                var tokens = _service.Checkout(touristId);
+                return Ok(tokens);
+            }
+            catch (InvalidOperationException ex)
+            {
+                // npr. "Only published tours..." / "Tour does not exist" itd.
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
     }
 }
