@@ -27,7 +27,7 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
             return task.Result;
         }
 
-        public PagedResult<TourRatingReaction> GetPagedByTourRating(int tourRatingId, int page, int pageSize)
+        public PagedResult<TourRatingReaction> GetPagedByTourRating(long tourRatingId, int page, int pageSize)
         {
             var task = _dbSet.GetPagedById(page, pageSize);
             task.Wait();

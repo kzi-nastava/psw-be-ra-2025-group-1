@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.Core.Domain;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
@@ -11,12 +12,20 @@ namespace Explorer.Tours.Core.UseCases
     public class TourRatingService : ITourRatingService
     {
         private readonly ITourRatingRepository _tourRatingRepository;
+        private readonly ITourExecutionRepository _tourExecutionRepository;
         private readonly IMapper _mapper;
 
-        public TourRatingService(ITourRatingRepository repository, IMapper mapper)
+        public TourRatingService(ITourRatingRepository tourRatingRepository, IMapper mapper, ITourExecutionRepository tourExecutionRepository)
         {
-            _tourRatingRepository = repository;
+            _tourRatingRepository = tourRatingRepository;
+            _tourExecutionRepository = tourExecutionRepository;
             _mapper = mapper;
+        }
+
+        public TourRatingDto Get(long id)
+        {
+            var result = _tourRatingRepository.Get(id);
+            return _mapper.Map<TourRatingDto>(result);
         }
 
         public PagedResult<TourRatingDto> GetPaged(int page, int pageSize)
@@ -26,34 +35,56 @@ namespace Explorer.Tours.Core.UseCases
             return new PagedResult<TourRatingDto>(items, result.TotalCount);
         }
 
-        public PagedResult<TourRatingDto> GetPagedByUser(int userId, int page, int pageSize)
+        public PagedResult<TourRatingDto> GetPagedByUser(long userId, int page, int pageSize)
         {
             var result = _tourRatingRepository.GetPagedByUser(userId, page, pageSize);
             var items = result.Results.Select(_mapper.Map<TourRatingDto>).ToList();
             return new PagedResult<TourRatingDto>(items, result.TotalCount);
         }
 
-        public PagedResult<TourRatingDto> GetPagedByTourExecution(int tourExecutionId, int page, int pageSize)
+        public PagedResult<TourRatingDto> GetPagedByTourExecution(long tourExecutionId, int page, int pageSize)
         {
             var result = _tourRatingRepository.GetPagedByTourExecution(tourExecutionId, page, pageSize);
             var items = result.Results.Select(_mapper.Map<TourRatingDto>).ToList();
             return new PagedResult<TourRatingDto>(items, result.TotalCount);
         }
 
-        public TourRatingDto Create(TourRatingDto entity)
+        public TourRatingDto Create(TourRatingDto rating)
         {
-            var result = _tourRatingRepository.Create(_mapper.Map<TourRating>(entity));
+            // Check if the execution exists
+            var execution = _tourExecutionRepository.Get(rating.TourExecutionId) ?? throw new System.UnauthorizedAccessException("Invalid tour ID.");
+            // Check if this is the user that has completed that tour
+            if (execution.TouristId != rating.UserId) throw new System.UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
+            // Check if the user has completed the tour
+            if (execution.Status != TourExecutionStatus.Completed) throw new System.InvalidOperationException("Tour needs to be completed in order to rate it.");
+            // Check if the user has completed the tour
+            if (execution.PercentageCompleted < 50) throw new System.InvalidOperationException("Tour needs to be completed at least 50% in order to rate it.");
+
+            var result = _tourRatingRepository.Create(_mapper.Map<TourRating>(rating));
             return _mapper.Map<TourRatingDto>(result);
         }
 
-        public TourRatingDto Update(TourRatingDto entity)
+        public TourRatingDto Update(long id, TourRatingDto rating)
         {
-            var result = _tourRatingRepository.Update(_mapper.Map<TourRating>(entity));
+            // Check if the rating exists
+            var existingRating = Get(id) ?? throw new KeyNotFoundException("Rating not found");
+            // Check if the rating belongs to the user
+            if (existingRating.UserId != rating.UserId) throw new System.UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
+
+            rating.Id = id;
+            rating.CreatedAt = existingRating.CreatedAt;
+
+            var result = _tourRatingRepository.Update(_mapper.Map<TourRating>(rating));
             return _mapper.Map<TourRatingDto>(result);
         }
 
-        public void Delete(long id)
+        public void Delete(long id, long userId)
         {
+            // Check if the rating exists
+            var existingRating = Get(id) ?? throw new KeyNotFoundException("Rating not found");
+            // Check if the rating belongs to the user
+            if (existingRating.UserId != userId) throw new System.UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
+
             _tourRatingRepository.Delete(id);
         }
     }

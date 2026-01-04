@@ -8,11 +8,13 @@ namespace Explorer.Tours.API.Dtos
 {
     public class TourRatingDto
     {
-        public int Id { get; set; }
-        public int UserId { get; set; }
-        public int TourExecutionId { get; set; }
+        public long Id { get; set; }
+        public long UserId { get; set; }
+        public long TourExecutionId { get; set; }
         public int Stars { get; set; }
         public string Comment { get; set; }
+        public int CompletedProcentage { get; set; }
         public int ThumbsUpCount { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

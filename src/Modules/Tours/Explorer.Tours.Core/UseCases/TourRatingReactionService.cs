@@ -26,7 +26,7 @@ namespace Explorer.Tours.Core.UseCases
             return new PagedResult<TourRatingReactionDto>(items, result.TotalCount);
         }
 
-        public PagedResult<TourRatingReactionDto> GetPagedByTourRating(int tourRatingId, int page, int pageSize)
+        public PagedResult<TourRatingReactionDto> GetPagedByTourRating(long tourRatingId, int page, int pageSize)
         {
             var result = _tourRatingReactionRepository.GetPagedByTourRating(tourRatingId, page, pageSize);
             var items = result.Results.Select(_mapper.Map<TourRatingReactionDto>).ToList();

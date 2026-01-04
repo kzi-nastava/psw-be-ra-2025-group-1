@@ -9,18 +9,20 @@ namespace Explorer.Tours.Core.Domain
 {
     public class TourRatingReaction : Entity
     {
-        public int TourRatingId;
-        public int UserId;
-        public DateTime CreatedAt;
+        public long TourRatingId { get; private set; }
+        public long UserId { get; private set; }
+        public DateTime CreatedAt { get; private set; }
         // we can add more reaction types in the future
 
-        public TourRatingReaction(int tourRatingId, int userId)
+        public TourRatingReaction()
         {
-            TourRatingId = tourRatingId;
-            UserId = userId;
             CreatedAt = DateTime.UtcNow;
         }
 
-        private TourRatingReaction() { }
+        public TourRatingReaction(long tourRatingId, long userId) : this()
+        {
+            TourRatingId = tourRatingId;
+            UserId = userId;
+        }
     }
 }
