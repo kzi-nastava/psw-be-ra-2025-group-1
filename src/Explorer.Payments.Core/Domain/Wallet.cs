@@ -18,6 +18,7 @@ namespace Explorer.Payments.Core.Domain
         {
             TouristId= touristId;
             Balance = balance;
+            CreatedAt = DateTime.UtcNow;
         }
 
         public void Update(double balance)
