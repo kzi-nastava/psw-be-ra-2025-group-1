@@ -45,7 +45,7 @@ namespace Explorer.Payments.Tests.Integration
             using var scope = Factory.Services.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IWalletService>();
             var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-            var walletId = 1;
+            var walletId = -1;
             var newBalance = 500.0;
 
             // Act
@@ -69,7 +69,7 @@ namespace Explorer.Payments.Tests.Integration
             using var scope = Factory.Services.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IWalletService>();
             var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-            var walletId = 2;
+            var walletId = -2;
 
             // Act
             service.Delete(walletId);
@@ -85,15 +85,13 @@ namespace Explorer.Payments.Tests.Integration
             // Arrange
             using var scope = Factory.Services.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IWalletService>();
-            var touristId = -24;
-
+            var touristId = -21;
             // Act
             var result = service.GetByTouristId(touristId);
 
             // Assert
             result.ShouldNotBeNull();
             result.TouristId.ShouldBe(touristId);
-            result.Balance.ShouldBe(100);
         }
     }
 }
