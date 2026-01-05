@@ -345,28 +345,27 @@ INSERT INTO tours."TourEquipment"(
 -- Tour Execution 1: In progress on Tour -10800 (ID: -10810)
 INSERT INTO tours."TourExecutions"(
     "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
-    VALUES (-10810, -11, -10800, 0, '2024-01-15T10:00:00Z', NULL, '2024-01-15T10:00:00Z', 0.0, 1);
-
--- Tour Execution 2: Completed tour (ID: -10811)
+    VALUES (-10810, -11, -10800, 0, '2025-12-15T10:00:00Z', NULL, '2025-12-15T10:00:00Z', 0.0, 1);
+    
+-- Tour Execution 2: Completed tour (ID: -10811) - Most commonly used in tests
 INSERT INTO tours."TourExecutions"(
     "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
-    VALUES (-10811, -11, -10800, 1, '2024-01-14T09:00:00Z', '2024-01-14T12:00:00Z', '2024-01-14T12:00:00Z', 100.0, 3);
-
--- Tour Execution 3: Abandoned tour (ID: -10812)
+    VALUES (-10811, -11, -10800, 1, '2025-12-20T09:00:00Z', '2025-12-20T12:00:00Z', '2025-12-20T12:00:00Z', 100.0, 3);
+    
+-- Tour Execution 3: Old activity for 3-month test (ID: -10812)
 INSERT INTO tours."TourExecutions"(
     "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
-    VALUES (-10812, -11, -10801, 2, '2024-01-13T14:00:00Z', '2024-01-13T15:00:00Z', '2024-01-13T14:20:00Z', 33.33, 1);
-
+    VALUES (-10812, -11, -10801, 1, '2025-09-01T14:00:00Z', '2025-09-01T15:00:00Z', '2025-09-01T14:20:00Z', 100.0, 1);
+    
 -- Tour Execution 4: Partially completed (1 keypoint reached) (ID: -10813)
 INSERT INTO tours."TourExecutions"(
     "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
-    VALUES (-10813, -11, -10801, 0, '2024-01-16T11:00:00Z', NULL, '2024-01-16T11:15:00Z', 33.33, 2);
-
+    VALUES (-10813, -11, -10801, 0, '2025-12-16T11:00:00Z', NULL, '2025-12-16T11:15:00Z', 33.33, 2);
+    
 -- Tour Execution 5: For multiple keypoint progression tests (ID: -10814)
 INSERT INTO tours."TourExecutions"(
     "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
-    VALUES (-10814, -11, -10802, 0, '2024-01-17T08:00:00Z', NULL, '2024-01-17T08:00:00Z', 0.0, 1);
-
+    VALUES (-10814, -11, -10802, 0, '2025-12-17T08:00:00Z', NULL, '2025-12-17T08:00:00Z', 0.0, 1);
 
 
 -- ============================================================================

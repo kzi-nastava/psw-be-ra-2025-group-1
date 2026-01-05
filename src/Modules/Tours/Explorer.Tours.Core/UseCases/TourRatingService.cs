@@ -61,6 +61,8 @@ namespace Explorer.Tours.Core.UseCases
             if (execution.PercentageCompleted < 50) throw new System.InvalidOperationException("Tour needs to be completed at least 50% in order to rate it.");
             // Check if the values are okay
             if (rating.Stars < 1 || rating.Stars > 5) throw new System.ArgumentException("Stars must be between 1 and 5.");
+            // Check that it hasn't passed more than 3 months since last activity
+            if(execution.LastActivity.AddMonths(3) < System.DateTime.UtcNow) throw new System.ArgumentException("Cannot rate tour after 3 months since last activity.");
 
             rating.Id = 0;
             rating.CompletedProcentage = execution.PercentageCompleted;

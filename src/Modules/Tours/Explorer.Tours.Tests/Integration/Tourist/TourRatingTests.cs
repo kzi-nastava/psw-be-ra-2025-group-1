@@ -466,4 +466,26 @@ public class TourRatingTests : BaseToursIntegrationTest
         // Assert
         result.Result.ShouldBeOfType<UnauthorizedObjectResult>();
     }
+
+    [Fact]
+    public void Cannot_rate_tour_after_3_months_since_last_activity()
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, -11);
+
+        var ratingDto = new TourRatingDto
+        {
+            TourExecutionId = -10812, // LastActivity from September 2025, over 3 months old
+            Stars = 5,
+            Comment = "Too late to rate this tour",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Act
+        var result = controller.Create(ratingDto);
+
+        // Assert
+        result.Result.ShouldBeOfType<BadRequestObjectResult>();
+    }
 }
