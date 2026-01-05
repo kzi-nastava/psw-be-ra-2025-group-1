@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Domain;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
@@ -87,7 +88,7 @@ namespace Explorer.Tours.Core.UseCases
                     .FirstOrDefault(r => r.UserId == userId);
 
             // Check if reaction exists
-            if (reaction == null) throw new KeyNotFoundException("Could not found reaction.");
+            if (reaction == null) throw new NotFoundException("Could not found reaction.");
 
             // Delete the existing reaction
             Delete(reaction.Id);

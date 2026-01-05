@@ -60,6 +60,10 @@ namespace Explorer.Tours.Core.UseCases
             // Check if the user has completed the tour
             if (execution.PercentageCompleted < 50) throw new System.InvalidOperationException("Tour needs to be completed at least 50% in order to rate it.");
 
+            rating.Id = 0;
+            rating.CompletedProcentage = execution.PercentageCompleted;
+            rating.ThumbsUpCount = 0;
+
             var result = _tourRatingRepository.Create(_mapper.Map<TourRating>(rating));
             return _mapper.Map<TourRatingDto>(result);
         }

@@ -13,7 +13,7 @@ namespace Explorer.Tours.Core.Domain
         public long TourExecutionId { get; private set; }
         public int Stars { get; private set; }
         public string Comment { get; private set; }
-        public int CompletedProcentage { get; private set; }
+        public double CompletedProcentage { get; private set; }
         public int ThumbsUpCount { get; private set; }
         public DateTime CreatedAt { get; private set; }
 
@@ -24,13 +24,14 @@ namespace Explorer.Tours.Core.Domain
             CreatedAt = DateTime.UtcNow;
         }
 
-        public TourRating(long userId, long tourExecutionId, int stars, string comment, int procentage) : this()
+        public TourRating(long userId, long tourExecutionId, int stars, string comment, double procentage) : this()
         {
             UserId = userId;
             TourExecutionId = tourExecutionId;
             Stars = stars;
             Comment = comment;
             CompletedProcentage = procentage;
+            Validate(); //Returns ArgumentException if num of Stars invalid
         }
 
         public void IncrementThumbsUp()
@@ -46,6 +47,14 @@ namespace Explorer.Tours.Core.Domain
         {
             Comment = comment;
             Stars = stars;
+        }
+
+        private void Validate()
+        {
+            if(Stars < 1 || Stars > 5)
+            {
+                throw new ArgumentException("Stars must be between 1 and 5.");
+            }
         }
     }
 }
