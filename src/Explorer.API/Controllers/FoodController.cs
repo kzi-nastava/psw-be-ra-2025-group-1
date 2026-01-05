@@ -24,8 +24,13 @@ namespace Explorer.API.Controllers
             [FromQuery] double? radiusKm,
             [FromQuery] int maxResults = 10)
         {
+            // 1) Validacija opsega koordinata
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180)
+            {
+                return BadRequest("Latitude must bi in range [-90, 90], a longitude in range [-180, 180].");
+            }
             // default ako nije poslato ili je glup radius
-            var radius = (radiusKm.HasValue && radiusKm.Value > 0) ? radiusKm.Value : 5.0;
+            var radius = (radiusKm.HasValue && radiusKm.Value > 0 && radiusKm.Value <= 50) ? radiusKm.Value : 5.0;
 
             // zaštita da neko ne traži 100000 rezultata
             var safeMaxResults = (maxResults > 0 && maxResults <= 50) ? maxResults : 10;
