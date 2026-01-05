@@ -43,5 +43,10 @@ namespace Explorer.Tours.Core.Domain
             ThumbsUpCount++;
         }
 
+        public void UpdateRating(string comment, int stars)
+        {
+            Comment = comment;
+            Stars = stars;
+        }
     }
 }

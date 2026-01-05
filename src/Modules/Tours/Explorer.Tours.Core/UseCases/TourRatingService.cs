@@ -66,15 +66,16 @@ namespace Explorer.Tours.Core.UseCases
 
         public TourRatingDto Update(long id, TourRatingDto rating)
         {
-            // Check if the rating exists
-            var existingRating = Get(id) ?? throw new KeyNotFoundException("Rating not found");
-            // Check if the rating belongs to the user
-            if (existingRating.UserId != rating.UserId) throw new System.UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
+            // Get entity directly from repository
+            var existingRating = _tourRatingRepository.Get(id) ?? throw new KeyNotFoundException("Rating not found");
 
-            rating.Id = id;
-            rating.CreatedAt = existingRating.CreatedAt;
+            if (existingRating.UserId != rating.UserId)
+                throw new UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
 
-            var result = _tourRatingRepository.Update(_mapper.Map<TourRating>(rating));
+            // Update on tracked entity
+            existingRating.UpdateRating(rating.Comment, rating.Stars);
+
+            var result = _tourRatingRepository.Update(existingRating);
             return _mapper.Map<TourRatingDto>(result);
         }
 
