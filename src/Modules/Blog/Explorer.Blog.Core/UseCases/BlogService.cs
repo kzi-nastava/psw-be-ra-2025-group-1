@@ -57,6 +57,16 @@ public class BlogService : IBlogService
         return AddAuthorToComments(updatedBlog);
     }
 
+    public void DeleteBlog(long blogId, long userId)
+    {
+        var blog = _blogRepository.GetById(blogId);
+
+        if (blog.UserId != userId)
+            throw new UnauthorizedAccessException("You can only delete your own blog.");
+
+        _blogRepository.Delete(blogId);
+    }
+
     public List<BlogDto> GetVisibleBlogs(long userId)
     {
         var blogs = _blogRepository.GetVisibleForUser(userId);
