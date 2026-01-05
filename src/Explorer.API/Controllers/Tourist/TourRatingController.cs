@@ -182,6 +182,10 @@ namespace Explorer.API.Controllers.Tourist
             {
                 return NotFound(new { error = ex.Message });
             }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, new { error = "An error occurred while updating the rating.", details = ex.Message });

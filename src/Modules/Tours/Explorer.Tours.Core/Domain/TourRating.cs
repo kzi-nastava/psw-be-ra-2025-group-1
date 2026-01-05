@@ -47,6 +47,7 @@ namespace Explorer.Tours.Core.Domain
         {
             Comment = comment;
             Stars = stars;
+            Validate();
         }
 
         private void Validate()

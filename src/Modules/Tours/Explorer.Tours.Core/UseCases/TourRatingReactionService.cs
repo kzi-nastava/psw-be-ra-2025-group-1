@@ -59,6 +59,9 @@ namespace Explorer.Tours.Core.UseCases
             // Check if the user is logged in
             if (userId == 0) throw new UnauthorizedAccessException("User must be logged in to react to a rating.");
 
+            // Check if rating exists
+            var tourRating = _tourRatingRepository.Get(tourRatingId);
+
             var reaction = _tourRatingReactionRepository
                     .GetPagedByTourRating(tourRatingId, 1, int.MaxValue)
                     .Results
@@ -69,8 +72,7 @@ namespace Explorer.Tours.Core.UseCases
             // Create the reaction
             reaction = new TourRatingReaction(tourRatingId, userId);
             Create(_mapper.Map<TourRatingReactionDto>(reaction));
-            // Increment the reactionCount on the TourRating
-            var tourRating = _tourRatingRepository.Get(tourRatingId);
+            // Increment the reactionCount on the TourRatin
             tourRating.IncrementThumbsUp();
             tourRating = _tourRatingRepository.Update(tourRating);
 

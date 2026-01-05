@@ -59,6 +59,8 @@ namespace Explorer.Tours.Core.UseCases
             if (execution.Status != TourExecutionStatus.Completed) throw new System.InvalidOperationException("Tour needs to be completed in order to rate it.");
             // Check if the user has completed the tour
             if (execution.PercentageCompleted < 50) throw new System.InvalidOperationException("Tour needs to be completed at least 50% in order to rate it.");
+            // Check if the values are okay
+            if (rating.Stars < 1 || rating.Stars > 5) throw new System.ArgumentException("Stars must be between 1 and 5.");
 
             rating.Id = 0;
             rating.CompletedProcentage = execution.PercentageCompleted;
