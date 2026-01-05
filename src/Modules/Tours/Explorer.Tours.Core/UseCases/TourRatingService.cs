@@ -52,7 +52,7 @@ namespace Explorer.Tours.Core.UseCases
         public TourRatingDto Create(TourRatingDto rating)
         {
             // Check if the execution exists
-            var execution = _tourExecutionRepository.Get(rating.TourExecutionId) ?? throw new System.UnauthorizedAccessException("Invalid tour ID.");
+            var execution = _tourExecutionRepository.Get(rating.TourExecutionId); // This will throw NotFoundException if not found
             // Check if this is the user that has completed that tour
             if (execution.TouristId != rating.UserId) throw new System.UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
             // Check if the user has completed the tour
@@ -67,7 +67,7 @@ namespace Explorer.Tours.Core.UseCases
         public TourRatingDto Update(long id, TourRatingDto rating)
         {
             // Get entity directly from repository
-            var existingRating = _tourRatingRepository.Get(id) ?? throw new KeyNotFoundException("Rating not found");
+            var existingRating = _tourRatingRepository.Get(id); // This will throw NotFoundException if not found
 
             if (existingRating.UserId != rating.UserId)
                 throw new UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
@@ -82,7 +82,7 @@ namespace Explorer.Tours.Core.UseCases
         public void Delete(long id, long userId)
         {
             // Check if the rating exists
-            var existingRating = Get(id) ?? throw new KeyNotFoundException("Rating not found");
+            var existingRating = Get(id); // This will throw NotFoundException if not found
             // Check if the rating belongs to the user
             if (existingRating.UserId != userId) throw new System.UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
 

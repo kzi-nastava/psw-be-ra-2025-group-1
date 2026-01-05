@@ -33,14 +33,13 @@ namespace Explorer.Tours.Core.Domain
             CompletedProcentage = procentage;
         }
 
-        // Temp, this might change
         public void IncrementThumbsUp()
         {
             ThumbsUpCount++;
         }
         public void DecrementThumbsUp()
         {
-            ThumbsUpCount++;
+            ThumbsUpCount--;
         }
 
         public void UpdateRating(string comment, int stars)

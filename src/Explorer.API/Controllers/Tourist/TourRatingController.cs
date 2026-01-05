@@ -1,3 +1,4 @@
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Infrastructure.Authentication;
@@ -112,13 +113,13 @@ namespace Explorer.API.Controllers.Tourist
             {
                 return Unauthorized(new { error = ex.Message });
             }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
             catch (ArgumentException ex)
             {
                 return BadRequest(new { error = ex.Message });
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
             }
             catch (Exception ex)
             {
@@ -148,7 +149,7 @@ namespace Explorer.API.Controllers.Tourist
             {
                 return BadRequest(new { error = ex.Message });
             }
-            catch (KeyNotFoundException ex)
+            catch (NotFoundException ex)
             {
                 return NotFound(new { error = ex.Message });
             }
@@ -205,7 +206,7 @@ namespace Explorer.API.Controllers.Tourist
             {
                 return BadRequest(new { error = ex.Message });
             }
-            catch (KeyNotFoundException ex)
+            catch (NotFoundException ex)
             {
                 return NotFound(new { error = ex.Message });
             }
