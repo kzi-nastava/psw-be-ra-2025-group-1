@@ -30,7 +30,7 @@ public class BlogService : IBlogService
     public List<BlogDto> GetUserBlogs(long userId)
     {
         var blogs = _blogRepository.GetByUserId(userId);
-        return AddAuthorToComments(blogs);
+        return MapBlogsForUser(blogs, userId);
     }
 
     public BlogDto UpdateBlog(long blogId, BlogUpdateDto blogDto)
@@ -60,7 +60,7 @@ public class BlogService : IBlogService
     public List<BlogDto> GetVisibleBlogs(long userId)
     {
         var blogs = _blogRepository.GetVisibleForUser(userId);
-        return AddAuthorToComments(blogs);
+        return MapBlogsForUser(blogs, userId);
     }
 
     public CommentDto GetCommentForBlog(long blogId, long commentId)
@@ -120,15 +120,17 @@ public class BlogService : IBlogService
         return mappedComment;
     }
 
-    public VoteDto AddVoteToBlog(long blogId, long userId, VoteCreateDto voteDto)
+    public VoteDto? AddVoteToBlog(long blogId, long userId, VoteCreateDto voteDto)
     {
         var blog = _blogRepository.GetById(blogId);
 
-        var voteType = voteDto.VoteType == "Upvote" ? VoteType.Upvote : VoteType.Downvote;
+        if (!Enum.TryParse<VoteType>(voteDto.VoteType, true, out var voteType))
+            throw new ArgumentException("Invalid vote type. Use 'Upvote' or 'Downvote'.");
+
         var vote = blog.AddVote(userId, voteType);
 
         _blogRepository.Update(blog);
-        return _mapper.Map<VoteDto>(vote);
+        return vote == null ? null : _mapper.Map<VoteDto>(vote);
     }
 
     public void RemoveVoteFromBlog(long blogId, long userId)
@@ -139,13 +141,33 @@ public class BlogService : IBlogService
     }
 
     public BlogDto GetBlogById(long blogId, long userId)
-{
-    var blog = _blogRepository.GetById(blogId);
+    {
+        var blog = _blogRepository.GetById(blogId);
     
-    // Check if user can view this blog
-    if (blog.Status == BlogStatus.Draft && blog.UserId != userId)
-        throw new UnauthorizedAccessException("You can only view draft blogs you created.");
-    
-    return AddAuthorToComments(blog);
-}
+        // Check if user can view this blog
+        if (blog.Status == BlogStatus.Draft && blog.UserId != userId)
+            throw new UnauthorizedAccessException("You can only view draft blogs you created.");
+
+        return MapBlogForUser(blog, userId);
+    }
+
+    private BlogDto MapBlogForUser(Domain.Blog blog, long userId)
+    {
+        var dto = AddAuthorToComments(blog); // vec mapira i doda authorName na komentare
+
+        dto.VoteScore = blog.GetVoteScore();
+
+        var myVote = blog.Votes.FirstOrDefault(v => v.UserId == userId);
+        dto.CurrentUserVote = myVote == null
+            ? null
+            : (myVote.VoteType == VoteType.Upvote ? VoteTypeDto.Upvote : VoteTypeDto.Downvote);
+
+        return dto;
+    }
+
+    private List<BlogDto> MapBlogsForUser(List<Domain.Blog> blogs, long userId)
+    {
+        return blogs.Select(b => MapBlogForUser(b, userId)).ToList();
+    }
+
 }
