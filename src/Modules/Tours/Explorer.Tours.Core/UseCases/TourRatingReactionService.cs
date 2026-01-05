@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
@@ -10,13 +11,15 @@ namespace Explorer.Tours.Core.UseCases
 {
     public class TourRatingReactionService : ITourRatingReactionService
     {
+        private readonly ITourRatingRepository _tourRatingRepository;
         private readonly ITourRatingReactionRepository _tourRatingReactionRepository;
         private readonly IMapper _mapper;
 
-        public TourRatingReactionService(ITourRatingReactionRepository repository, IMapper mapper)
+        public TourRatingReactionService(ITourRatingReactionRepository repository, IMapper mapper, ITourRatingRepository tourRatingRepository)
         {
             _tourRatingReactionRepository = repository;
             _mapper = mapper;
+            _tourRatingRepository = tourRatingRepository;
         }
 
         public PagedResult<TourRatingReactionDto> GetPaged(int page, int pageSize)
@@ -48,6 +51,53 @@ namespace Explorer.Tours.Core.UseCases
         public void Delete(long id)
         {
             _tourRatingReactionRepository.Delete(id);
+        }
+
+        public TourRatingDto AddReaction(long tourRatingId, long userId)
+        {
+            // Check if the user is logged in
+            if (userId == 0) throw new UnauthorizedAccessException("User must be logged in to react to a rating.");
+
+            var reaction = _tourRatingReactionRepository
+                    .GetPagedByTourRating(tourRatingId, 1, int.MaxValue)
+                    .Results
+                    .FirstOrDefault(r => r.UserId == userId);
+
+            // Check if the reaction is already added
+            if (reaction != null) throw new InvalidOperationException("User has already reacted to this rating.");
+            // Create the reaction
+            reaction = new TourRatingReaction(tourRatingId, userId);
+            Create(_mapper.Map<TourRatingReactionDto>(reaction));
+            // Increment the reactionCount on the TourRating
+            var tourRating = _tourRatingRepository.Get(tourRatingId);
+            tourRating.IncrementThumbsUp();
+            tourRating = _tourRatingRepository.Update(tourRating);
+
+            return _mapper.Map<TourRatingDto>(tourRating);
+        }
+
+        public TourRatingDto RemoveReaction(long tourRatingId, long userId)
+        {
+            // Check if the user is logged in
+            if (userId == 0) throw new UnauthorizedAccessException("User must be logged in to react to a rating.");
+
+            var reaction = _tourRatingReactionRepository
+                    .GetPagedByTourRating(tourRatingId, 1, int.MaxValue)
+                    .Results
+                    .FirstOrDefault(r => r.UserId == userId);
+
+            // Check if reaction exists
+            if (reaction == null) throw new KeyNotFoundException("Could not found reaction.");
+
+            // Delete the existing reaction
+            Delete(reaction.Id);
+
+            // Decrement the reactionCount on the TourRating
+            var tourRating = _tourRatingRepository.Get(tourRatingId);
+            tourRating.DecrementThumbsUp();
+            tourRating = _tourRatingRepository.Update(tourRating);
+
+            return _mapper.Map<TourRatingDto>(tourRating);
         }
     }
 }

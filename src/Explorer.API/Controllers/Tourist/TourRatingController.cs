@@ -157,5 +157,62 @@ namespace Explorer.API.Controllers.Tourist
                 return StatusCode(500, new { error = "An error occurred while updating the rating.", details = ex.Message });
             }
         }
+
+        [HttpPut("{id:long}/thumbs-up")]
+        [Authorize(Policy = "touristPolicy")]
+        public ActionResult<TourRatingDto> ThumbsUp(long id)
+        {
+            try
+            {
+                var userId = User.UserId();
+
+                var updatedRating = _tourRatingReactionService.AddReaction(id, userId);
+                return Ok(updatedRating);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while updating the rating.", details = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id:long}/thumbs-up")]
+        public ActionResult<TourRatingDto> RemoveThumbsUp(long id)
+        {
+            try
+            {
+                var userId = User.UserId();
+
+                var updatedRating = _tourRatingReactionService.RemoveReaction(id, userId);
+                return Ok(updatedRating);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while updating the rating.", details = ex.Message });
+            }
+        }
     }
 }

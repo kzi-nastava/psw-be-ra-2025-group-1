@@ -38,5 +38,10 @@ namespace Explorer.Tours.Core.Domain
         {
             ThumbsUpCount++;
         }
+        public void DecrementThumbsUp()
+        {
+            ThumbsUpCount++;
+        }
+
     }
 }

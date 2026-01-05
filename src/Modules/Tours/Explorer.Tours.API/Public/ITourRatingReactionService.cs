@@ -10,5 +10,7 @@ namespace Explorer.Tours.API.Public
         TourRatingReactionDto Create(TourRatingReactionDto entity);
         TourRatingReactionDto Update(TourRatingReactionDto entity);
         void Delete(long id);
+        TourRatingDto AddReaction(long tourRatingId, long userId);
+        TourRatingDto RemoveReaction(long tourRatingId, long userId);
     }
 }
