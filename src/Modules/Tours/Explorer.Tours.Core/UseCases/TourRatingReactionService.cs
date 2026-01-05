@@ -62,13 +62,16 @@ namespace Explorer.Tours.Core.UseCases
             // Check if rating exists
             var tourRating = _tourRatingRepository.Get(tourRatingId);
 
+            // Check if the reaction is already added
             var reaction = _tourRatingReactionRepository
                     .GetPagedByTourRating(tourRatingId, 1, int.MaxValue)
                     .Results
                     .FirstOrDefault(r => r.UserId == userId);
-
-            // Check if the reaction is already added
             if (reaction != null) throw new InvalidOperationException("User has already reacted to this rating.");
+
+            // Check if trying to react to own post
+            if (tourRating.UserId == userId) throw new InvalidOperationException("User cannot react to own rating.");
+
             // Create the reaction
             reaction = new TourRatingReaction(tourRatingId, userId);
             Create(_mapper.Map<TourRatingReactionDto>(reaction));

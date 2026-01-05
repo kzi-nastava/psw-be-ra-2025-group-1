@@ -180,7 +180,7 @@ namespace Explorer.API.Controllers.Tourist
             }
             catch (InvalidOperationException ex)
             {
-                return NotFound(new { error = ex.Message });
+                return Unauthorized(new { error = ex.Message });
             }
             catch (NotFoundException ex)
             {

@@ -361,7 +361,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         var ratingDto = new TourRatingDto
         {
             TourExecutionId = -10811,
-            Stars = 6, // Invalid - assuming ratings are 1-5
+            Stars = 6, // Invalid - ratings are 1-5
             Comment = "Too high rating",
             CreatedAt = DateTime.UtcNow
         };
@@ -441,5 +441,29 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         // Assert
         result.Result.ShouldBeOfType<NotFoundObjectResult>();
+    }
+
+    [Fact]
+    public void Cannot_thumbs_up_own_rating()
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, -11);
+
+        // First create a rating as user -11
+        var createResult = controller.Create(new TourRatingDto
+        {
+            UserId = -11,
+            TourExecutionId = -10811,
+            Stars = 5,
+            Comment = "My own rating"
+        });
+        var createdRating = ((OkObjectResult)createResult.Result!).Value as TourRatingDto;
+
+        // Act - Try to thumbs up own rating
+        var result = controller.ThumbsUp(createdRating!.Id);
+
+        // Assert
+        result.Result.ShouldBeOfType<UnauthorizedObjectResult>();
     }
 }
