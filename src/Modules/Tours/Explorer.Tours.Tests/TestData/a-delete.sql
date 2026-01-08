@@ -1,4 +1,6 @@
-﻿DELETE FROM tours."TourExecutions";
+﻿DELETE FROM tours."TourRatingReactions";
+DELETE FROM tours."TourRatings";
+DELETE FROM tours."TourExecutions";
 DELETE FROM tours."TourPurchaseTokens";
 DELETE FROM tours."TourPurchases";
 DELETE FROM tours."PersonEquipment";
