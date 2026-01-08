@@ -33,7 +33,7 @@ public class Tour : AggregateRoot
     public List<Keypoint> Keypoints { get; private set; }
     public List<Equipment> Equipment { get; private set; }
     public List<TransportTime> TransportTimes { get; private set; }
-    public double EstimatedLength { get; private set; }
+    public double? EstimatedLength { get; private set; }
 
     public Tour()
     {
