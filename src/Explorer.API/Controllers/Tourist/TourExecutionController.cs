@@ -125,14 +125,6 @@ public class TourExecutionController : ControllerBase
         return Ok(history);
     }
 
-    [HttpGet("can-review/{tourId:long}")]
-    public ActionResult<bool> CanLeaveReview(long tourId)
-    {
-        var touristId = GetTouristId();
-        var canReview = _tourExecutionService.CanLeaveReview(touristId, tourId);
-        return Ok(new { canReview });
-    }
-
     private long GetTouristId()
     {
         var personIdClaim = User.FindFirst("personId")?.Value;

@@ -5,10 +5,9 @@ using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Core.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
+using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.API.Controllers.Author;
-
 
 [Authorize]
 [Route("api/author/tours")]
@@ -26,19 +25,8 @@ public class TourController : ControllerBase
     [HttpPost]
     public ActionResult<TourDto> Create([FromBody] CreateTourDto tour)
     {
-        try
-        {
-            var result = _tourService.Create(tour);
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = "You don't have permission to create tours. Author role required." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = "Failed to create tour", details = ex.Message });
-        }
+        var result = _tourService.Create(tour);
+        return Ok(result);
     }
 
     [AllowAnonymous]
@@ -54,15 +42,8 @@ public class TourController : ControllerBase
     [HttpGet("my")]
     public ActionResult<PagedResult<TourDto>> GetMyToursPaged([FromQuery] int page, [FromQuery] int pageSize)
     {
-        try
-        {
-            var result = _tourService.GetByCreator(User.PersonId(), page, pageSize);
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = "Failed to retrieve your tours", details = ex.Message });
-        }
+        var result = _tourService.GetByCreator(User.PersonId(), page, pageSize);
+        return Ok(result);
     }
 
     [AllowAnonymous]
@@ -82,17 +63,17 @@ public class TourController : ControllerBase
             var result = _tourService.Update(id, tour, authorId);
             return Ok(result);
         }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = $"You don't have permission to update this tour. Only the tour creator can modify it." });
-        }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
             return NotFound(new { message = $"Tour with ID {id} not found" });
         }
-        catch (Exception ex)
+        catch (NotFoundException ex)
         {
-            return BadRequest(new { message = "Failed to update tour", details = ex.Message });
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -106,17 +87,17 @@ public class TourController : ControllerBase
             _tourService.Delete(id, authorId);
             return Ok(new { message = "Tour successfully deleted" });
         }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = "You don't have permission to delete this tour. Only the tour creator can delete it." });
-        }
-        catch (KeyNotFoundException ex)
+        catch (KeyNotFoundException)
         {
             return NotFound(new { message = $"Tour with ID {id} not found" });
         }
-        catch (Exception ex)
+        catch (NotFoundException ex)
         {
-            return BadRequest(new { message = "Failed to delete tour", details = ex.Message });
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -130,17 +111,17 @@ public class TourController : ControllerBase
             var result = _tourService.AddTransportTime(tourId, transport, authorId);
             return Ok(result);
         }
-        catch (UnauthorizedAccessException ex)
+        catch (ArgumentException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to add transport times to this tour. Only the tour creator can modify it." });
+            return BadRequest(new { message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (NotFoundException ex)
         {
-            return NotFound(new { message = $"Tour with ID {tourId} not found" });
+            return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = "Failed to add transport time", details = ex.Message });
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -155,17 +136,17 @@ public class TourController : ControllerBase
             var result = _tourService.UpdateTransportTime(tourId, transport, authorId);
             return Ok(result);
         }
-        catch (UnauthorizedAccessException ex)
+        catch (ArgumentException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to update transport times on this tour. Only the tour creator can modify it." });
+            return BadRequest(new { message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (NotFoundException ex)
         {
-            return NotFound(new { message = $"Transport time with ID {transportId} not found on tour {tourId}" });
+            return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = "Failed to update transport time", details = ex.Message });
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -179,17 +160,13 @@ public class TourController : ControllerBase
             _tourService.DeleteTransportTime(tourId, transportId, authorId);
             return Ok(new { message = "Transport time successfully deleted" });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (NotFoundException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to delete transport times from this tour. Only the tour creator can modify it." });
+            return NotFound(new { message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (InvalidOperationException ex)
         {
-            return NotFound(new { message = $"Transport time with ID {transportId} not found on tour {tourId}" });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = "Failed to delete transport time", details = ex.Message });
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -197,50 +174,24 @@ public class TourController : ControllerBase
     [HttpPut("{id:long}/archive")]
     public ActionResult Archive(long id)
     {
-        try
+        bool result = _tourService.Archive(id);
+        if (result)
         {
-            bool result = _tourService.Archive(id);
-            if (result)
-            {
-                return Ok(new { message = "Tour successfully archived" });
-            }
-            return BadRequest(new { message = "Tour could not be archived. It may already be archived or in an invalid state." });
+            return Ok(new { message = "Tour successfully archived" });
         }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = "You don't have permission to archive this tour. Only the tour creator can archive it." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = "Failed to archive tour", details = ex.Message });
-        }
+        return BadRequest(new { message = "Tour could not be archived. It may already be archived or in an invalid state." });
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpPut("{id:long}/publish")]
     public ActionResult Publish(long id)
     {
-        try
+        bool result = _tourService.Publish(id);
+        if (result)
         {
-            bool result = _tourService.Publish(id);
-            if (result)
-            {
-                return Ok(new { message = "Tour successfully published" });
-            }
-            return BadRequest(new { message = "Tour could not be published. Ensure all required fields are complete and the tour has at least 2 keypoints adn one transport time. Check that the tour isn't published already." });
+            return Ok(new { message = "Tour successfully published" });
         }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { message = "You don't have permission to publish this tour. Only the tour creator can publish it." });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = "Failed to publish tour", details = ex.Message });
-        }
+        return BadRequest(new { message = "Tour could not be published. Ensure all required fields are complete and the tour has at least 2 keypoints and one transport time. Check that the tour isn't published already." });
     }
 
     [Authorize(Policy = "authorPolicy")]
@@ -250,19 +201,11 @@ public class TourController : ControllerBase
         try
         {
             bool result = _tourService.Activate(id);
-            if (result)
-            {
-                return Ok(new { message = "Tour successfully activated" });
-            }
-            return BadRequest(new { message = "Tour could not be activated. It must be published before activation." });
+            return Ok(new { message = "Tour successfully activated" });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (NotFoundException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to activate this tour. Only the tour creator can activate it." });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = "Failed to activate tour", details = ex.Message });
+            return NotFound(new { message = ex.Message });
         }
     }
 
@@ -276,17 +219,17 @@ public class TourController : ControllerBase
             var result = _tourService.AddKeypoint(tourId, keypoint, authorId);
             return Ok(result);
         }
-        catch (UnauthorizedAccessException ex)
+        catch (ArgumentException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to add keypoints to this tour. Only the tour creator can modify it." });
+            return BadRequest(new { message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (NotFoundException ex)
         {
-            return NotFound(new { message = $"Tour with ID {tourId} not found" });
+            return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = "Failed to add keypoint", details = ex.Message });
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -301,17 +244,17 @@ public class TourController : ControllerBase
             var result = _tourService.UpdateKeypoint(tourId, keypoint, authorId);
             return Ok(result);
         }
-        catch (UnauthorizedAccessException ex)
+        catch (ArgumentException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to update keypoints on this tour. Only the tour creator can modify it." });
+            return BadRequest(new { message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (NotFoundException ex)
         {
-            return NotFound(new { message = $"Keypoint with ID {keypointId} not found on tour {tourId}" });
+            return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = "Failed to update keypoint", details = ex.Message });
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -325,17 +268,13 @@ public class TourController : ControllerBase
             _tourService.DeleteKeypoint(tourId, keypointId, authorId);
             return Ok(new { message = "Keypoint successfully deleted" });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (NotFoundException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to delete keypoints from this tour. Only the tour creator can modify it." });
+            return NotFound(new { message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (InvalidOperationException ex)
         {
-            return NotFound(new { message = $"Keypoint with ID {keypointId} not found on tour {tourId}" });
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = "Failed to delete keypoint", details = ex.Message });
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -349,17 +288,17 @@ public class TourController : ControllerBase
             _tourService.AddEquipment(id, equipId, authorId);
             return Ok(new { message = "Equipment successfully added to tour" });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (ArgumentException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to add equipment to this tour. Only the tour creator can modify it." });
+            return BadRequest(new { message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (NotFoundException ex)
         {
-            return NotFound(new { message = $"Tour with ID {id} or equipment with ID {equipId} not found" });
+            return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = "Failed to add equipment", details = ex.Message });
+            return Unauthorized(new { message = ex.Message });
         }
     }
 
@@ -373,18 +312,17 @@ public class TourController : ControllerBase
             _tourService.RemoveEquipment(id, equipId, authorId);
             return Ok(new { message = "Equipment successfully removed from tour" });
         }
-        catch (UnauthorizedAccessException ex)
+        catch (ArgumentException ex)
         {
-            return Unauthorized(new { message = "You don't have permission to remove equipment from this tour. Only the tour creator can modify it." });
+            return BadRequest(new { message = ex.Message });
         }
-        catch (KeyNotFoundException ex)
+        catch (NotFoundException ex)
         {
-            return NotFound(new { message = $"Equipment with ID {equipId} not found on tour {id}" });
+            return NotFound(new { message = ex.Message });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            return BadRequest(new { message = "Failed to remove equipment", details = ex.Message });
+            return Unauthorized(new { message = ex.Message });
         }
     }
-
 }
