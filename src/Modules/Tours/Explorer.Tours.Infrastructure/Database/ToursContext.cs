@@ -81,5 +81,10 @@ public class ToursContext : DbContext
         modelBuilder.Entity<TourRatingReaction>()
             .HasIndex(r => new { r.TourRatingId, r.UserId })
             .IsUnique();
+
+        // Unique constraint: one reaction per tour execution
+        modelBuilder.Entity<TourRating>()
+            .HasIndex(r => new { r.TourExecutionId, r.UserId })
+            .IsUnique();
     }
 }

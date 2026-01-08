@@ -367,6 +367,11 @@ INSERT INTO tours."TourExecutions"(
     "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
     VALUES (-10814, -11, -10802, 0, '2025-12-17T08:00:00Z', NULL, '2025-12-17T08:00:00Z', 0.0, 1);
 
+-- Tour Execution 6: For TourRatings tests (ID: -10815)
+INSERT INTO tours."TourExecutions"(
+    "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
+    VALUES (-10815, -11, -10800, 1, '2025-12-17T08:00:00Z', '2025-12-20T12:00:00Z', '2025-12-20T12:00:00Z', 100.0, 3);
+
 
 -- ============================================================================
 -- KEYPOINT PROGRESS (Reached keypoints)

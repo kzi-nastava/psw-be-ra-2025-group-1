@@ -63,6 +63,8 @@ namespace Explorer.Tours.Core.UseCases
             if (rating.Stars < 1 || rating.Stars > 5) throw new System.ArgumentException("Stars must be between 1 and 5.");
             // Check that it hasn't passed more than 3 months since last activity
             if(execution.LastActivity.AddMonths(3) < System.DateTime.UtcNow) throw new System.ArgumentException("Cannot rate tour after 3 months since last activity.");
+            // Check if the user has already rated this tour execution
+            if (_tourRatingRepository.GetPagedByUser(rating.UserId, 1, int.MaxValue).Results.Any(r => r.TourExecutionId == rating.TourExecutionId)) throw new System.InvalidOperationException("You have already rated this tour execution.");
 
             rating.Id = 0;
             rating.CompletedProcentage = execution.PercentageCompleted;

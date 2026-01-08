@@ -4,6 +4,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Infrastructure.Database;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
@@ -50,7 +51,7 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         var ratingDto = new TourRatingDto
         {
-            TourExecutionId = -10811,
+            TourExecutionId = -10815, // Execution with no existing ratings
             Stars = 5,
             Comment = "Excellent tour, highly recommended!",
             CreatedAt = DateTime.UtcNow
@@ -66,7 +67,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         result.ShouldNotBeNull();
         result.Id.ShouldNotBe(0);
         result.UserId.ShouldBe(-11);
-        result.TourExecutionId.ShouldBe(-10811);
+        result.TourExecutionId.ShouldBe(-10815);
         result.Stars.ShouldBe(5);
         result.Comment.ShouldBe("Excellent tour, highly recommended!");
 
@@ -76,6 +77,9 @@ public class TourRatingTests : BaseToursIntegrationTest
         storedRating.ShouldNotBeNull();
         storedRating.UserId.ShouldBe(-11);
         storedRating.Stars.ShouldBe(5);
+
+        //Cleanup
+        controller.Delete(result.Id);
     }
 
     [Fact]
@@ -94,7 +98,7 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         result.ShouldNotBeNull();
         result.Results.ShouldNotBeNull();
-        result.TotalCount.ShouldBeGreaterThanOrEqualTo(0);
+        result.TotalCount.ShouldBeGreaterThanOrEqualTo(3); // At least the 3 seeded ratings
     }
 
     [Fact]
@@ -103,17 +107,6 @@ public class TourRatingTests : BaseToursIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope, -11);
-
-        // Create a rating first
-        var ratingDto = new TourRatingDto
-        {
-            TourExecutionId = -10811,
-            Stars = 4,
-            Comment = "Good tour",
-            CreatedAt = DateTime.UtcNow
-        };
-        var createResult = controller.Create(ratingDto);
-        createResult.Result.ShouldBeOfType<OkObjectResult>();
 
         // Act
         var actionResult = controller.GetMyRatings(0, 10);
@@ -125,6 +118,12 @@ public class TourRatingTests : BaseToursIntegrationTest
         result.ShouldNotBeNull();
         result.Results.ShouldNotBeNull();
         result.Results.All(r => r.UserId == -11).ShouldBeTrue();
+        result.TotalCount.ShouldBeGreaterThanOrEqualTo(2); // User -11 has ratings -10820 and -10821
+
+        // Verify seeded ratings are present
+        var ratingIds = result.Results.Select(r => r.Id).ToList();
+        ratingIds.ShouldContain(-10820);
+        ratingIds.ShouldContain(-10821);
     }
 
     [Fact]
@@ -134,7 +133,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope, -11);
 
-        // Act
+        // Act - Query execution -10811 which has 2 ratings
         var actionResult = controller.GetByTourExecution(-10811, 0, 10);
 
         // Assert
@@ -143,6 +142,8 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         result.ShouldNotBeNull();
         result.Results.ShouldNotBeNull();
+        result.TotalCount.ShouldBeGreaterThanOrEqualTo(2); // Execution -10811 has 2 ratings (-10820 and -10822)
+        result.Results.All(r => r.TourExecutionId == -10811).ShouldBeTrue();
     }
 
     [Fact]
@@ -156,7 +157,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         // Create a rating first
         var ratingDto = new TourRatingDto
         {
-            TourExecutionId = -10811,
+            TourExecutionId = -10815, // Execution with no existing ratings
             Stars = 3,
             Comment = "Average tour",
             CreatedAt = DateTime.UtcNow
@@ -168,7 +169,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         var updatedDto = new TourRatingDto
         {
             Id = created.Id,
-            TourExecutionId = -10811,
+            TourExecutionId = -10815,
             Stars = 5,
             Comment = "Actually, it was amazing!",
             CreatedAt = created.CreatedAt
@@ -192,6 +193,9 @@ public class TourRatingTests : BaseToursIntegrationTest
         storedRating.ShouldNotBeNull();
         storedRating.Stars.ShouldBe(5);
         storedRating.Comment.ShouldBe("Actually, it was amazing!");
+
+        //Cleanup
+        controller.Delete(result.Id);
     }
 
     [Fact]
@@ -205,7 +209,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         // Create a rating with user -11
         var ratingDto = new TourRatingDto
         {
-            TourExecutionId = -10811,
+            TourExecutionId = -10815,
             Stars = 4,
             Comment = "Nice tour",
             CreatedAt = DateTime.UtcNow
@@ -217,7 +221,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         var updatedDto = new TourRatingDto
         {
             Id = created.Id,
-            TourExecutionId = -10811,
+            TourExecutionId = -10815,
             Stars = 1,
             Comment = "Trying to sabotage!",
             CreatedAt = created.CreatedAt
@@ -228,6 +232,9 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         // Assert
         result.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+
+        //Cleanup
+        controller1.Delete(created.Id);
     }
 
     [Fact]
@@ -241,7 +248,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         // Create a rating first
         var ratingDto = new TourRatingDto
         {
-            TourExecutionId = -10811,
+            TourExecutionId = -10815,
             Stars = 3,
             Comment = "Will delete this",
             CreatedAt = DateTime.UtcNow
@@ -259,6 +266,8 @@ public class TourRatingTests : BaseToursIntegrationTest
         dbContext.ChangeTracker.Clear();
         var storedRating = dbContext.TourRatings.FirstOrDefault(tr => tr.Id == created.Id);
         storedRating.ShouldBeNull();
+
+        // No cleanup needed - already deleted
     }
 
     [Fact]
@@ -272,13 +281,13 @@ public class TourRatingTests : BaseToursIntegrationTest
         // Create a rating with user -11
         var ratingDto = new TourRatingDto
         {
-            TourExecutionId = -10811,
+            TourExecutionId = -10815,
             Stars = 4,
             Comment = "My rating",
             CreatedAt = DateTime.UtcNow
         };
         var createResult = controller1.Create(ratingDto);
-        var created = ((OkObjectResult)createResult.Result)?.Value as TourRatingDto;
+        var created = ((ObjectResult)createResult.Result)?.Value as TourRatingDto;
 
         // Try to delete with different user
         // Act
@@ -286,6 +295,9 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         // Assert
         result.ShouldBeOfType<UnauthorizedObjectResult>();
+
+        //Cleanup
+        controller1.Delete(created.Id);
     }
 
     [Fact]
@@ -299,23 +311,27 @@ public class TourRatingTests : BaseToursIntegrationTest
         // Create a rating with user -11
         var ratingDto = new TourRatingDto
         {
-            TourExecutionId = -10811,
+            TourExecutionId = -10815,
             Stars = 5,
             Comment = "Great tour!",
             CreatedAt = DateTime.UtcNow
         };
         var createResult = controller1.Create(ratingDto);
-        var created = ((OkObjectResult)createResult.Result)?.Value as TourRatingDto;
+        var created = ((ObjectResult)createResult.Result)?.Value as TourRatingDto;
 
         // Act - User -12 adds thumbs up
         var actionResult = controller2.ThumbsUp(created.Id);
 
         // Assert
         actionResult.Result.ShouldBeOfType<OkObjectResult>();
-        var result = ((OkObjectResult)actionResult.Result)?.Value as TourRatingDto;
+        var result = ((ObjectResult)actionResult.Result)?.Value as TourRatingDto;
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe(created.Id);
+
+        //Cleanup
+        controller2.RemoveThumbsUp(created.Id); // Remove reaction first
+        controller1.Delete(result.Id);
     }
 
     [Fact]
@@ -325,30 +341,34 @@ public class TourRatingTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller1 = CreateController(scope, -11);
         var controller2 = CreateController(scope, -12);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // Create a rating
-        var ratingDto = new TourRatingDto
-        {
-            TourExecutionId = -10811,
-            Stars = 5,
-            Comment = "Excellent!",
-            CreatedAt = DateTime.UtcNow
-        };
-        var createResult = controller1.Create(ratingDto);
-        var created = ((OkObjectResult)createResult.Result)?.Value as TourRatingDto;
+        // Use existing reaction: User -12 has reacted to rating -10821 (reaction -10831)
+        var existingRatingId = -10821L;
+        var existingReactionId = -10831L;
 
-        // Add thumbs up
-        controller2.ThumbsUp(created.Id);
+        // Verify the reaction exists before removal
+        dbContext.ChangeTracker.Clear();
+        var reactionBefore = dbContext.TourRatingReactions.FirstOrDefault(r => r.Id == existingReactionId);
+        reactionBefore.ShouldNotBeNull();
 
-        // Act - Remove thumbs up
-        var actionResult = controller2.RemoveThumbsUp(created.Id);
+        // Act - User -12 removes thumbs up from rating -10821
+        var actionResult = controller2.RemoveThumbsUp(existingRatingId);
 
         // Assert
         actionResult.Result.ShouldBeOfType<OkObjectResult>();
-        var result = ((OkObjectResult)actionResult.Result)?.Value as TourRatingDto;
+        var result = ((ObjectResult)actionResult.Result)?.Value as TourRatingDto;
 
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(created.Id);
+        result.Id.ShouldBe(existingRatingId);
+
+        // Verify reaction was removed from database
+        dbContext.ChangeTracker.Clear();
+        var reactionAfter = dbContext.TourRatingReactions.FirstOrDefault(r => r.Id == existingReactionId);
+        reactionAfter.ShouldBeNull();
+
+        // Cleanup - Add the reaction back for other tests
+        controller2.ThumbsUp(existingRatingId);
     }
 
     [Fact]
@@ -360,7 +380,7 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         var ratingDto = new TourRatingDto
         {
-            TourExecutionId = -10811,
+            TourExecutionId = -10815,
             Stars = 6, // Invalid - ratings are 1-5
             Comment = "Too high rating",
             CreatedAt = DateTime.UtcNow
@@ -376,6 +396,8 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         var errorObj = badRequestResult.Value;
         errorObj.ShouldNotBeNull();
+
+        // No cleanup needed - rating was not created
     }
 
     [Fact]
@@ -388,7 +410,7 @@ public class TourRatingTests : BaseToursIntegrationTest
         var ratingDto = new TourRatingDto
         {
             Id = 999999, // Non-existent ID
-            TourExecutionId = -10811,
+            TourExecutionId = -10815,
             Stars = 5,
             Comment = "This won't work",
             CreatedAt = DateTime.UtcNow
@@ -399,6 +421,8 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         // Assert
         result.Result.ShouldBeOfType<NotFoundObjectResult>();
+
+        // No cleanup needed - no rating was created
     }
 
     [Fact]
@@ -413,6 +437,8 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         // Assert
         result.ShouldBeOfType<NotFoundObjectResult>();
+
+        // No cleanup needed - nothing was deleted
     }
 
     [Fact]
@@ -427,6 +453,8 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         // Assert
         result.Result.ShouldBeOfType<NotFoundObjectResult>();
+
+        // No cleanup needed - no rating exists
     }
 
     [Fact]
@@ -441,6 +469,8 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         // Assert
         result.Result.ShouldBeOfType<NotFoundObjectResult>();
+
+        // No cleanup needed - no rating exists
     }
 
     [Fact]
@@ -450,21 +480,16 @@ public class TourRatingTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope, -11);
 
-        // First create a rating as user -11
-        var createResult = controller.Create(new TourRatingDto
-        {
-            UserId = -11,
-            TourExecutionId = -10811,
-            Stars = 5,
-            Comment = "My own rating"
-        });
-        var createdRating = ((OkObjectResult)createResult.Result!).Value as TourRatingDto;
+        // Use existing rating -10820 created by user -11
+        var ownRatingId = -10820L;
 
         // Act - Try to thumbs up own rating
-        var result = controller.ThumbsUp(createdRating!.Id);
+        var result = controller.ThumbsUp(ownRatingId);
 
         // Assert
         result.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+
+        // No cleanup needed - using existing data
     }
 
     [Fact]
@@ -487,5 +512,35 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         // Assert
         result.Result.ShouldBeOfType<BadRequestObjectResult>();
+
+        // No cleanup needed - rating was not created
+    }
+
+    [Fact]
+    public void Cannot_create_duplicate_rating_for_same_execution()
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, -11);
+
+        // User -11 already has rating -10820 for execution -10811
+        // Try to create another rating for the same execution
+        var duplicateRating = new TourRatingDto
+        {
+            TourExecutionId = -10811, // User -11 already rated this execution
+            Stars = 5,
+            Comment = "Trying to rate again",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        // Act
+        var result = controller.Create(duplicateRating);
+
+        // Assert
+        result.Result.ShouldBeOfType<BadRequestObjectResult>();
+        var badRequestResult = result.Result as BadRequestObjectResult;
+        badRequestResult.ShouldNotBeNull();
+
+        // No cleanup needed - rating was not created
     }
 }
