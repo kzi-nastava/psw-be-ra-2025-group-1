@@ -33,6 +33,7 @@ public class Tour : AggregateRoot
     public List<Keypoint> Keypoints { get; private set; }
     public List<Equipment> Equipment { get; private set; }
     public List<TransportTime> TransportTimes { get; private set; }
+    public double EstimatedLength { get; private set; }
 
     public Tour()
     {
@@ -47,6 +48,7 @@ public class Tour : AggregateRoot
         Keypoints = [];
         Equipment = [];
         TransportTimes = [];
+        EstimatedLength = 0;
     }
     public Tour(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status = TourStatus.Draft, double price = 0)
     {
@@ -66,6 +68,7 @@ public class Tour : AggregateRoot
         ArchivedAt = DateTime.MinValue;
         Equipment = [];
         TransportTimes = [];
+        EstimatedLength = 0;
     }
 
     public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
@@ -114,6 +117,7 @@ public class Tour : AggregateRoot
             throw new InvalidOperationException("Can only add keypoints to tour in draft");
         keypoint.SequenceNumber = GenerateKeypointSequenceNumber();
         Keypoints.Add(keypoint);
+        EstimatedLength = GetTotalLength();
         return keypoint;
     }
 
@@ -126,7 +130,10 @@ public class Tour : AggregateRoot
 
         updatedKeypoint.SequenceNumber = keypoint.SequenceNumber;
 
-        return keypoint.Update(updatedKeypoint);    
+        var result = keypoint.Update(updatedKeypoint);
+        EstimatedLength = GetTotalLength();
+
+        return result;
     }
 
     public void DeleteKeypoint(long keypointId)
@@ -141,6 +148,8 @@ public class Tour : AggregateRoot
             throw new InvalidOperationException("Can only delete last keypoint in tour");
 
         Keypoints.Remove(keypoint);
+
+        EstimatedLength = GetTotalLength();
     }
 
     private int GenerateKeypointSequenceNumber()
@@ -212,5 +221,41 @@ public class Tour : AggregateRoot
         if (Tags.Length <= 0) return false;
         if (TransportTimes.Count < 1) return false;
         return true;
+    }
+
+    private double GetTotalLength()
+    {
+        var keypoints = Keypoints.OrderBy(kp => kp.SequenceNumber).ToList();
+        double totalLength = 0;
+        for(int i = 0; i < keypoints.Count - 1; i++)
+        {
+            var distance = Haversine(keypoints[i], keypoints[i + 1]);
+            totalLength += distance;
+        }
+        return totalLength;
+    }
+
+    private double Haversine(Keypoint kp1, Keypoint kp2)
+    {
+        var lat1 = kp1.Latitude;
+        var lat2 = kp2.Latitude;
+        var lon1 = kp1.Longitude;
+        var lon2 = kp2.Longitude;
+
+        // distance between latitudes and longitudes
+        double dLat = (Math.PI / 180) * (lat2 - lat1);
+        double dLon = (Math.PI / 180) * (lon2 - lon1);
+
+        // convert to radians
+        lat1 = (Math.PI / 180) * (lat1);
+        lat2 = (Math.PI / 180) * (lat2);
+
+        // apply formulae
+        double a = Math.Pow(Math.Sin(dLat / 2), 2) +
+                   Math.Pow(Math.Sin(dLon / 2), 2) *
+                   Math.Cos(lat1) * Math.Cos(lat2);
+        double rad = 6371;
+        double c = 2 * Math.Asin(Math.Sqrt(a));
+        return rad * c;
     }
 }

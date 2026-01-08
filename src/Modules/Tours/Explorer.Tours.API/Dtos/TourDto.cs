@@ -24,5 +24,6 @@ public class TourDto
     public List<TransportTimeDto> TransportTimes { get; init; } = [];
     public List<KeypointDto> Keypoints { get; init; }
     public List<EquipmentDto> Equipment { get; init; }
+    public double EstimatedLength { get; init; }
 }
 
