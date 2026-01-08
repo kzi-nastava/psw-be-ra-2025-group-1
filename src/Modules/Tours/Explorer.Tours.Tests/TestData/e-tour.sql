@@ -370,7 +370,7 @@ INSERT INTO tours."TourExecutions"(
 -- Tour Execution 6: For TourRatings tests (ID: -10815)
 INSERT INTO tours."TourExecutions"(
     "Id", "TouristId", "TourId", "Status", "StartTime", "EndTime", "LastActivity", "PercentageCompleted", "CurrentKeypointSequence")
-    VALUES (-10815, -11, -10800, 1, '2025-12-17T08:00:00Z', '2025-12-20T12:00:00Z', '2025-12-20T12:00:00Z', 100.0, 3);
+    VALUES (-10815, -11, -10800, 1, '2027-12-17T08:00:00Z', '2027-12-20T12:00:00Z', '2027-12-20T12:00:00Z', 100.0, 3);
 
 
 -- ============================================================================

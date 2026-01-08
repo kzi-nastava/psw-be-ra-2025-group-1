@@ -493,7 +493,7 @@ public class TourRatingTests : BaseToursIntegrationTest
     }
 
     [Fact]
-    public void Cannot_rate_tour_after_3_months_since_last_activity()
+    public void Cannot_rate_tour_after_1_week_since_last_activity()
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
@@ -501,7 +501,7 @@ public class TourRatingTests : BaseToursIntegrationTest
 
         var ratingDto = new TourRatingDto
         {
-            TourExecutionId = -10812, // LastActivity from September 2025, over 3 months old
+            TourExecutionId = -10812, // LastActivity from September 2025, over 1 week old
             Stars = 5,
             Comment = "Too late to rate this tour",
             CreatedAt = DateTime.UtcNow
