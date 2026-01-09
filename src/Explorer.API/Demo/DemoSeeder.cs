@@ -14,9 +14,10 @@ namespace Explorer.API.Demo
         private readonly ITourService _tourService;
         private readonly IUserLocationService _userLocationService;
         private readonly ITourExecutionService _tourExecutionService;
-        private readonly IRestaurantService _restaurantService;
+        private readonly ITourRatingService _tourRatingService;
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, IRestaurantService restaurantService)
+
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -24,7 +25,7 @@ namespace Explorer.API.Demo
             _tourService = tourService;
             _userLocationService = userLocationService;
             _tourExecutionService = tourExecution;
-            _restaurantService = restaurantService;
+            _tourRatingService = tourRatingService;
         }
 
         public void Seed()
@@ -38,7 +39,7 @@ namespace Explorer.API.Demo
             SeedUserLocation();
             SeedKeypoints();
             SeedTourExecution();
-            SeedRestaurants();
+            SeedRatings();
         }
 
         private void SeedAdmin()
@@ -417,13 +418,16 @@ namespace Explorer.API.Demo
                 });
             }
         }
+
         private void SeedTourExecution()
         {
             long tour1Id = 1;
+            long tour5Id = 5;
             long tourist2Id = 2;
+            long tourist3Id = 3;
+            long tourist4Id = 4;
             long author1Id = 5;
-
-            var t1 = _tourService.GetById(tour1Id);
+            long author2Id = 6;
 
             // Add transport time 
             TransportTimeDto tt = new TransportTimeDto()
@@ -433,20 +437,96 @@ namespace Explorer.API.Demo
             };
 
             _tourService.AddTransportTime(tour1Id, tt, author1Id);
-            _tourService.Publish(t1.Id);
+            _tourService.Publish(tour1Id);
 
-            TourExecutionDto tourExecution = new TourExecutionDto()
+            // Tourist 2 - Execution 1 (In Progress)
+            TourExecutionDto tourExecution1 = new TourExecutionDto()
             {
                 TouristId = tourist2Id,
                 TourId = tour1Id,
                 Status = TourExecutionStatusDto.InProgress,
-                StartTime = DateTime.UtcNow.AddHours(-2), // Started 2 hours ago
+                StartTime = DateTime.UtcNow.AddHours(-2),
                 EndTime = null,
-                LastActivity = DateTime.UtcNow.AddMinutes(-15), // Last activity 15 minutes ago
-                PercentageCompleted = 33.33 // Completed 1 out of 3 keypoints
+                LastActivity = DateTime.UtcNow.AddMinutes(-15),
+                PercentageCompleted = 33.33
+            };
+            _tourExecutionService.Create(tourExecution1);
+
+            _tourService.AddTransportTime(tour5Id, tt, author2Id);
+            _tourService.Publish(tour5Id);
+
+            // Tourist 2 
+            TourExecutionDto tourExecution2 = new TourExecutionDto()
+            {
+                TouristId = tourist2Id,
+                TourId = tour5Id,
+                Status = TourExecutionStatusDto.InProgress,
+                StartTime = DateTime.UtcNow.AddHours(-5),
+                EndTime = DateTime.UtcNow.AddHours(-2),
+                LastActivity = DateTime.UtcNow.AddHours(-2),
+                PercentageCompleted = 100.0
+            };
+            var execution2 = _tourExecutionService.Create(tourExecution2);
+            _tourExecutionService.CompleteTour(tourist2Id, execution2.Id);
+
+            // Tourist 3 
+            TourExecutionDto tourExecution3 = new TourExecutionDto()
+            {
+                TouristId = tourist3Id,
+                TourId = tour5Id,
+                Status = TourExecutionStatusDto.InProgress,
+                StartTime = DateTime.UtcNow.AddHours(-3),
+                EndTime = DateTime.UtcNow.AddMinutes(-30),
+                LastActivity = DateTime.UtcNow.AddMinutes(-30),
+                PercentageCompleted = 66.67
+            };
+            var execution3 = _tourExecutionService.Create(tourExecution3);
+            _tourExecutionService.CompleteTour(tourist3Id, execution3.Id);
+
+            // Tourist 4 
+            TourExecutionDto tourExecution4 = new TourExecutionDto()
+            {
+                TouristId = tourist4Id,
+                TourId = tour5Id,
+                Status = TourExecutionStatusDto.InProgress,
+                StartTime = DateTime.UtcNow.AddDays(-1),
+                EndTime = DateTime.UtcNow.AddHours(-6),
+                LastActivity = DateTime.UtcNow.AddHours(-6),
+                PercentageCompleted = 100.0
+            };
+            var execution4 = _tourExecutionService.Create(tourExecution4);
+            _tourExecutionService.CompleteTour(tourist4Id, execution4.Id);
+        }
+
+        private void SeedRatings()
+        {
+            long tour5Id = 5;
+            long tourist3Id = 3;
+            long tourist4Id = 4;
+
+            var execution1 = _tourExecutionService.GetTouristHistory(tourist3Id).FirstOrDefault(e => e.TourId == tour5Id);
+            var execution2 = _tourExecutionService.GetTouristHistory(tourist4Id).FirstOrDefault(e => e.TourId == tour5Id);
+
+            TourRatingDto rating1 = new TourRatingDto()
+            {
+                UserId = tourist3Id,
+                TourExecutionId = execution1.Id, 
+                Stars = 5,
+                Comment = "Super! Sve preporuke.",
+                CompletedProcentage = 100.0
             };
 
-            _tourExecutionService.Create(tourExecution);
+            TourRatingDto rating2 = new TourRatingDto()
+            {
+                UserId = tourist4Id,
+                TourExecutionId = execution2.Id,
+                Stars = 4,
+                Comment = "Lepa tura, ali može bolje organizaciono.",
+                CompletedProcentage = 100.0
+            };
+
+            _tourRatingService.Create(rating1);
+            _tourRatingService.Create(rating2);
         }
 
         private void SeedRestaurants()
