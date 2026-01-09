@@ -15,9 +15,10 @@ namespace Explorer.API.Demo
         private readonly IUserLocationService _userLocationService;
         private readonly ITourExecutionService _tourExecutionService;
         private readonly ITourRatingService _tourRatingService;
+        private readonly IRestaurantService _restaurantService;
 
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService)
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService, IRestaurantService restaurantService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -26,6 +27,7 @@ namespace Explorer.API.Demo
             _userLocationService = userLocationService;
             _tourExecutionService = tourExecution;
             _tourRatingService = tourRatingService;
+            _restaurantService = restaurantService;
         }
 
         public void Seed()
@@ -40,6 +42,7 @@ namespace Explorer.API.Demo
             SeedKeypoints();
             SeedTourExecution();
             SeedRatings();
+            SeedRestaurants();
         }
 
         private void SeedAdmin()
@@ -528,5 +531,80 @@ namespace Explorer.API.Demo
             _tourRatingService.Create(rating1);
             _tourRatingService.Create(rating2);
         }
+
+        private void SeedRestaurants()
+        {
+            var r1 = new RestaurantDto
+            {
+                Name = "Project 72 Wine & Deli",
+                Description = "Moderan restoran sa lokalnim i internacionalnim jelima i velikim izborom vina.",
+                Latitude = 45.2551,
+                Longitude = 19.8450,
+                City = "Novi Sad",
+                CuisineType = "srpska / internacionalna",
+                AverageRating = 4.7,
+                ReviewCount = 320,
+                RecommendedDishes = "Teleći obrazi; domaći hleb; lokalna vina"
+            };
+
+            var r2 = new RestaurantDto
+            {
+                Name = "Fish & Zelenish",
+                Description = "Poznat po ribljim specijalitetima i kreativnim kombinacijama sa povrćem.",
+                Latitude = 45.2557,
+                Longitude = 19.8443,
+                City = "Novi Sad",
+                CuisineType = "mediteranska / riblja",
+                AverageRating = 4.8,
+                ReviewCount = 410,
+                RecommendedDishes = "Filet brancina; riblja čorba; domaći deserti"
+            };
+
+            var r3 = new RestaurantDto
+            {
+                Name = "Veliki",
+                Description = "Restoran u staroj kući sa fokusom na vojvođansku kuhinju.",
+                Latitude = 45.2559,
+                Longitude = 19.8457,
+                City = "Novi Sad",
+                CuisineType = "vojvođanska / domaća",
+                AverageRating = 4.6,
+                ReviewCount = 290,
+                RecommendedDishes = "Perkelt; domaće knedle; štrudla s makom"
+            };
+
+            var r4 = new RestaurantDto
+            {
+                Name = "Savoca",
+                Description = "Italijanski restoran poznat po picama iz peći na drva i pastama.",
+                Latitude = 45.2537,
+                Longitude = 19.8468,
+                City = "Novi Sad",
+                CuisineType = "italijanska",
+                AverageRating = 4.5,
+                ReviewCount = 350,
+                RecommendedDishes = "Pizza Savoca; pasta carbonara; tiramisu"
+            };
+
+            var r5 = new RestaurantDto
+            {
+                Name = "Zak",
+                Description = "Fine dining restoran sa modernim pristupom lokalnim namirnicama.",
+                Latitude = 45.2530,
+                Longitude = 19.8425,
+                City = "Novi Sad",
+                CuisineType = "fine dining / moderna kuhinja",
+                AverageRating = 4.9,
+                ReviewCount = 210,
+                RecommendedDishes = "Degustacioni meni; steak; deserti od lokalnog voća"
+            };
+
+            _restaurantService.Create(r1);
+            _restaurantService.Create(r2);
+            _restaurantService.Create(r3);
+            _restaurantService.Create(r4);
+            _restaurantService.Create(r5);
+        }
+
     }
 }

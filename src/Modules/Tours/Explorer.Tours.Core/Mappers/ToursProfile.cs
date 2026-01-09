@@ -36,5 +36,9 @@ public class ToursProfile : Profile
         
         CreateMap<TourExecutionDto, TourExecution>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (TourExecutionStatus)src.Status));
+        
+        CreateMap<Restaurant, RestaurantDto>()
+            .ForMember(d => d.DistanceKm, opt => opt.Ignore());
+
     }
 }
