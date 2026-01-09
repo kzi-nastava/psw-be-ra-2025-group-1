@@ -15,9 +15,10 @@ namespace Explorer.API.Demo
         private readonly IUserLocationService _userLocationService;
         private readonly ITourExecutionService _tourExecutionService;
         private readonly ITourRatingService _tourRatingService;
+        private readonly IRestaurantService _restaurantService;
 
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService)
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService, IRestaurantService restaurantService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -26,6 +27,7 @@ namespace Explorer.API.Demo
             _userLocationService = userLocationService;
             _tourExecutionService = tourExecution;
             _tourRatingService = tourRatingService;
+            _restaurantService = restaurantService;
         }
 
         public void Seed()
@@ -40,6 +42,7 @@ namespace Explorer.API.Demo
             SeedKeypoints();
             SeedTourExecution();
             SeedRatings();
+            SeedRestaurants();
         }
 
         private void SeedAdmin()

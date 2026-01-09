@@ -88,5 +88,21 @@ public class ToursContext : DbContext
         modelBuilder.Entity<TourRating>()
             .HasIndex(r => new { r.TourExecutionId, r.UserId })
             .IsUnique();
+
+
+        modelBuilder.Entity<Restaurant>(cfg =>
+        {
+            cfg.ToTable("Restaurants");
+            cfg.HasKey(r => r.Id);
+
+            cfg.Property(r => r.Name).IsRequired();
+            cfg.Property(r => r.Latitude).IsRequired();
+            cfg.Property(r => r.Longitude).IsRequired();
+
+            cfg.Property(r => r.AverageRating)
+                .HasColumnType("double precision");
+
+            cfg.Property(r => r.ReviewCount);
+        });
     }
 }
