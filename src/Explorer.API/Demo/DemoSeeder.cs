@@ -15,14 +15,20 @@ namespace Explorer.API.Demo
         private readonly ITourService _tourService;
         private readonly IUserLocationService _userLocationService;
         private readonly ITourExecutionService _tourExecutionService;
-        private readonly ISaleService _saleService;
-
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ISaleService saleService)
         private readonly ITourRatingService _tourRatingService;
         private readonly IRestaurantService _restaurantService;
+        private readonly ISaleService _saleService;
 
-
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService, IRestaurantService restaurantService)
+        public DemoSeeder(
+            IAuthenticationService authenticationService, 
+            IEquipmentService equipmentService, 
+            IFacilityService facilityService, 
+            ITourService tourService, 
+            IUserLocationService userLocationService, 
+            ITourExecutionService tourExecution, 
+            ITourRatingService tourRatingService, 
+            IRestaurantService restaurantService,
+            ISaleService saleService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -30,9 +36,9 @@ namespace Explorer.API.Demo
             _tourService = tourService;
             _userLocationService = userLocationService;
             _tourExecutionService = tourExecution;
-            _saleService = saleService;
             _tourRatingService = tourRatingService;
             _restaurantService = restaurantService;
+            _saleService = saleService;
         }
 
         public void Seed()

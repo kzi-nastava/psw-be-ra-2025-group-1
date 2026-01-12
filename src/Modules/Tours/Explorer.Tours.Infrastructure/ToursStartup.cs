@@ -50,8 +50,6 @@ public static class ToursStartup
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); 
-        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
-        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
         services.AddScoped<IMonumentRepository, MonumentDbRepository>();
         services.AddScoped<ITourRatingRepository, TourRatingDbRepository>();
         services.AddScoped<ITourRatingReactionRepository, TourRatingReactionDbRepository>();

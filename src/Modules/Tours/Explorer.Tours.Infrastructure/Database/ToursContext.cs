@@ -14,13 +14,9 @@ public class ToursContext : DbContext
     public DbSet<TourExecution> TourExecutions { get; set; }
     public DbSet<KeypointProgress> KeypointProgress { get; set; }
     public DbSet<Keypoint> Keypoints { get; set; }
-    public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
     public DbSet<TourRating> TourRatings { get; set; }
     public DbSet<TourRatingReaction> TourRatingReactions { get; set; }
-
-
-    public DbSet<PersonEquipment> PersonEquipment { get; set; } //dodala sam
-
+    public DbSet<PersonEquipment> PersonEquipment { get; set; }
     public DbSet<Restaurant> Restaurants { get; set; }
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
