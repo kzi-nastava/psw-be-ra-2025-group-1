@@ -29,12 +29,12 @@ public class SaleQueryTests : BasePaymentsIntegrationTest
         service.Create(newSale, 1);
 
         // Act
-        var result = service.GetByAuthor(1);
+        var result = service.GetByAuthor(1, 1, 10);
 
         // Assert
         result.ShouldNotBeNull();
-        result.ShouldNotBeEmpty();
-        result.All(s => s.AuthorId == 1).ShouldBeTrue();
+        result.Results.ShouldNotBeEmpty();
+        result.Results.All(s => s.AuthorId == 1).ShouldBeTrue();
     }
 
     [Fact]

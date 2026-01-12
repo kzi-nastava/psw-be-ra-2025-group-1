@@ -1,4 +1,5 @@
-﻿using Explorer.Payments.API.Dtos.Sales;
+﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Payments.API.Dtos.Sales;
 using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.Core.Domain.Sales;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
@@ -81,10 +82,11 @@ public class SaleService : ISaleService
         return MapToDto(sale);
     }
 
-    public List<SaleDto> GetByAuthor(long authorId)
+    public PagedResult<SaleDto> GetByAuthor(long authorId, int page, int pageSize)
     {
-        var sales = _saleRepository.GetByAuthor(authorId);
-        return sales.Select(MapToDto).ToList();
+        var result = _saleRepository.GetByAuthor(authorId, page, pageSize);
+        var dtos = result.Results.Select(MapToDto).ToList();
+        return new PagedResult<SaleDto>(dtos, result.TotalCount);
     }
 
     private SaleDto MapToDto(Sale sale)

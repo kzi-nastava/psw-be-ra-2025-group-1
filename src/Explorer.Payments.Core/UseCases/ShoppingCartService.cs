@@ -1,6 +1,8 @@
+using Explorer.BuildingBlocks.Core.Services;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Dtos.ShoppingCart;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Shopping;
@@ -16,23 +18,27 @@ namespace Explorer.Payments.Core.UseCases
         private readonly IShoppingCartRepository _cartRepo;
         private readonly ITourRepository _tourRepo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
-
+        private readonly ITourPurchaseRepository _purchaseRepo;
         private readonly ICouponRepository _couponRepo;
         private readonly ICouponRedemptionRepository _couponRedemptionRepo;
+        private readonly ISaleService _saleService;
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
             ITourRepository tourRepo,
             ITourPurchaseTokenRepository tokenRepo,
+            ITourPurchaseRepository purchaseRepo,
             ICouponRepository couponRepo,
-            ICouponRedemptionRepository couponRedemptionRepo)
+            ICouponRedemptionRepository couponRedemptionRepo,
+            ISaleService saleService)
         {
             _cartRepo = cartRepo;
             _tourRepo = tourRepo;
             _tokenRepo = tokenRepo;
-
+            _purchaseRepo = purchaseRepo;
             _couponRepo = couponRepo;
             _couponRedemptionRepo = couponRedemptionRepo;
+            _saleService = saleService;
         }
 
         public void AddToCart(long touristId, long tourId)
@@ -51,7 +57,7 @@ namespace Explorer.Payments.Core.UseCases
 
             cart.AddItem(tour.Id, tour.Title, (decimal)tour.Price);
 
-            // (opciono) ako želiš da popust uvek bude “fresh” kad se menja korpa:
+            // (opciono) ako želiš da popust uvek bude "fresh" kad se menja korpa:
             RecalculateCouponDiscountIfApplied(cart);
 
             _cartRepo.Update(cart);
@@ -165,6 +171,14 @@ namespace Explorer.Payments.Core.UseCases
                 if (_tokenRepo.ExistsForUserAndTour(touristId, item.TourId))
                     continue;
 
+                // Calculate final price with Sale + Coupon
+                var finalPrice = CalculateFinalPrice(item.TourId, item.Price, cart.Subtotal, cart.TotalDiscount, cart.Items.Count);
+
+                // Create TourPurchase record
+                var purchase = new TourPurchase(touristId, item.TourId, finalPrice);
+                _purchaseRepo.Create(purchase);
+
+                // Create token
                 var token = new TourPurchaseToken(
                     item.TourId,
                     touristId,
@@ -183,7 +197,6 @@ namespace Explorer.Payments.Core.UseCases
                     null,
                     DateTime.UtcNow
                 ));
-
             }
 
             cart.Clear();
@@ -200,6 +213,27 @@ namespace Explorer.Payments.Core.UseCases
             }).ToList();
         }
 
+        private decimal CalculateFinalPrice(long tourId, decimal basePrice, decimal cartSubtotal, decimal cartTotalDiscount, int itemCount)
+        {
+            // 1. Apply Sale discount first
+            var activeSales = _saleService.GetActiveSalesForTour(tourId);
+            var salePrice = basePrice;
+            
+            if (activeSales.Any())
+            {
+                var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
+                salePrice = basePrice * (1 - bestSale.DiscountPercentage / 100m);
+            }
+
+            // 2. Apply proportional Coupon discount (if any)
+            if (cartTotalDiscount > 0 && cartSubtotal > 0)
+            {
+                var proportionalCouponDiscount = (basePrice / cartSubtotal) * cartTotalDiscount;
+                salePrice -= proportionalCouponDiscount;
+            }
+
+            return Math.Max(0, salePrice); // Ne može biti negativna cena
+        }
 
         private Coupon ValidateCouponOrThrow(string code, long userId)
         {

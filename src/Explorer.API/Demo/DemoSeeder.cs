@@ -3,6 +3,7 @@ using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Payments.API.Public.Author;
 
 namespace Explorer.API.Demo
 {
@@ -14,8 +15,9 @@ namespace Explorer.API.Demo
         private readonly ITourService _tourService;
         private readonly IUserLocationService _userLocationService;
         private readonly ITourExecutionService _tourExecutionService;
+        private readonly ISaleService _saleService;
 
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution)
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ISaleService saleService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -23,6 +25,7 @@ namespace Explorer.API.Demo
             _tourService = tourService;
             _userLocationService = userLocationService;
             _tourExecutionService = tourExecution;
+            _saleService = saleService;
         }
 
         public void Seed()
