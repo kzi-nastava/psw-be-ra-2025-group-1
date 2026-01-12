@@ -14,8 +14,14 @@ public class ToursContext : DbContext
     public DbSet<TourExecution> TourExecutions { get; set; }
     public DbSet<KeypointProgress> KeypointProgress { get; set; }
     public DbSet<Keypoint> Keypoints { get; set; }
+    public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
+    public DbSet<TourRating> TourRatings { get; set; }
+    public DbSet<TourRatingReaction> TourRatingReactions { get; set; }
+
 
     public DbSet<PersonEquipment> PersonEquipment { get; set; } //dodala sam
+
+    public DbSet<Restaurant> Restaurants { get; set; }
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
@@ -53,5 +59,39 @@ public class ToursContext : DbContext
             .IsRequired()
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        // One-Many relationship between TourRating and TourRatingReaction
+        modelBuilder.Entity<TourRating>()
+            .HasMany<TourRatingReaction>()
+            .WithOne()
+            .HasForeignKey(r => r.TourRatingId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint: one reaction per user per rating
+        modelBuilder.Entity<TourRatingReaction>()
+            .HasIndex(r => new { r.TourRatingId, r.UserId })
+            .IsUnique();
+
+        // Unique constraint: one reaction per tour execution
+        modelBuilder.Entity<TourRating>()
+            .HasIndex(r => new { r.TourExecutionId, r.UserId })
+            .IsUnique();
+
+
+        modelBuilder.Entity<Restaurant>(cfg =>
+        {
+            cfg.ToTable("Restaurants");
+            cfg.HasKey(r => r.Id);
+
+            cfg.Property(r => r.Name).IsRequired();
+            cfg.Property(r => r.Latitude).IsRequired();
+            cfg.Property(r => r.Longitude).IsRequired();
+
+            cfg.Property(r => r.AverageRating)
+                .HasColumnType("double precision");
+
+            cfg.Property(r => r.ReviewCount);
+        });
     }
 }

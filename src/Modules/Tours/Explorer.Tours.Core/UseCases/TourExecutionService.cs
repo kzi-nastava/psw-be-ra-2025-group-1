@@ -99,15 +99,6 @@ public class TourExecutionService : ITourExecutionService
         return executions.Select(_mapper.Map<TourExecutionDto>).ToList();
     }
 
-    public bool CanLeaveReview(long touristId, long tourId)
-    {
-        var lastExecution = _tourExecutionRepository.GetLastExecutionForTour(touristId, tourId);
-        if (lastExecution == null)
-            return false;
-
-        return lastExecution.CanLeaveReview();
-    }
-
     public bool TryReachKeypoint(long touristId, long executionId, long keypointId)
     {
         var execution = _tourExecutionRepository.Get(executionId);

@@ -18,6 +18,11 @@ namespace Explorer.API.Demo
         private readonly ISaleService _saleService;
 
         public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ISaleService saleService)
+        private readonly ITourRatingService _tourRatingService;
+        private readonly IRestaurantService _restaurantService;
+
+
+        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService, IRestaurantService restaurantService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -26,6 +31,8 @@ namespace Explorer.API.Demo
             _userLocationService = userLocationService;
             _tourExecutionService = tourExecution;
             _saleService = saleService;
+            _tourRatingService = tourRatingService;
+            _restaurantService = restaurantService;
         }
 
         public void Seed()
@@ -39,6 +46,8 @@ namespace Explorer.API.Demo
             SeedUserLocation();
             SeedKeypoints();
             SeedTourExecution();
+            SeedRatings();
+            SeedRestaurants();
         }
 
         private void SeedAdmin()
@@ -417,13 +426,16 @@ namespace Explorer.API.Demo
                 });
             }
         }
+
         private void SeedTourExecution()
         {
             long tour1Id = 1;
+            long tour5Id = 5;
             long tourist2Id = 2;
+            long tourist3Id = 3;
+            long tourist4Id = 4;
             long author1Id = 5;
-
-            var t1 = _tourService.GetById(tour1Id);
+            long author2Id = 6;
 
             // Add transport time 
             TransportTimeDto tt = new TransportTimeDto()
@@ -433,20 +445,171 @@ namespace Explorer.API.Demo
             };
 
             _tourService.AddTransportTime(tour1Id, tt, author1Id);
-            _tourService.Publish(t1.Id);
+            _tourService.Publish(tour1Id);
 
-            TourExecutionDto tourExecution = new TourExecutionDto()
+            // Tourist 2 - Execution 1 (In Progress)
+            TourExecutionDto tourExecution1 = new TourExecutionDto()
             {
                 TouristId = tourist2Id,
                 TourId = tour1Id,
                 Status = TourExecutionStatusDto.InProgress,
-                StartTime = DateTime.UtcNow.AddHours(-2), // Started 2 hours ago
+                StartTime = DateTime.UtcNow.AddHours(-2),
                 EndTime = null,
-                LastActivity = DateTime.UtcNow.AddMinutes(-15), // Last activity 15 minutes ago
-                PercentageCompleted = 33.33 // Completed 1 out of 3 keypoints
+                LastActivity = DateTime.UtcNow.AddMinutes(-15),
+                PercentageCompleted = 33.33
+            };
+            _tourExecutionService.Create(tourExecution1);
+
+            _tourService.AddTransportTime(tour5Id, tt, author2Id);
+            _tourService.Publish(tour5Id);
+
+            // Tourist 2 
+            TourExecutionDto tourExecution2 = new TourExecutionDto()
+            {
+                TouristId = tourist2Id,
+                TourId = tour5Id,
+                Status = TourExecutionStatusDto.InProgress,
+                StartTime = DateTime.UtcNow.AddHours(-5),
+                EndTime = DateTime.UtcNow.AddHours(-2),
+                LastActivity = DateTime.UtcNow.AddHours(-2),
+                PercentageCompleted = 100.0
+            };
+            var execution2 = _tourExecutionService.Create(tourExecution2);
+            _tourExecutionService.CompleteTour(tourist2Id, execution2.Id);
+
+            // Tourist 3 
+            TourExecutionDto tourExecution3 = new TourExecutionDto()
+            {
+                TouristId = tourist3Id,
+                TourId = tour5Id,
+                Status = TourExecutionStatusDto.InProgress,
+                StartTime = DateTime.UtcNow.AddHours(-3),
+                EndTime = DateTime.UtcNow.AddMinutes(-30),
+                LastActivity = DateTime.UtcNow.AddMinutes(-30),
+                PercentageCompleted = 66.67
+            };
+            var execution3 = _tourExecutionService.Create(tourExecution3);
+            _tourExecutionService.CompleteTour(tourist3Id, execution3.Id);
+
+            // Tourist 4 
+            TourExecutionDto tourExecution4 = new TourExecutionDto()
+            {
+                TouristId = tourist4Id,
+                TourId = tour5Id,
+                Status = TourExecutionStatusDto.InProgress,
+                StartTime = DateTime.UtcNow.AddDays(-1),
+                EndTime = DateTime.UtcNow.AddHours(-6),
+                LastActivity = DateTime.UtcNow.AddHours(-6),
+                PercentageCompleted = 100.0
+            };
+            var execution4 = _tourExecutionService.Create(tourExecution4);
+            _tourExecutionService.CompleteTour(tourist4Id, execution4.Id);
+        }
+
+        private void SeedRatings()
+        {
+            long tour5Id = 5;
+            long tourist3Id = 3;
+            long tourist4Id = 4;
+
+            var execution1 = _tourExecutionService.GetTouristHistory(tourist3Id).FirstOrDefault(e => e.TourId == tour5Id);
+            var execution2 = _tourExecutionService.GetTouristHistory(tourist4Id).FirstOrDefault(e => e.TourId == tour5Id);
+
+            TourRatingDto rating1 = new TourRatingDto()
+            {
+                UserId = tourist3Id,
+                TourExecutionId = execution1.Id, 
+                Stars = 5,
+                Comment = "Super! Sve preporuke.",
+                CompletedProcentage = 100.0
             };
 
-            _tourExecutionService.Create(tourExecution);
+            TourRatingDto rating2 = new TourRatingDto()
+            {
+                UserId = tourist4Id,
+                TourExecutionId = execution2.Id,
+                Stars = 4,
+                Comment = "Lepa tura, ali može bolje organizaciono.",
+                CompletedProcentage = 100.0
+            };
+
+            _tourRatingService.Create(rating1);
+            _tourRatingService.Create(rating2);
         }
+
+        private void SeedRestaurants()
+        {
+            var r1 = new RestaurantDto
+            {
+                Name = "Project 72 Wine & Deli",
+                Description = "Moderan restoran sa lokalnim i internacionalnim jelima i velikim izborom vina.",
+                Latitude = 45.2551,
+                Longitude = 19.8450,
+                City = "Novi Sad",
+                CuisineType = "srpska / internacionalna",
+                AverageRating = 4.7,
+                ReviewCount = 320,
+                RecommendedDishes = "Teleći obrazi; domaći hleb; lokalna vina"
+            };
+
+            var r2 = new RestaurantDto
+            {
+                Name = "Fish & Zelenish",
+                Description = "Poznat po ribljim specijalitetima i kreativnim kombinacijama sa povrćem.",
+                Latitude = 45.2557,
+                Longitude = 19.8443,
+                City = "Novi Sad",
+                CuisineType = "mediteranska / riblja",
+                AverageRating = 4.8,
+                ReviewCount = 410,
+                RecommendedDishes = "Filet brancina; riblja čorba; domaći deserti"
+            };
+
+            var r3 = new RestaurantDto
+            {
+                Name = "Veliki",
+                Description = "Restoran u staroj kući sa fokusom na vojvođansku kuhinju.",
+                Latitude = 45.2559,
+                Longitude = 19.8457,
+                City = "Novi Sad",
+                CuisineType = "vojvođanska / domaća",
+                AverageRating = 4.6,
+                ReviewCount = 290,
+                RecommendedDishes = "Perkelt; domaće knedle; štrudla s makom"
+            };
+
+            var r4 = new RestaurantDto
+            {
+                Name = "Savoca",
+                Description = "Italijanski restoran poznat po picama iz peći na drva i pastama.",
+                Latitude = 45.2537,
+                Longitude = 19.8468,
+                City = "Novi Sad",
+                CuisineType = "italijanska",
+                AverageRating = 4.5,
+                ReviewCount = 350,
+                RecommendedDishes = "Pizza Savoca; pasta carbonara; tiramisu"
+            };
+
+            var r5 = new RestaurantDto
+            {
+                Name = "Zak",
+                Description = "Fine dining restoran sa modernim pristupom lokalnim namirnicama.",
+                Latitude = 45.2530,
+                Longitude = 19.8425,
+                City = "Novi Sad",
+                CuisineType = "fine dining / moderna kuhinja",
+                AverageRating = 4.9,
+                ReviewCount = 210,
+                RecommendedDishes = "Degustacioni meni; steak; deserti od lokalnog voća"
+            };
+
+            _restaurantService.Create(r1);
+            _restaurantService.Create(r2);
+            _restaurantService.Create(r3);
+            _restaurantService.Create(r4);
+            _restaurantService.Create(r5);
+        }
+
     }
 }
