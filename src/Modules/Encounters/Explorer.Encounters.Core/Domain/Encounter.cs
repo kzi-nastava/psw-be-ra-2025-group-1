@@ -13,6 +13,7 @@ public class Encounter : Entity
     public int Xp { get; private set; }
     public EncounterStatus Status { get; private set; }
     public EncounterType Type { get; private set; }
+    public string? ImagePath { get; private set; }
 
     public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type)
     {
@@ -27,6 +28,20 @@ public class Encounter : Entity
         Validate();
     }
 
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, string imgPath)
+    {
+        Title = title;
+        Description = description;
+        Longitude = longitude;
+        Latitude = latitude;
+        Xp = xp;
+        Type = type;
+        Status = EncounterStatus.Draft;
+        ImagePath = imgPath;
+
+        Validate();
+    }
+
     private void Validate()
     {
         if (string.IsNullOrEmpty(Title)) throw new EntityValidationException("Title cannot be empty.");
@@ -34,6 +49,7 @@ public class Encounter : Entity
         if (Longitude < -180 || Longitude > 180) throw new EntityValidationException("Invalid longitude.");
         if (Latitude < -90 || Latitude > 90) throw new EntityValidationException("Invalid latitude.");
         if (Xp <= 0) throw new ArgumentException("XP must be > 0.");
+        if (Type == EncounterType.Location && string.IsNullOrEmpty(ImagePath)) throw new EntityValidationException("Location encounters must have an image.");
     }
 
     private Encounter() { }
@@ -63,6 +79,22 @@ public class Encounter : Entity
         Latitude = latitude;
         Xp = xp;
         Type = type;
+
+        Validate();
+    }
+
+    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, string imgPath)
+    {
+        if (Status != EncounterStatus.Draft)
+            throw new InvalidOperationException("Only draft encounters can be updated.");
+
+        Title = title;
+        Description = description;
+        Longitude = longitude;
+        Latitude = latitude;
+        Xp = xp;
+        Type = type;
+        ImagePath = imgPath;
 
         Validate();
     }

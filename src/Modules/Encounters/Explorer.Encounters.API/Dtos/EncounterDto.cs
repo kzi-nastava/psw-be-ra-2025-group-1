@@ -10,4 +10,5 @@ public class EncounterDto
     public int Xp { get; set; }
     public string Status { get; set; } = "";
     public string Type { get; set; } = "";
+    public string? ImagePath { get; set; } = "";
 }
