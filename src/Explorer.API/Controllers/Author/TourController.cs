@@ -174,24 +174,46 @@ public class TourController : ControllerBase
     [HttpPut("{id:long}/archive")]
     public ActionResult Archive(long id)
     {
-        bool result = _tourService.Archive(id);
-        if (result)
+        try
         {
-            return Ok(new { message = "Tour successfully archived" });
+            bool result = _tourService.Archive(id);
+            if (result)
+            {
+                return Ok(new { message = "Tour successfully archived" });
+            }
+            return BadRequest(new { message = "Tour could not be archived. It may already be archived or in an invalid state." });
         }
-        return BadRequest(new { message = "Tour could not be archived. It may already be archived or in an invalid state." });
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpPut("{id:long}/publish")]
     public ActionResult Publish(long id)
     {
-        bool result = _tourService.Publish(id);
-        if (result)
+        try
         {
-            return Ok(new { message = "Tour successfully published" });
+            bool result = _tourService.Publish(id);
+            if (result)
+            {
+                return Ok(new { message = "Tour successfully published" });
+            }
+            return BadRequest(new { message = "Tour could not be published. Ensure all required fields are complete and the tour has at least 2 keypoints and one transport time. Check that the tour isn't published already." });
         }
-        return BadRequest(new { message = "Tour could not be published. Ensure all required fields are complete and the tour has at least 2 keypoints and one transport time. Check that the tour isn't published already." });
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
