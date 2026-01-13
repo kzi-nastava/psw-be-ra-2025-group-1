@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public;
 using System.Security.Claims;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 
 namespace Explorer.API.Controllers;
 [Route("api/[controller]")]
@@ -27,7 +28,7 @@ public class EncounterController : ControllerBase
     [Authorize(Policy = "touristPolicy")]
     public ActionResult<List<EncounterDto>> GetActive()
     {
-        var touristId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var touristId = User.UserId();
         return Ok(_encounterService.GetAvailableForTourist(touristId));
     }
 
@@ -81,7 +82,7 @@ public class EncounterController : ControllerBase
     [Authorize(Policy = "touristPolicy")]
     public ActionResult<ActiveEncounterDto> Activate(long id, [FromBody] LocationDto location)
     {
-        var touristId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var touristId = User.UserId();
         var result = _encounterService.ActivateEncounter(id, touristId, location.Latitude, location.Longitude);
         return Ok(result);
     }
@@ -90,7 +91,7 @@ public class EncounterController : ControllerBase
     [Authorize(Policy = "touristPolicy")]
     public ActionResult<List<ActiveEncounterDto>> UpdateLocation([FromBody] LocationDto location)
     {
-        var touristId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var touristId = User.UserId();
         var result = _encounterService.UpdateTouristLocation(touristId, location.Latitude, location.Longitude);
         return Ok(result);
     }
@@ -99,7 +100,7 @@ public class EncounterController : ControllerBase
     [Authorize(Policy = "touristPolicy")]
     public ActionResult<List<ActiveEncounterDto>> GetMyActiveEncounters()
     {
-        var touristId = long.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var touristId = User.UserId();
         return Ok(_encounterService.GetActiveTouristEncounters(touristId));
     }
 
