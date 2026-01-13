@@ -7,7 +7,8 @@ $env:DATABASE_SCHEMA = "explorer-v1"
 $migrationFolders = @(
     "Modules\Stakeholders\Explorer.Stakeholders.Infrastructure\Migrations",
     "Modules\Tours\Explorer.Tours.Infrastructure\Migrations",
-    "Modules\Blog\Explorer.Blog.Infrastructure\Migrations"
+    "Modules\Blog\Explorer.Blog.Infrastructure\Migrations", 
+    "Modules\Encounters\Explorer.Encounters.Infrastructure\Migrations"
 )
 
 foreach ($folder in $migrationFolders) {
@@ -57,3 +58,16 @@ dotnet ef database update `
     --context BlogContext `
     --project Modules/Blog/Explorer.Blog.Infrastructure `
     --startup-project Explorer.API
+
+Write-Host ""
+
+Write-Host "=== Migrating EncounterContext ===" -ForegroundColor Cyan
+dotnet ef migrations add Init_Encounters `
+    --context EncounterContext `
+    --project Modules/Encounters/Explorer.Encounters.Infrastructure/Explorer.Encounters.Infrastructure.csproj `
+    --startup-project Explorer.API/Explorer.API.csproj
+
+dotnet ef database update `
+    --context EncounterContext `
+    --project Modules/Encounters/Explorer.Encounters.Infrastructure/Explorer.Encounters.Infrastructure.csproj `
+    --startup-project Explorer.API/Explorer.API.csproj
