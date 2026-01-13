@@ -1,5 +1,4 @@
 ﻿using Explorer.API.Demo;
-using Explorer.Payments.API.Public.Author;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
@@ -22,7 +21,7 @@ namespace Explorer.API.Controllers
             ITourExecutionService tourExecution,
             ITourRatingService tourRatingService,
             IRestaurantService restaurantService,
-            ISaleService saleService)
+            Explorer.Payments.API.Public.Author.ISaleService saleService)
         {
             _demoSeeder = new DemoSeeder(
                 authenticationService, 

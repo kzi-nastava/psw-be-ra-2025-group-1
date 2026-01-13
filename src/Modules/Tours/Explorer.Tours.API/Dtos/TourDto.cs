@@ -16,7 +16,7 @@ public class TourDto
     public int Difficulty { get; init; } = -1;
     public string[] Tags { get; init; }= Array.Empty<string>();
     public TourStatusDto Status { get; init; }= TourStatusDto.Draft;
-    public double Price { get; init; } = -1;
+    public double Price { get; set; } = -1;  // Changed from init to set so we can apply discounts
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
     public DateTime PublishedAt { get; init; }

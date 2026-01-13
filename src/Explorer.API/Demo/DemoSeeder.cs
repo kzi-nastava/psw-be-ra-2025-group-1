@@ -3,7 +3,6 @@ using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
-using Explorer.Payments.API.Public.Author;
 
 namespace Explorer.API.Demo
 {
@@ -17,7 +16,7 @@ namespace Explorer.API.Demo
         private readonly ITourExecutionService _tourExecutionService;
         private readonly ITourRatingService _tourRatingService;
         private readonly IRestaurantService _restaurantService;
-        private readonly ISaleService _saleService;
+        private readonly Explorer.Payments.API.Public.Author.ISaleService _saleService;
 
         public DemoSeeder(
             IAuthenticationService authenticationService, 
@@ -28,7 +27,7 @@ namespace Explorer.API.Demo
             ITourExecutionService tourExecution, 
             ITourRatingService tourRatingService, 
             IRestaurantService restaurantService,
-            ISaleService saleService)
+            Explorer.Payments.API.Public.Author.ISaleService saleService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;

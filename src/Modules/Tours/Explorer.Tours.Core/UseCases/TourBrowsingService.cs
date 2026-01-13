@@ -50,11 +50,14 @@ public class TourBrowsingService : ITourBrowsingService
         var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
         
         tour.IsOnSale = true;
-        tour.OriginalPrice = tour.Price;
+        tour.OriginalPrice = tour.Price; // Čuvamo originalnu cenu
         tour.SaleDiscountPercentage = bestSale.DiscountPercentage;
         tour.DiscountedPrice = tour.Price * (1 - bestSale.DiscountPercentage / 100.0);
         tour.SaleId = bestSale.Id;
         tour.SaleName = bestSale.Name;
+        
+        // KLJUČNO: Setujemo Price na sniženu cenu jer frontend koristi Price property!
+        tour.Price = tour.DiscountedPrice.Value;
         
         return tour;
     }

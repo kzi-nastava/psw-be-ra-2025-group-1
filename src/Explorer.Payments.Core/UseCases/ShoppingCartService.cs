@@ -55,7 +55,16 @@ namespace Explorer.Payments.Core.UseCases
                 cart = _cartRepo.Create(cart);
             }
 
-            cart.AddItem(tour.Id, tour.Title, (decimal)tour.Price);
+            // ✅ Apply sale discount if available
+            var priceToUse = (decimal)tour.Price;
+            var activeSales = _saleService.GetActiveSalesForTour(tourId);
+            if (activeSales.Any())
+            {
+                var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
+                priceToUse = (decimal)(tour.Price * (1 - bestSale.DiscountPercentage / 100.0));
+            }
+
+            cart.AddItem(tour.Id, tour.Title, priceToUse);
 
             // (opciono) ako želiš da popust uvek bude "fresh" kad se menja korpa:
             RecalculateCouponDiscountIfApplied(cart);
