@@ -48,6 +48,14 @@ public class BlogRepository : IBlogRepository
         return blog;
     }
 
+    public void Delete(long blogId)
+    {
+        var blog = GetById(blogId); // ukljucuje Comments/Votes zbog Include
+        _context.Blogs.Remove(blog);
+        _context.SaveChanges();
+    }
+
+
     public BlogEntity GetById(long id)
     {
         return _context.Blogs.Include(b => b.Comments).Include(b => b.Votes).FirstOrDefault(b => b.Id == id) ?? throw new KeyNotFoundException($"Blog with the ID {id} was not found.");
