@@ -16,9 +16,18 @@ namespace Explorer.API.Demo
         private readonly ITourExecutionService _tourExecutionService;
         private readonly ITourRatingService _tourRatingService;
         private readonly IRestaurantService _restaurantService;
+        private readonly Explorer.Payments.API.Public.Author.ISaleService _saleService;
 
-
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService, IRestaurantService restaurantService)
+        public DemoSeeder(
+            IAuthenticationService authenticationService, 
+            IEquipmentService equipmentService, 
+            IFacilityService facilityService, 
+            ITourService tourService, 
+            IUserLocationService userLocationService, 
+            ITourExecutionService tourExecution, 
+            ITourRatingService tourRatingService, 
+            IRestaurantService restaurantService,
+            Explorer.Payments.API.Public.Author.ISaleService saleService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -28,6 +37,7 @@ namespace Explorer.API.Demo
             _tourExecutionService = tourExecution;
             _tourRatingService = tourRatingService;
             _restaurantService = restaurantService;
+            _saleService = saleService;
         }
 
         public void Seed()
