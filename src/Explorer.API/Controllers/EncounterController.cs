@@ -134,7 +134,7 @@ public class EncounterController : ControllerBase
         return Ok();
     }
 
-    [HttpGet("{activeId}/get-hint")]
+    [HttpGet("{activeId}/hint")]
     [Authorize(Policy = "touristPolicy")]
     public ActionResult<List<string>> GetNextHint(long activeId)
     {
