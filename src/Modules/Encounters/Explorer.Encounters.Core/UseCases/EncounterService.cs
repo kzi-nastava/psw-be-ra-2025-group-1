@@ -114,7 +114,7 @@ public class EncounterService : IEncounterService
         if (!isWithinRange && encounter.Type == EncounterType.Social)
             throw new InvalidOperationException($"Tourist is too far from encounter. Distance: {distance:F2}m, Required: {encounter.Range}m");
         
-        var activeEncounter = new ActiveEncounter(touristId, encounterId, latitude, longitude);
+        var activeEncounter = new ActiveEncounter(touristId, encounterId, latitude, longitude, encounter.Hints, encounter.ImagePath);
         var created = _repository.ActivateEncounter(activeEncounter);
 
         EncounterType type = encounter.Type;
@@ -288,6 +288,21 @@ public class EncounterService : IEncounterService
         return R * c;
     }
 
+    public List<string> GetNextHint(long activeId, long touristId)
+    {
+        ActiveEncounter activeEncounter = _repository.GetActiveById(activeId);
+
+        // Check if the tourist owns the active encounter
+        if (activeEncounter.TouristId != touristId) throw new UnauthorizedAccessException("Tourist does not own this active encounter.");
+
+        var hints = activeEncounter.GetNextHint();
+        _repository.UpdateActiveEncounter(activeEncounter);
+
+        return hints;
+    }
+
+    // ---------- HELPERS -------------
+
     private double ToRadians(double degrees)
     {
         return degrees * Math.PI / 180.0;
@@ -310,7 +325,8 @@ public class EncounterService : IEncounterService
             EncounterDescription = encounter.Description,
             EncounterType = encounter.Type.ToString(),
             RequiredPeopleCount = encounter.RequiredPeopleCount,
-            Requirements = _mapper.Map<List<RequirementDto>>(activeEncounter.Requirements)
+            Requirements = _mapper.Map<List<RequirementDto>>(activeEncounter.Requirements),
+            ImagePath = encounter.ImagePath
         };
     }
 }

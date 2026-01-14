@@ -133,4 +133,12 @@ public class EncounterController : ControllerBase
         _encounterService.ResetRequirement(activeId, reqId);
         return Ok();
     }
+
+    [HttpGet("{activeId}/get-hint")]
+    [Authorize(Policy = "touristPolicy")]
+    public ActionResult<List<string>> GetNextHint(long activeId)
+    {
+        var tourist = User.UserId();
+        return Ok(_encounterService.GetNextHint(activeId, tourist));
+    }
 }
