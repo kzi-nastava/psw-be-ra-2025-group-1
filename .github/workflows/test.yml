@@ -86,16 +86,6 @@ jobs:
             --results-directory TestReport \
             --logger "trx;LogFileName=Explorer.Blogs.Tests.trx"
 
-      - name: Run tests – Payments
-        continue-on-error: true
-        run: |
-          dotnet test ./src/Explorer.Payments.Tests/Explorer.Payments.Tests.csproj \
-            --no-build \
-            --configuration Release \
-            --results-directory TestReport \
-            --logger "trx;LogFileName=Explorer.Payments.Tests.trx"
-
-
       - name: Run tests – Tours
         continue-on-error: true
         run: |
@@ -104,6 +94,15 @@ jobs:
             --configuration Release \
             --results-directory TestReport \
             --logger "trx;LogFileName=Explorer.Tours.Tests.trx"
+
+      - name: Run tests – Payments
+        continue-on-error: true
+        run: |
+          dotnet test ./src/Explorer.Payments.Tests/Explorer.Payments.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --results-directory TestReport \
+            --logger "trx;LogFileName=Explorer.Payments.Tests.trx"
 
       - name: Run tests – Encounters
         continue-on-error: true
