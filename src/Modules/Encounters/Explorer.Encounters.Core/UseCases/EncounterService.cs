@@ -338,9 +338,9 @@ public class EncounterService : IEncounterService
             EncounterDescription = encounter.Description,
             EncounterType = encounter.Type.ToString(),
             RequiredPeopleCount = encounter.RequiredPeopleCount,
-            Requirements = activeEncounter.Requirements != null 
+            Requirements = activeEncounter.Requirements != null
                 ? _mapper.Map<List<RequirementDto>>(activeEncounter.Requirements)
-                : new List<RequirementDto>()
+                : new List<RequirementDto>(),
             ImagePath = encounter.ImagePath
         };
     }
