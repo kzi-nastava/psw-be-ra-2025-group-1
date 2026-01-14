@@ -21,7 +21,6 @@ public class Bundle : AggregateRoot
 
     public Bundle(long authorId, string name, decimal price, List<long> tourIds)
     {
-        if (authorId <= 0) throw new ArgumentException("Invalid author ID");
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name is required");
         if (price < 0) throw new ArgumentException("Price cannot be negative");
         if (tourIds == null || tourIds.Count == 0) throw new ArgumentException("Bundle must contain at least one tour");

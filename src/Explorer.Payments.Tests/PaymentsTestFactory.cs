@@ -1,17 +1,20 @@
 ﻿using Explorer.BuildingBlocks.Tests;
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Explorer.Payments.Tests
 {
-    public class PaymentsTestFactory:BaseTestFactory<PaymentsContext>
+    public class PaymentsTestFactory : BaseTestFactory<PaymentsContext>
     {
         protected override IServiceCollection ReplaceNeededDbContexts(IServiceCollection services)
         {
@@ -31,5 +34,18 @@ namespace Explorer.Payments.Tests
             return services;
         }
 
+        private static void InitializeContext(DbContext context)
+        {
+            context.Database.EnsureCreated();
+            try
+            {
+                var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
+                databaseCreator.CreateTables();
+            }
+            catch (Exception)
+            {
+                // Tables might already exist
+            }
+        }
     }
 }
