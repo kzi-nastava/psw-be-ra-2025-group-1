@@ -141,29 +141,31 @@ public class TransportTimeCommandTests : BaseToursIntegrationTest
         // Use creator ID that matches the controller context
         long creatorId = -1;
         var tour = EnsureDraftTourExists(dbContext, creatorId);
-        
+
         // Ensure tour has a transport time to delete
         if (!tour.TransportTimes.Any())
         {
             var tt = tour.AddTransportTime(new TransportTime(TransportType.Foot, 10));
             dbContext.SaveChanges();
         }
-        
+
         // Refresh tour to get the transport time with ID
         tour = dbContext.Tour
             .Include(t => t.TransportTimes)
             .First(t => t.Id == tour.Id);
-        
+
         var existingTransport = tour.TransportTimes.First();
         var controller = CreateController(scope, creatorId.ToString());
         var transportTimeId = existingTransport.Id;
 
         // Act
-        var result = controller.DeleteTransportTime(tour.Id, transportTimeId) as OkResult;
+        var result = controller.DeleteTransportTime(tour.Id, transportTimeId);
 
         // Assert - Response
         result.ShouldNotBeNull();
-        result.StatusCode.ShouldBe(200);
+        result.ShouldBeOfType<OkObjectResult>();
+        var okResult = result as OkObjectResult;
+        okResult.StatusCode.ShouldBe(200);
 
         // Assert - Database
         var storedEntity = dbContext.TransportTime
