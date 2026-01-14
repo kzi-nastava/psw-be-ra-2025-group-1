@@ -91,6 +91,10 @@ public class EncounterRepository : IEncounterRepository
     public CompletedEncounter CompleteEncounter(CompletedEncounter completedEncounter)
     {
         _context.CompletedEncounters.Add(completedEncounter);
+        var activeEncounter = _context.ActiveEncounters.Where(ae =>
+            ae.TouristId == completedEncounter.TouristId &&
+            ae.EncounterId == completedEncounter.EncounterId);
+        _context.ActiveEncounters.RemoveRange(activeEncounter);
         _context.SaveChanges();
         return completedEncounter;
     }
