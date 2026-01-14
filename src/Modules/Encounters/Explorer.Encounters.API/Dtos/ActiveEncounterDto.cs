@@ -5,6 +5,7 @@ public class ActiveEncounterDto
     public long Id { get; set; }
     public long TouristId { get; set; }
     public long EncounterId { get; set; }
+    public int EncounterXp { get; set; }
     public DateTime ActivationTime { get; set; }
     public DateTime LastLocationUpdate { get; set; }
     public double LastLatitude { get; set; }

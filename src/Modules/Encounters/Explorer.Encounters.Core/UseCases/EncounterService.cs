@@ -298,6 +298,7 @@ public class EncounterService : IEncounterService
             Id = activeEncounter.Id,
             TouristId = activeEncounter.TouristId,
             EncounterId = activeEncounter.EncounterId,
+            EncounterXp = encounter.Xp,
             ActivationTime = activeEncounter.ActivationTime,
             LastLocationUpdate = activeEncounter.LastLocationUpdate,
             LastLatitude = activeEncounter.LastLatitude,
