@@ -44,6 +44,7 @@ public class EncounterService : IEncounterService
             dto.Latitude,
             dto.Xp,
             encounterType,
+            dto.Requirements,
             dto.RequiredPeopleCount,
             dto.Range
         );
@@ -113,6 +114,18 @@ public class EncounterService : IEncounterService
         
         var activeEncounter = new ActiveEncounter(touristId, encounterId, latitude, longitude);
         var created = _repository.ActivateEncounter(activeEncounter);
+
+        EncounterType type = encounter.Type;
+        if (type == EncounterType.Misc)
+        {
+            if (encounter.Requirements.Count == 0)
+                throw new InvalidOperationException("Misc encounter must have at least one requirement.");
+            foreach (var requirement in encounter.Requirements)
+            {
+                var req = new Requirement(requirement);
+                _repository.CreateRequirement(req, created.Id);
+            }
+        }
         
         return MapToDto(created, encounter);
     }
@@ -213,6 +226,49 @@ public class EncounterService : IEncounterService
         return _mapper.Map<List<EncounterDto>>(availableEncounters);
     }
 
+    public List<RequirementDto> GetRequirementsByActiveEncounter(long activeEncounterId)
+    {
+        var requirements = _repository.GetRequirementsByActiveEncounter(activeEncounterId);
+        return _mapper.Map<List<RequirementDto>>(requirements);
+    }
+
+    public void CompleteRequirement(long activeEncounterId, long requirementId)
+    {
+        var activeEncounter = _repository.GetActiveById(activeEncounterId);
+        if (!activeEncounter.IsWithinRange)
+            throw new InvalidOperationException("Tourist is not within range of the encounter.");
+
+        var requirement = activeEncounter.GetRequirementById(requirementId);
+
+        var encounter = _repository.GetById(activeEncounter.EncounterId);
+
+        if (requirement.IsMet)
+            throw new InvalidOperationException("Requirement is already met.");
+
+        requirement.MarkAsMet();
+        _repository.UpdateRequirement(requirement, activeEncounterId);
+        
+        if (activeEncounter.AreAllRequirementsMet())
+        {
+            // Complete the encounter for the tourist
+            if (!_repository.HasCompletedEncounter(activeEncounter.TouristId, encounter.Id))
+            {
+                var completed = new CompletedEncounter(activeEncounter.TouristId, encounter.Id, encounter.Xp);
+                _repository.CompleteEncounter(completed);
+            }
+        }
+    }
+
+    public void ResetRequirement(long activeEncounterId, long requirementId)
+    {
+        var activeEncounter = _repository.GetActiveById(activeEncounterId);
+        var requirement = activeEncounter.GetRequirementById(requirementId);
+        if (!requirement.IsMet)
+            throw new InvalidOperationException("Requirement is already not met.");
+        requirement.Reset();
+        _repository.UpdateRequirement(requirement, activeEncounterId);
+    }
+
     // Haversine formula to calculate distance between two GPS coordinates in meters
     private double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
     {
@@ -242,6 +298,7 @@ public class EncounterService : IEncounterService
             Id = activeEncounter.Id,
             TouristId = activeEncounter.TouristId,
             EncounterId = activeEncounter.EncounterId,
+            EncounterXp = encounter.Xp,
             ActivationTime = activeEncounter.ActivationTime,
             LastLocationUpdate = activeEncounter.LastLocationUpdate,
             LastLatitude = activeEncounter.LastLatitude,
@@ -250,7 +307,8 @@ public class EncounterService : IEncounterService
             EncounterTitle = encounter.Title,
             EncounterDescription = encounter.Description,
             EncounterType = encounter.Type.ToString(),
-            RequiredPeopleCount = encounter.RequiredPeopleCount
+            RequiredPeopleCount = encounter.RequiredPeopleCount,
+            Requirements = _mapper.Map<List<RequirementDto>>(activeEncounter.Requirements)
         };
     }
 }

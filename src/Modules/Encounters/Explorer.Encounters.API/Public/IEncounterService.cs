@@ -19,4 +19,8 @@ public interface IEncounterService
     List<ActiveEncounterDto> GetActiveTouristEncounters(long touristId);
     int GetActiveCountInRange(long encounterId);
     List<EncounterDto> GetAvailableForTourist(long touristId);
+
+    List<RequirementDto> GetRequirementsByActiveEncounter(long activeEncounterId);
+    void CompleteRequirement(long activeEncounterId, long requirementId);
+    void ResetRequirement(long activeEncounterId, long requirementId);
 }
