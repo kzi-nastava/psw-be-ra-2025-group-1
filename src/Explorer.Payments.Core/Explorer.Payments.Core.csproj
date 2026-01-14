@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Explorer.Payments.API\Explorer.Payments.API.csproj" />
-    <ProjectReference Include="..\Modules\Tours\Explorer.Tours.Core\Explorer.Tours.Core.csproj" />
   </ItemGroup>
 
 </Project>

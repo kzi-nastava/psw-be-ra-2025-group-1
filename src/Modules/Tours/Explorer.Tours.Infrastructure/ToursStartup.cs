@@ -13,6 +13,7 @@ using Explorer.Tours.Core.UseCases;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.UseCases.Tourist;
 using Explorer.Tours.Core.UseCases.Social;
+using Explorer.BuildingBlocks.Core.Services;
 
 namespace Explorer.Tours.Infrastructure;
 
@@ -54,6 +55,7 @@ public static class ToursStartup
         services.AddScoped<ITourRatingRepository, TourRatingDbRepository>();
         services.AddScoped<ITourRatingReactionRepository, TourRatingReactionDbRepository>();
         services.AddScoped<IRestaurantRepository, RestaurantDbRepository>();
+        services.AddScoped<ITourInfoService, TourInfoService>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
