@@ -1,6 +1,8 @@
+using Explorer.API.Adapters.Tours;
 using Explorer.API.Demo;
 using Explorer.API.Middleware;
 using Explorer.API.Startup;
+using Explorer.Payments.Core.Domain.External;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.UseCases;
@@ -43,6 +45,8 @@ builder.Services.AddScoped<IConversationRepository, ConversationRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<Explorer.Tours.Core.Domain.RepositoryInterfaces.IUserLocationRepository, UserLocationAdapter>(); // So there is no link between modules
 builder.Services.AddScoped<DemoSeeder>();
+builder.Services.AddScoped<ITourInfoService,TourInfoServiceAdapter>();
+
 
 
 builder.Services.RegisterModules();

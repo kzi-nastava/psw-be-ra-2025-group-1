@@ -1,5 +1,7 @@
 ﻿using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Domain.External;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Mappers;
 using Explorer.Payments.Core.UseCases; // AutoMapper profil
@@ -7,6 +9,7 @@ using Explorer.Payments.Infrastructure.Database;
 using Explorer.Payments.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
 using Npgsql;
 
 namespace Explorer.Payments.Infrastructure
@@ -28,8 +31,7 @@ namespace Explorer.Payments.Infrastructure
             // npr. services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
             services.AddScoped<IShoppingCartService, ShoppingCartService>();
-            services.AddScoped<ICouponRepository, CouponRepository>();
-            services.AddScoped<ICouponRedemptionRepository, CouponRedemptionRepository>();
+            services.AddScoped<ICouponService, CouponService>();
 
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourPurchaseTokenChecker,
                 Explorer.Payments.Core.Services.TourPurchaseTokenChecker>();
@@ -40,6 +42,8 @@ namespace Explorer.Payments.Infrastructure
         {
             services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
             services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+            services.AddScoped<ICouponRepository, CouponRepository>();
+            services.AddScoped<ICouponRedemptionRepository, CouponRedemptionRepository>();
 
             var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
             dataSourceBuilder.EnableDynamicJson();
