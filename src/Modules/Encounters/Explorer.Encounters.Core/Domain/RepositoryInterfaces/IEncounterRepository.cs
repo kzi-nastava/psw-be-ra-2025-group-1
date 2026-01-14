@@ -30,4 +30,5 @@ public interface IEncounterRepository
     Requirement UpdateRequirement(Requirement requirement, long activeEncounterId);
     List<Requirement> GetRequirementsByActiveEncounter(long activeEncounterId);
     Requirement GetRequirementById(long id, long activeEncounterId);
+
 }

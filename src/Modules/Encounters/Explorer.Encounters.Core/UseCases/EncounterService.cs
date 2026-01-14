@@ -2,18 +2,22 @@ using AutoMapper;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public;
 using Explorer.Encounters.Core.Domain;
+using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using Explorer.Encounters.Core.RepositoryInterfaces;
+using System.Diagnostics.Metrics;
 
 namespace Explorer.Encounters.Core.UseCases;
 
 public class EncounterService : IEncounterService
 {
     private readonly IEncounterRepository _repository;
+    private readonly ITouristStatsRepository _statsRepository;
     private readonly IMapper _mapper;
 
-    public EncounterService(IEncounterRepository repository, IMapper mapper)
+    public EncounterService(IEncounterRepository repository, ITouristStatsRepository statsRepository, IMapper mapper)
     {
         _repository = repository;
+        _statsRepository = statsRepository;
         _mapper = mapper;
     }
 
@@ -184,6 +188,9 @@ public class EncounterService : IEncounterService
                             var completed = new CompletedEncounter(ae.TouristId, encounter.Id, encounter.Xp);
                             _repository.CompleteEncounter(completed);
                             _repository.DeleteActiveEncounter(ae.Id);
+
+                            // Update tourist stats
+                            UpdateTouristStats(ae.TouristId, encounter.Xp);
                         }
                     }
                 }
@@ -192,6 +199,13 @@ public class EncounterService : IEncounterService
         
         // Return updated active encounters
         return GetActiveTouristEncounters(touristId);
+    }
+
+    private void UpdateTouristStats(long touristId, int xp)
+    {
+        var stats = _statsRepository.GetByTourist(touristId);
+        stats.AddXp(xp);
+        _statsRepository.Update(stats);
     }
 
     public List<ActiveEncounterDto> GetActiveTouristEncounters(long touristId)
@@ -270,6 +284,9 @@ public class EncounterService : IEncounterService
             {
                 var completed = new CompletedEncounter(activeEncounter.TouristId, encounter.Id, encounter.Xp);
                 _repository.CompleteEncounter(completed);
+
+                // Update tourist stats
+                UpdateTouristStats(activeEncounter.TouristId, encounter.Xp);
             }
         }
     }
