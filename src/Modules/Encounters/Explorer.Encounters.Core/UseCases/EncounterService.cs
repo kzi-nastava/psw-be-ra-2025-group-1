@@ -118,11 +118,11 @@ public class EncounterService : IEncounterService
         EncounterType type = encounter.Type;
         if (type == EncounterType.Misc)
         {
-            if (encounter.Requirements.Count == 0)
+            if (encounter.Requirements == null || encounter.Requirements.Count == 0)
                 throw new InvalidOperationException("Misc encounter must have at least one requirement.");
             foreach (var requirement in encounter.Requirements)
             {
-                var req = new Requirement(requirement);
+                var req = new Requirement(requirement, created.Id);
                 _repository.CreateRequirement(req, created.Id);
             }
         }
@@ -137,7 +137,15 @@ public class EncounterService : IEncounterService
         
         foreach (var activeEncounter in activeEncounters)
         {
-            var encounter = _repository.GetById(activeEncounter.EncounterId);
+            Encounter encounter;
+            try
+            {
+                encounter = _repository.GetById(activeEncounter.EncounterId);
+            }
+            catch (KeyNotFoundException)
+            {
+                continue;
+            }
             
             // Calculate if within range
             var distance = CalculateDistance(latitude, longitude, encounter.Latitude, encounter.Longitude);
@@ -173,6 +181,7 @@ public class EncounterService : IEncounterService
                         {
                             var completed = new CompletedEncounter(ae.TouristId, encounter.Id, encounter.Xp);
                             _repository.CompleteEncounter(completed);
+                            _repository.DeleteActiveEncounter(ae.Id);
                         }
                     }
                 }
@@ -190,18 +199,22 @@ public class EncounterService : IEncounterService
         
         foreach (var ae in activeEncounters)
         {
-            // Filter out completed encounters
-            if (_repository.HasCompletedEncounter(touristId, ae.EncounterId))
-                continue;
+            try
+            {
+                var encounter = _repository.GetById(ae.EncounterId);
+                var dto = MapToDto(ae, encounter);
                 
-            var encounter = _repository.GetById(ae.EncounterId);
-            var dto = MapToDto(ae, encounter);
-            
-            // Calculate current people count in range
-            dto.CurrentPeopleInRange = _repository.GetActiveByEncounter(ae.EncounterId)
-                .Count(x => x.IsWithinRange);
-            
-            result.Add(dto);
+                // Calculate current people count in range
+                dto.CurrentPeopleInRange = _repository.GetActiveByEncounter(ae.EncounterId)
+                    .Count(x => x.IsWithinRange);
+                
+                result.Add(dto);
+            }
+            catch (KeyNotFoundException)
+            {
+                // Encounter definition deleted, skipping orphaned active encounter
+                continue;
+            }
         }
         
         return result;
@@ -308,7 +321,9 @@ public class EncounterService : IEncounterService
             EncounterDescription = encounter.Description,
             EncounterType = encounter.Type.ToString(),
             RequiredPeopleCount = encounter.RequiredPeopleCount,
-            Requirements = _mapper.Map<List<RequirementDto>>(activeEncounter.Requirements)
+            Requirements = activeEncounter.Requirements != null 
+                ? _mapper.Map<List<RequirementDto>>(activeEncounter.Requirements)
+                : new List<RequirementDto>()
         };
     }
 }

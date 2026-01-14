@@ -18,6 +18,7 @@ public interface IEncounterRepository
     List<ActiveEncounter> GetActiveByEncounter(long encounterId);
     ActiveEncounter? GetActiveTouristEncounter(long touristId, long encounterId);
     ActiveEncounter GetActiveById(long activeEncounterId);
+    void DeleteActiveEncounter(long activeEncounterId);
 
     // Completed encounter methods
     CompletedEncounter CompleteEncounter(CompletedEncounter completedEncounter);
