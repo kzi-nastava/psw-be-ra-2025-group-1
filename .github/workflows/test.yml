@@ -9,6 +9,7 @@ on:
     branches:
       - main
       - development
+      - feat/update-test-workflow
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -93,6 +94,24 @@ jobs:
             --configuration Release \
             --results-directory TestReport \
             --logger "trx;LogFileName=Explorer.Tours.Tests.trx"
+
+      - name: Run tests – Encounters
+        continue-on-error: true
+        run: |
+          dotnet test ./src/Modules/Encounters/Explorer.Encounters.Tests/Explorer.Encounters.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --results-directory TestReport \
+            --logger "trx;LogFileName=Explorer.Encounters.Tests.trx"
+
+      - name: Run tests – Payments
+        continue-on-error: true
+        run: |
+          dotnet test ./src/Modules/Payments/Explorer.Payments.Tests/Explorer.Payments.Tests.csproj \
+            --no-build \
+            --configuration Release \
+            --results-directory TestReport \
+            --logger "trx;LogFileName=Explorer.Payments.Tests.trx"
 
 
       - name: Upload test results
