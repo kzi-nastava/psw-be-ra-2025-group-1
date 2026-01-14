@@ -110,4 +110,27 @@ public class EncounterController : ControllerBase
     {
         return Ok(_encounterService.GetActiveCountInRange(id));
     }
+
+    [HttpGet("{id}/requirements")]
+    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    public ActionResult<List<RequirementDto>> GetRequirements(long id)
+    {
+        return Ok(_encounterService.GetRequirementsByActiveEncounter(id));
+    }
+
+    [HttpPut("{activeId}/requirements/{reqId}/complete")]
+    [Authorize(Policy = "touristPolicy")]
+    public IActionResult CompleteRequirement(long activeId, long reqId)
+    {
+        _encounterService.CompleteRequirement(activeId, reqId);
+        return Ok();
+    }
+
+    [HttpPut("{activeId}/requirements/{reqId}/reset")]
+    [Authorize(Policy = "touristPolicy")]
+    public IActionResult ResetRequirement(long activeId, long reqId)
+    {
+        _encounterService.ResetRequirement(activeId, reqId);
+        return Ok();
+    }
 }

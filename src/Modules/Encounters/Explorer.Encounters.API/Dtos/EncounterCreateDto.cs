@@ -9,5 +9,6 @@ public class EncounterCreateDto
     public int Xp { get; set; }
     public string Type { get; set; } = "";
     public int? RequiredPeopleCount { get; set; }
+    public List<string> Requirements { get; set; } = new List<string>();
     public double? Range { get; set; }
 }

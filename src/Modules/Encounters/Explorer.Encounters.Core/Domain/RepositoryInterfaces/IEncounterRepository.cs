@@ -17,9 +17,16 @@ public interface IEncounterRepository
     List<ActiveEncounter> GetActiveByTourist(long touristId);
     List<ActiveEncounter> GetActiveByEncounter(long encounterId);
     ActiveEncounter? GetActiveTouristEncounter(long touristId, long encounterId);
-    
+    ActiveEncounter GetActiveById(long activeEncounterId);
+
     // Completed encounter methods
     CompletedEncounter CompleteEncounter(CompletedEncounter completedEncounter);
     bool HasCompletedEncounter(long touristId, long encounterId);
     List<CompletedEncounter> GetCompletedByTourist(long touristId);
+
+    // Misc encounter methods
+    Requirement CreateRequirement(Requirement requirement);
+    Requirement UpdateRequirement(Requirement requirement);
+    List<Requirement> GetRequirementsByActiveEncounter(long activeEncounterId);
+    Requirement GetRequirementById(long id);
 }

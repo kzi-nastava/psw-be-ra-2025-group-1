@@ -8,7 +8,7 @@ public class EncounterContext : DbContext
     public DbSet<Encounter> Encounters { get; set; }
     public DbSet<ActiveEncounter> ActiveEncounters { get; set; }
     public DbSet<CompletedEncounter> CompletedEncounters { get; set; }
-
+    public DbSet<Requirement> Requirements { get; set; }
     public EncounterContext(DbContextOptions<EncounterContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -22,5 +22,11 @@ public class EncounterContext : DbContext
         modelBuilder.Entity<Encounter>()
             .Property(e => e.Type)
             .HasConversion<int>();
+
+        modelBuilder.Entity<ActiveEncounter>()
+            .HasMany(r => r.Requirements)
+            .WithOne()
+            .HasForeignKey(r => r.ActiveEncounterId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

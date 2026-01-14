@@ -11,6 +11,7 @@ public class ActiveEncounter : Entity
     public double LastLatitude { get; private set; }
     public double LastLongitude { get; private set; }
     public bool IsWithinRange { get; private set; }
+    public List<Requirement> Requirements { get; private set; } = new List<Requirement>();
 
     public ActiveEncounter(long touristId, long encounterId, double latitude, double longitude)
     {

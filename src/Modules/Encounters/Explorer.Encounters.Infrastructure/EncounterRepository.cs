@@ -87,14 +87,28 @@ public class EncounterRepository : IEncounterRepository
             .FirstOrDefault(ae => ae.TouristId == touristId && ae.EncounterId == encounterId);
     }
 
+    public ActiveEncounter GetActiveById(long activeEncounterId)
+    {
+        return _context.ActiveEncounters
+            .FirstOrDefault(ae => ae.Id == activeEncounterId)
+            ?? throw new KeyNotFoundException($"ActiveEncounter with ID {activeEncounterId} not found.");
+    }
+
     // Completed encounter methods
     public CompletedEncounter CompleteEncounter(CompletedEncounter completedEncounter)
     {
         _context.CompletedEncounters.Add(completedEncounter);
+
         var activeEncounter = _context.ActiveEncounters.Where(ae =>
             ae.TouristId == completedEncounter.TouristId &&
             ae.EncounterId == completedEncounter.EncounterId);
+
+        var requirements = _context.Requirements.Where(r =>
+            r.ActiveEncounterId == activeEncounter.First().Id);
+
         _context.ActiveEncounters.RemoveRange(activeEncounter);
+        _context.Requirements.RemoveRange(requirements);
+
         _context.SaveChanges();
         return completedEncounter;
     }
@@ -110,5 +124,35 @@ public class EncounterRepository : IEncounterRepository
         return _context.CompletedEncounters
             .Where(ce => ce.TouristId == touristId)
             .ToList();
+    }
+
+    // Misc encounter methods
+
+    public Requirement CreateRequirement(Requirement requirement)
+    {
+        _context.Requirements.Add(requirement);
+        _context.SaveChanges();
+        return requirement;
+    }
+
+    public Requirement UpdateRequirement(Requirement requirement)
+    {
+        _context.Requirements.Update(requirement);
+        _context.SaveChanges();
+        return requirement;
+    }
+
+    public List<Requirement> GetRequirementsByActiveEncounter(long activeEncounterId)
+    {
+        return _context.Requirements
+            .Where(r => r.ActiveEncounterId == activeEncounterId)
+            .ToList();
+    }
+
+    public Requirement GetRequirementById(long id)
+    {
+        return _context.Requirements
+            .FirstOrDefault(r => r.Id == id)
+            ?? throw new KeyNotFoundException($"Requirement with ID {id} not found.");
     }
 }

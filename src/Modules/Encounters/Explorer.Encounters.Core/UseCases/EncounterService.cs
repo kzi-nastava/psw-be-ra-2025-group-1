@@ -44,6 +44,7 @@ public class EncounterService : IEncounterService
             dto.Latitude,
             dto.Xp,
             encounterType,
+            dto.Requirements,
             dto.RequiredPeopleCount,
             dto.Range
         );
@@ -113,6 +114,18 @@ public class EncounterService : IEncounterService
         
         var activeEncounter = new ActiveEncounter(touristId, encounterId, latitude, longitude);
         var created = _repository.ActivateEncounter(activeEncounter);
+
+        EncounterType type = encounter.Type;
+        if (type == EncounterType.Misc)
+        {
+            if (encounter.Requirements.Count == 0)
+                throw new InvalidOperationException("Misc encounter must have at least one requirement.");
+            foreach (var requirement in encounter.Requirements)
+            {
+                var req = new Requirement(created.Id, requirement);
+                _repository.CreateRequirement(req);
+            }
+        }
         
         return MapToDto(created, encounter);
     }
@@ -211,6 +224,54 @@ public class EncounterService : IEncounterService
             .ToList();
         
         return _mapper.Map<List<EncounterDto>>(availableEncounters);
+    }
+
+    public List<RequirementDto> GetRequirementsByActiveEncounter(long activeEncounterId)
+    {
+        var requirements = _repository.GetRequirementsByActiveEncounter(activeEncounterId);
+        return _mapper.Map<List<RequirementDto>>(requirements);
+    }
+
+    public void CompleteRequirement(long activeEncounterId, long requirementId)
+    {
+        var requirement = _repository.GetRequirementById(requirementId);
+        var activeEncounter = _repository.GetActiveById(activeEncounterId);
+        if (!activeEncounter.IsWithinRange)
+            throw new InvalidOperationException("Tourist is not within range of the encounter.");
+
+        var encounter = _repository.GetById(activeEncounter.EncounterId);
+        if (requirement == null || requirement.ActiveEncounterId != activeEncounterId)
+            throw new InvalidOperationException("Requirement not found for the given active encounter.");
+
+        if (requirement.IsMet)
+            throw new InvalidOperationException("Requirement is already met.");
+
+        requirement.MarkAsMet();
+        _repository.UpdateRequirement(requirement);
+        
+        // Check if all requirements are completed
+        var allRequirements = _repository.GetRequirementsByActiveEncounter(activeEncounterId);
+        if (allRequirements.All(r => r.IsMet))
+        {
+            // Complete the encounter for the tourist
+            if (!_repository.HasCompletedEncounter(activeEncounter.TouristId, encounter.Id))
+            {
+                var completed = new CompletedEncounter(activeEncounter.TouristId, encounter.Id, encounter.Xp);
+                _repository.CompleteEncounter(completed);
+            }
+        }
+    }
+
+    public void ResetRequirement(long activeEncounterId, long requirementId)
+    {
+        var requirement = _repository.GetRequirementById(requirementId);
+        var activeEncounter = _repository.GetActiveById(activeEncounterId);
+        if (requirement == null || requirement.ActiveEncounterId != activeEncounterId)
+            throw new InvalidOperationException("Requirement not found for the given active encounter.");
+        if (!requirement.IsMet)
+            throw new InvalidOperationException("Requirement is already not met.");
+        requirement.Reset();
+        _repository.UpdateRequirement(requirement);
     }
 
     // Haversine formula to calculate distance between two GPS coordinates in meters
