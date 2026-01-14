@@ -1,8 +1,8 @@
-﻿
 using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.Cupons;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
+using Explorer.Payments.Core.Domain.Sales;  
 using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Payments.Infrastructure.Database
@@ -14,9 +14,10 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<TourPurchase> TourPurchases { get; set; }
         public DbSet<Coupon> Coupons { get; set; }
         public DbSet<CouponRedemption> CouponRedemptions { get; set; }
-
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
-        
+        public DbSet<Sale> Sales { get; set; }
+        public DbSet<Wallet> Wallets { get; set; }
+
         public PaymentsContext(DbContextOptions<PaymentsContext> options)
             : base(options) { }
 
@@ -24,11 +25,16 @@ namespace Explorer.Payments.Infrastructure.Database
         {
             // postavljanje default šeme u camelCase
             modelBuilder.HasDefaultSchema("payments");
+
             modelBuilder.Entity<TourPurchaseToken>(entity =>
             {
                 entity.Property(t => t.Status)
                     .HasConversion<string>();
             });
+
+           
+            modelBuilder.ApplyConfiguration(new SaleConfiguration());
+
             base.OnModelCreating(modelBuilder);
         }
     }

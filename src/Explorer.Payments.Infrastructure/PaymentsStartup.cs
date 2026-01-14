@@ -1,7 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Infrastructure.Database;
-using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.API.Public.Tourist;
-using Explorer.Payments.Core.Domain.External;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Mappers;
 using Explorer.Payments.Core.UseCases; // AutoMapper profil
@@ -31,7 +29,13 @@ namespace Explorer.Payments.Infrastructure
             // npr. services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
             services.AddScoped<IShoppingCartService, ShoppingCartService>();
-            services.AddScoped<ICouponService, CouponService>();
+            services.AddScoped<ISaleRepository, SaleRepository>();
+            services.AddScoped<Explorer.Payments.API.Public.Author.ISaleService, SaleService>();
+            services.AddScoped<ISalePublicService, SalePublicService>();
+            services.AddScoped<IWalletService, WalletService>();
+            
+            // Adapter za Sale servic za Tours modul
+            services.AddScoped<Explorer.BuildingBlocks.Core.Services.ISaleService, Explorer.Payments.Core.Services.SaleServiceAdapter>();
 
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourPurchaseTokenChecker,
                 Explorer.Payments.Core.Services.TourPurchaseTokenChecker>();
@@ -44,6 +48,8 @@ namespace Explorer.Payments.Infrastructure
             services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
             services.AddScoped<ICouponRepository, CouponRepository>();
             services.AddScoped<ICouponRedemptionRepository, CouponRedemptionRepository>();
+            services.AddScoped<IWalletRepository, WalletRepository>();
+            services.AddScoped<ITourPurchaseRepository, TourPurchaseDbRepository>();
 
             var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
             dataSourceBuilder.EnableDynamicJson();

@@ -130,7 +130,7 @@ public class Blog : AggregateRoot
         UpdateStatusByEngagement();
     }
 
-    public Vote AddVote(long userId, VoteType voteType)  
+    public Vote? AddVote(long userId, VoteType voteType)  
     {
         if (!IsInteractive())
         {
@@ -140,12 +140,20 @@ public class Blog : AggregateRoot
         // Remove the previous vote if a user tries to vote again after already having a vote 
         // Can't both upvote and downvnote a blog
         var existingVote = Votes.FirstOrDefault(v => v.UserId == userId);
+        if (existingVote != null && existingVote.VoteType == voteType)
+        {
+            Votes.Remove(existingVote);
+            UpdateStatusByEngagement();
+            return null; // nema novog glasa
+        }
+
+        // 2) Ako postoji neki drugi glas -> zameni ga
         if (existingVote != null)
         {
             Votes.Remove(existingVote);
         }
 
-        var vote = new Vote(userId, voteType);
+        var vote = new Vote(this.Id, userId, voteType);
         Votes.Add(vote);
 
         UpdateStatusByEngagement();
@@ -155,7 +163,7 @@ public class Blog : AggregateRoot
 
     public void RemoveVote(long userId)
     {
-        if (IsReadOnly())
+        if (Status == BlogStatus.Draft || Status == BlogStatus.Archived)
         {
             throw new InvalidOperationException("Votes cannot be changed on a closed blog.");
         }
@@ -209,7 +217,7 @@ public class Blog : AggregateRoot
 
     private bool IsReadOnly()
     {
-        return Status == BlogStatus.Closed || Status == BlogStatus.Archived;
+        return Status == BlogStatus.Archived;
     }
 
     private bool IsInteractive()

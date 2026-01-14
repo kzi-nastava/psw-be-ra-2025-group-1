@@ -15,4 +15,8 @@
     <Folder Include="Public\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="FluentResults" Version="4.0.0" />
+  </ItemGroup>
+
 </Project>

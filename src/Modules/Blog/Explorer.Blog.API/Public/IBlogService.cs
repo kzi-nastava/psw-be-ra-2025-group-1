@@ -11,6 +11,8 @@ public interface IBlogService
     BlogDto PublishBlog(long blogId);
     BlogDto ArchiveBlog(long blogId);
 
+    void DeleteBlog(long blogId, long userId);
+
     List<BlogDto> GetVisibleBlogs(long userId);    // lista blogova koje user sme da vidi
 
     public CommentDto GetCommentForBlog(long blogId, long commentId);

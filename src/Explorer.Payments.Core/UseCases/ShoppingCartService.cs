@@ -1,43 +1,49 @@
+using Explorer.BuildingBlocks.Core.Services;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Dtos.ShoppingCart;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Core.Domain.Cupons;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
-using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using Explorer.Payments.Core.Domain.Cupons;
+
 
 namespace Explorer.Payments.Core.UseCases
 {
     public class ShoppingCartService : IShoppingCartService
     {
         private readonly IShoppingCartRepository _cartRepo;
-        private readonly ITourRepository _tourRepo;
+        private readonly ITourBrowsingInfo _tourBrowsingInfo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
-
+        private readonly ITourPurchaseRepository _purchaseRepo;
         private readonly ICouponRepository _couponRepo;
         private readonly ICouponRedemptionRepository _couponRedemptionRepo;
+        private readonly ISaleService _saleService;
+        private readonly IWalletRepository _walletRepo;
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
-            ITourRepository tourRepo,
+            ITourBrowsingInfo tourBrowsingInfo,
             ITourPurchaseTokenRepository tokenRepo,
+            ITourPurchaseRepository purchaseRepo,
             ICouponRepository couponRepo,
-            ICouponRedemptionRepository couponRedemptionRepo)
+            ICouponRedemptionRepository couponRedemptionRepo,
+            ISaleService saleService)
         {
             _cartRepo = cartRepo;
-            _tourRepo = tourRepo;
+            _tourBrowsingInfo = tourBrowsingInfo;
             _tokenRepo = tokenRepo;
-
+            _purchaseRepo = purchaseRepo;
             _couponRepo = couponRepo;
             _couponRedemptionRepo = couponRedemptionRepo;
+            _saleService = saleService;
         }
 
         public void AddToCart(long touristId, long tourId)
         {
-            var tour = _tourRepo.GetPublishedById(tourId);
-            if (tour == null)
+            var tour = _tourBrowsingInfo.GetPublishedTourById(tourId);
+            if (tour == null || !tour.IsPublished)
                 throw new ArgumentException("Tour does not exist or is not published.");
 
             var cart = _cartRepo.GetByTouristId(touristId);
@@ -48,9 +54,18 @@ namespace Explorer.Payments.Core.UseCases
                 cart = _cartRepo.Create(cart);
             }
 
-            cart.AddItem(tour.Id, tour.Title, (decimal)tour.Price);
+            // ✅ Apply sale discount if available
+            var priceToUse = (decimal)tour.Price;
+            var activeSales = _saleService.GetActiveSalesForTour(tourId);
+            if (activeSales.Any())
+            {
+                var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
+                priceToUse = (decimal)(tour.Price * (1 - bestSale.DiscountPercentage / 100.0));
+            }
 
-            // (opciono) ako želiš da popust uvek bude “fresh” kad se menja korpa:
+            cart.AddItem(tour.Id, tour.Title, priceToUse);
+
+            // (opciono) ako želiš da popust uvek bude "fresh" kad se menja korpa:
             RecalculateCouponDiscountIfApplied(cart);
 
             _cartRepo.Update(cart);
@@ -134,6 +149,8 @@ namespace Explorer.Payments.Core.UseCases
 
         public List<TourPurchaseTokenDto> Checkout(long touristId)
         {
+            Wallet? userWallet = _walletRepo.GetByTouristId(touristId) ?? throw new InvalidOperationException("User wallet not found.");
+
             var cart = _cartRepo.GetByTouristId(touristId);
             if (cart == null || !cart.Items.Any())
                 throw new InvalidOperationException("Shopping cart is empty.");
@@ -151,19 +168,27 @@ namespace Explorer.Payments.Core.UseCases
 
             foreach (var item in cart.Items)
             {
-                var tour = _tourRepo.Get(item.TourId);
+                var tour = _tourBrowsingInfo.GetPublishedTourById(item.TourId);
                 if (tour == null)
                     throw new InvalidOperationException("Tour does not exist.");
 
-                if (tour.Status == TourStatus.Archived)
-                    throw new InvalidOperationException("Archived tour cannot be purchased.");
-
-                if (tour.Status != TourStatus.Published)
+                if (!tour.IsPublished)
                     throw new InvalidOperationException("Only published tours can be purchased.");
 
                 if (_tokenRepo.ExistsForUserAndTour(touristId, item.TourId))
                     continue;
 
+                // Calculate final price with Sale + Coupon
+                var finalPrice = CalculateFinalPrice(item.TourId, item.Price, cart.Subtotal, cart.TotalDiscount, cart.Items.Count);
+
+                if (finalPrice > (decimal)userWallet.Balance)
+                    continue;
+
+                // Create TourPurchase record
+                var purchase = new TourPurchase(touristId, item.TourId, finalPrice);
+                _purchaseRepo.Create(purchase);
+
+                // Create token
                 var token = new TourPurchaseToken(
                     item.TourId,
                     touristId,
@@ -199,6 +224,27 @@ namespace Explorer.Payments.Core.UseCases
             }).ToList();
         }
 
+        private decimal CalculateFinalPrice(long tourId, decimal basePrice, decimal cartSubtotal, decimal cartTotalDiscount, int itemCount)
+        {
+            // 1. Apply Sale discount first
+            var activeSales = _saleService.GetActiveSalesForTour(tourId);
+            var salePrice = basePrice;
+            
+            if (activeSales.Any())
+            {
+                var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
+                salePrice = basePrice * (1 - bestSale.DiscountPercentage / 100m);
+            }
+
+            // 2. Apply proportional Coupon discount (if any)
+            if (cartTotalDiscount > 0 && cartSubtotal > 0)
+            {
+                var proportionalCouponDiscount = (basePrice / cartSubtotal) * cartTotalDiscount;
+                salePrice -= proportionalCouponDiscount;
+            }
+
+            return Math.Max(0, salePrice); // Ne može biti negativna cena
+        }
 
         private Coupon ValidateCouponOrThrow(string code, long userId)
         {
