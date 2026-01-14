@@ -45,21 +45,25 @@ namespace Explorer.Payments.Tests.Integration
             using var scope = Factory.Services.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IWalletService>();
             var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-            var walletId = -1;
-            var newBalance = 500.0;
+            var walletDto = new WalletDto
+            {
+                Id = -1,
+                TouristId = -21,
+                Balance = 500.0
+            };
 
             // Act
-            var result = service.UpdateBalance(walletId, newBalance);
+            var result = service.UpdateBalance(walletDto.Id, walletDto);
 
             // Assert - Response
             result.ShouldNotBeNull();
-            result.Id.ShouldBe(walletId);
-            result.Balance.ShouldBe((decimal)newBalance);
+            result.Id.ShouldBe(walletDto.Id);
+            result.Balance.ShouldBe(walletDto.Balance);
 
             // Assert - Database
-            var storedEntity = dbContext.Set<Explorer.Payments.Core.Domain.Wallet>().FirstOrDefault(w => w.Id == walletId);
+            var storedEntity = dbContext.Set<Explorer.Payments.Core.Domain.Wallet>().FirstOrDefault(w => w.Id == walletDto.Id);
             storedEntity.ShouldNotBeNull();
-            storedEntity.Balance.ShouldBe(newBalance);
+            storedEntity.Balance.ShouldBe(walletDto.Balance);
         }
 
         [Fact]
