@@ -54,6 +54,7 @@ public static class ToursStartup
         services.AddScoped<ITourRatingRepository, TourRatingDbRepository>();
         services.AddScoped<ITourRatingReactionRepository, TourRatingReactionDbRepository>();
         services.AddScoped<IRestaurantRepository, RestaurantDbRepository>();
+        services.AddScoped<ITourBundleRepository, TourBundleDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
