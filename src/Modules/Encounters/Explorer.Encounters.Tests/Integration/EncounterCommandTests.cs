@@ -21,7 +21,8 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     private static EncounterController CreateController(IServiceScope scope, long touristId)
     {
         var controller = new EncounterController(
-            scope.ServiceProvider.GetRequiredService<IEncounterService>()
+            scope.ServiceProvider.GetRequiredService<IEncounterService>(),
+            scope.ServiceProvider.GetRequiredService<ITouristStatsService>()
         );
 
         controller.ControllerContext = new ControllerContext
