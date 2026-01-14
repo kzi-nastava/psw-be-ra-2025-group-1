@@ -73,7 +73,11 @@ namespace Explorer.Payments.Tests.Integration
             using var scope = Factory.Services.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<IWalletService>();
             var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-            var walletId = -2;
+            
+            // Create a wallet specifically for deletion test
+            var touristId = -25; // Use unique tourist ID
+            var createdWallet = service.Create(touristId);
+            var walletId = createdWallet.Id;
 
             // Act
             service.Delete(walletId);

@@ -7,8 +7,6 @@ using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
-using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 
 
 namespace Explorer.Payments.Core.UseCases
@@ -16,7 +14,7 @@ namespace Explorer.Payments.Core.UseCases
     public class ShoppingCartService : IShoppingCartService
     {
         private readonly IShoppingCartRepository _cartRepo;
-        private readonly ITourRepository _tourRepo;
+        private readonly ITourBrowsingInfo _tourBrowsingInfo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
         private readonly ITourPurchaseRepository _purchaseRepo;
         private readonly ICouponRepository _couponRepo;
@@ -25,7 +23,7 @@ namespace Explorer.Payments.Core.UseCases
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
-            ITourRepository tourRepo,
+            ITourBrowsingInfo tourBrowsingInfo,
             ITourPurchaseTokenRepository tokenRepo,
             ITourPurchaseRepository purchaseRepo,
             ICouponRepository couponRepo,
@@ -33,7 +31,7 @@ namespace Explorer.Payments.Core.UseCases
             ISaleService saleService)
         {
             _cartRepo = cartRepo;
-            _tourRepo = tourRepo;
+            _tourBrowsingInfo = tourBrowsingInfo;
             _tokenRepo = tokenRepo;
             _purchaseRepo = purchaseRepo;
             _couponRepo = couponRepo;
@@ -43,8 +41,8 @@ namespace Explorer.Payments.Core.UseCases
 
         public void AddToCart(long touristId, long tourId)
         {
-            var tour = _tourRepo.GetPublishedById(tourId);
-            if (tour == null)
+            var tour = _tourBrowsingInfo.GetPublishedTourById(tourId);
+            if (tour == null || !tour.IsPublished)
                 throw new ArgumentException("Tour does not exist or is not published.");
 
             var cart = _cartRepo.GetByTouristId(touristId);
@@ -167,14 +165,11 @@ namespace Explorer.Payments.Core.UseCases
 
             foreach (var item in cart.Items)
             {
-                var tour = _tourRepo.Get(item.TourId);
+                var tour = _tourBrowsingInfo.GetPublishedTourById(item.TourId);
                 if (tour == null)
                     throw new InvalidOperationException("Tour does not exist.");
 
-                if (tour.Status == TourStatus.Archived)
-                    throw new InvalidOperationException("Archived tour cannot be purchased.");
-
-                if (tour.Status != TourStatus.Published)
+                if (!tour.IsPublished)
                     throw new InvalidOperationException("Only published tours can be purchased.");
 
                 if (_tokenRepo.ExistsForUserAndTour(touristId, item.TourId))
