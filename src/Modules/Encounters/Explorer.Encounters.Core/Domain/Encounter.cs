@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace Explorer.Encounters.Core.Domain;
 
-public class Encounter : Entity
+public class Encounter : AggregateRoot
 {
     public string Title { get; private set; } = "";
     public string Description { get; private set; } = "";

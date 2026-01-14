@@ -26,7 +26,8 @@ public class EncounterContext : DbContext
         modelBuilder.Entity<ActiveEncounter>()
             .HasMany(r => r.Requirements)
             .WithOne()
-            .HasForeignKey(r => r.ActiveEncounterId)
+            .HasForeignKey("ActiveEncounterId")
+            .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

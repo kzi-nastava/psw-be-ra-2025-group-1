@@ -1,6 +1,7 @@
 using Explorer.Encounters.Core.Domain;
 using Explorer.Encounters.Core.RepositoryInterfaces;
 using Explorer.Encounters.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Encounters.Infrastructure;
 
@@ -70,6 +71,7 @@ public class EncounterRepository : IEncounterRepository
     public List<ActiveEncounter> GetActiveByTourist(long touristId)
     {
         return _context.ActiveEncounters
+            .Include(b => b.Requirements)
             .Where(ae => ae.TouristId == touristId)
             .ToList();
     }
@@ -77,6 +79,7 @@ public class EncounterRepository : IEncounterRepository
     public List<ActiveEncounter> GetActiveByEncounter(long encounterId)
     {
         return _context.ActiveEncounters
+            .Include(b => b.Requirements)
             .Where(ae => ae.EncounterId == encounterId)
             .ToList();
     }
@@ -84,12 +87,14 @@ public class EncounterRepository : IEncounterRepository
     public ActiveEncounter? GetActiveTouristEncounter(long touristId, long encounterId)
     {
         return _context.ActiveEncounters
+            .Include(b => b.Requirements)
             .FirstOrDefault(ae => ae.TouristId == touristId && ae.EncounterId == encounterId);
     }
 
     public ActiveEncounter GetActiveById(long activeEncounterId)
     {
         return _context.ActiveEncounters
+            .Include(b => b.Requirements)
             .FirstOrDefault(ae => ae.Id == activeEncounterId)
             ?? throw new KeyNotFoundException($"ActiveEncounter with ID {activeEncounterId} not found.");
     }
@@ -103,11 +108,7 @@ public class EncounterRepository : IEncounterRepository
             ae.TouristId == completedEncounter.TouristId &&
             ae.EncounterId == completedEncounter.EncounterId);
 
-        var requirements = _context.Requirements.Where(r =>
-            r.ActiveEncounterId == activeEncounter.First().Id);
-
         _context.ActiveEncounters.RemoveRange(activeEncounter);
-        _context.Requirements.RemoveRange(requirements);
 
         _context.SaveChanges();
         return completedEncounter;
@@ -128,31 +129,29 @@ public class EncounterRepository : IEncounterRepository
 
     // Misc encounter methods
 
-    public Requirement CreateRequirement(Requirement requirement)
+    public Requirement CreateRequirement(Requirement requirement, long activeEncounterId)
     {
-        _context.Requirements.Add(requirement);
+        var activeEncounter = GetActiveById(activeEncounterId);
+        activeEncounter?.AddRequirement(requirement);
         _context.SaveChanges();
         return requirement;
     }
 
-    public Requirement UpdateRequirement(Requirement requirement)
+    public Requirement UpdateRequirement(Requirement requirement, long activeEncounterId)
     {
-        _context.Requirements.Update(requirement);
+        var activeEncounter = GetActiveById(activeEncounterId);
+        activeEncounter?.UpdateRequirement(requirement);
         _context.SaveChanges();
         return requirement;
     }
 
     public List<Requirement> GetRequirementsByActiveEncounter(long activeEncounterId)
     {
-        return _context.Requirements
-            .Where(r => r.ActiveEncounterId == activeEncounterId)
-            .ToList();
+        return GetActiveById(activeEncounterId).Requirements;
     }
 
-    public Requirement GetRequirementById(long id)
+    public Requirement GetRequirementById(long id, long activeEncounterId)
     {
-        return _context.Requirements
-            .FirstOrDefault(r => r.Id == id)
-            ?? throw new KeyNotFoundException($"Requirement with ID {id} not found.");
+        return GetActiveById(activeEncounterId).GetRequirementById(id);
     }
 }

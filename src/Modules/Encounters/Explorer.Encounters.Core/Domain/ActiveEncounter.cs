@@ -42,4 +42,40 @@ public class ActiveEncounter : Entity
     {
         IsWithinRange = false;
     }
+
+    public void AddRequirement(Requirement requirement)
+    {
+        Requirements.Add(requirement);
+    }
+
+    public void RemoveRequirement(Requirement requirement)
+    {
+        Requirements.Remove(requirement);
+    }
+
+    public bool AreAllRequirementsMet()
+    {
+        return Requirements.All(r => r.IsMet);
+    }
+
+    public Requirement UpdateRequirement(Requirement requirement)
+    {
+        var existingRequirement = Requirements.FirstOrDefault(r => r.Id == requirement.Id);
+        if (existingRequirement == null)
+        {
+            throw new KeyNotFoundException($"Requirement with ID {requirement.Id} not found in ActiveEncounter {Id}.");
+        }
+        existingRequirement = requirement;
+        return existingRequirement;
+    }
+
+    public Requirement GetRequirementById(long requirementId)
+    {
+        var requirement = Requirements.FirstOrDefault(r => r.Id == requirementId);
+        if (requirement == null)
+        {
+            throw new KeyNotFoundException($"Requirement with ID {requirementId} not found in ActiveEncounter {Id}.");
+        }
+        return requirement;
+    }
 }

@@ -9,7 +9,6 @@ namespace Explorer.Encounters.API.Dtos
     public class RequirementDto
     {
         public long Id { get; set; }
-        public long ActiveEncounterId { get; set; }
         public string Description { get; set; }
         public bool IsMet { get; set; }
     }

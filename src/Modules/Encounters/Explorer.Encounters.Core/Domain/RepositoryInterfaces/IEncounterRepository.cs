@@ -25,8 +25,8 @@ public interface IEncounterRepository
     List<CompletedEncounter> GetCompletedByTourist(long touristId);
 
     // Misc encounter methods
-    Requirement CreateRequirement(Requirement requirement);
-    Requirement UpdateRequirement(Requirement requirement);
+    Requirement CreateRequirement(Requirement requirement, long activeEncounterId);
+    Requirement UpdateRequirement(Requirement requirement, long activeEncounterId);
     List<Requirement> GetRequirementsByActiveEncounter(long activeEncounterId);
-    Requirement GetRequirementById(long id);
+    Requirement GetRequirementById(long id, long activeEncounterId);
 }

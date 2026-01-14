@@ -17,4 +17,5 @@ public class ActiveEncounterDto
     public string? EncounterType { get; set; }
     public int? RequiredPeopleCount { get; set; }
     public int? CurrentPeopleInRange { get; set; }
+    public List<RequirementDto>? Requirements { get; set; } = new List<RequirementDto>();
 }
