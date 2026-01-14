@@ -35,6 +35,7 @@ namespace Explorer.Payments.Infrastructure
             services.AddScoped<ISaleRepository, SaleRepository>();
             services.AddScoped<Explorer.Payments.API.Public.Author.ISaleService, SaleService>();
             services.AddScoped<ISalePublicService, SalePublicService>();
+            services.AddScoped<IWalletService, WalletService>();
             
             // Adapter za Sale servic za Tours modul
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ISaleService, Explorer.Payments.Core.Services.SaleServiceAdapter>();
@@ -48,6 +49,7 @@ namespace Explorer.Payments.Infrastructure
         {
             services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
             services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
+            services.AddScoped<IWalletRepository, WalletRepository>();
             services.AddScoped<ITourPurchaseRepository, TourPurchaseDbRepository>();
 
             var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
