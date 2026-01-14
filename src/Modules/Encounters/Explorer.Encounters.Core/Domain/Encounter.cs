@@ -49,7 +49,21 @@ public class Encounter : AggregateRoot
         if (Longitude < -180 || Longitude > 180) throw new EntityValidationException("Invalid longitude.");
         if (Latitude < -90 || Latitude > 90) throw new EntityValidationException("Invalid latitude.");
         if (Xp <= 0) throw new ArgumentException("XP must be > 0.");
-        if (Type == EncounterType.Location && string.IsNullOrEmpty(ImagePath)) throw new EntityValidationException("Location encounters must have an image.");
+        switch (Type)
+        {
+            case EncounterType.Location:
+                if (string.IsNullOrEmpty(ImagePath))
+                    throw new EntityValidationException("Location encounters must have an image.");
+                break;
+            case EncounterType.Social:
+                if (RequiredPeopleCount == null || RequiredPeopleCount <= 0)
+                    throw new EntityValidationException("Social encounters must have a positive requiredPeopleCount.");
+                break;
+            case EncounterType.Misc:
+                if (Requirements == null || !Requirements.Any())
+                    throw new EntityValidationException("Misc encounters must have at least one requirement.");
+                break;
+        }
     }
 
     public void Publish() // publish = draft->active (Activate doesn't sound like a good name for this so publish it is)
@@ -66,7 +80,7 @@ public class Encounter : AggregateRoot
         Status = EncounterStatus.Archived;
     }
 
-    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null)
+    public void UpdateSocial(string title, string description, double longitude, double latitude, int xp, EncounterType type, int requiredPeopleCount, double range)
     {
         if (Status != EncounterStatus.Draft)
             throw new InvalidOperationException("Only draft encounters can be updated.");
@@ -76,11 +90,58 @@ public class Encounter : AggregateRoot
         Longitude = longitude;
         Latitude = latitude;
         Xp = xp;
-        Type = type;
+        Type = EncounterType.Social;
         RequiredPeopleCount = requiredPeopleCount;
         Range = range;
-        ImagePath = imgPath;
-        Hints = hints;
+
+        // Null out unrelated fields
+        ImagePath = null;
+        Hints = null;
+        Requirements = new List<string>();
+
+        Validate();
+    }
+
+    public void UpdateLocation(string title, string description, double longitude, double latitude, int xp, EncounterType type, double range, string imagePath, List<string>? hints = null)
+    {
+        if (Status != EncounterStatus.Draft)
+            throw new InvalidOperationException("Only draft encounters can be updated.");
+
+        Title = title;
+        Description = description;
+        Longitude = longitude;
+        Latitude = latitude;
+        Xp = xp;
+        Type = EncounterType.Location;
+        Range = range;
+        ImagePath = imagePath;
+        Hints = hints ?? new List<string>();
+
+        // Null out unrelated fields
+        RequiredPeopleCount = null;
+        Requirements = new List<string>();
+
+        Validate();
+    }
+
+    public void UpdateMisc(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> requirements, double range)
+    {
+        if (Status != EncounterStatus.Draft)
+            throw new InvalidOperationException("Only draft encounters can be updated.");
+
+        Title = title;
+        Description = description;
+        Longitude = longitude;
+        Latitude = latitude;
+        Xp = xp;
+        Type = EncounterType.Misc;
+        Range = range;
+        Requirements = requirements;
+
+        // Null out unrelated fields
+        RequiredPeopleCount = null;
+        ImagePath = null;
+        Hints = null;
 
         Validate();
     }

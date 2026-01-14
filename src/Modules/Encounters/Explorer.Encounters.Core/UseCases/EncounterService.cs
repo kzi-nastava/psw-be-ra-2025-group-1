@@ -1,4 +1,5 @@
 using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public;
 using Explorer.Encounters.Core.Domain;
@@ -58,9 +59,59 @@ public class EncounterService : IEncounterService
     public EncounterDto Update(long id, EncounterCreateDto dto)
     {
         var encounter = _repository.GetById(id);
-        
-        encounter.Update(dto.Title, dto.Description, dto.Longitude, dto.Latitude, dto.Xp, 
-            Enum.Parse<EncounterType>(dto.Type), dto.RequiredPeopleCount, dto.Range, dto.ImagePath, dto.Hints);
+
+        switch (Enum.Parse<EncounterType>(dto.Type))
+        {
+            case EncounterType.Social:
+                if (dto.RequiredPeopleCount == null)
+                    throw new EntityValidationException("Social encounters must have a requiredPeopleCount.");
+
+                encounter.UpdateSocial(
+                    dto.Title,
+                    dto.Description,
+                    dto.Longitude,
+                    dto.Latitude,
+                    dto.Xp,
+                    Enum.Parse<EncounterType>(dto.Type),
+                    dto.RequiredPeopleCount.Value,
+                    dto.Range ?? 0
+                );
+                break;
+
+            case EncounterType.Location:
+                if (string.IsNullOrEmpty(dto.ImagePath))
+                    throw new EntityValidationException("Location encounters must have an image.");
+
+                encounter.UpdateLocation(
+                    dto.Title,
+                    dto.Description,
+                    dto.Longitude,
+                    dto.Latitude,
+                    dto.Xp,
+                    Enum.Parse<EncounterType>(dto.Type),
+                    dto.Range ?? 0,
+                    dto.ImagePath,
+                    dto.Hints
+                );
+                break;
+
+            case EncounterType.Misc:
+                encounter.UpdateMisc(
+                    dto.Title,
+                    dto.Description,
+                    dto.Longitude,
+                    dto.Latitude,
+                    dto.Xp,
+                    Enum.Parse<EncounterType>(dto.Type),
+                    dto.Requirements ?? new List<string>(),
+                    dto.Range ?? 0
+                );
+                break;
+
+            default:
+                throw new ArgumentException($"Unknown encounter type: {dto.Type}");
+        }
+
         var updated = _repository.Update(encounter);
         return _mapper.Map<EncounterDto>(updated);
     }
