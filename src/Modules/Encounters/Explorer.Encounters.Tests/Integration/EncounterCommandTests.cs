@@ -164,7 +164,8 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             Longitude = 21.0,
             Latitude = 45.0,
             Xp = 150,
-            Type = "Location"
+            Type = "Location",
+            ImagePath = "some/path"
         };
 
         // Act
