@@ -20,6 +20,7 @@ namespace Explorer.Payments.Core.UseCases
         private readonly ICouponRepository _couponRepo;
         private readonly ICouponRedemptionRepository _couponRedemptionRepo;
         private readonly ISaleService _saleService;
+        private readonly IWalletRepository _walletRepo;
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
@@ -148,6 +149,8 @@ namespace Explorer.Payments.Core.UseCases
 
         public List<TourPurchaseTokenDto> Checkout(long touristId)
         {
+            Wallet? userWallet = _walletRepo.GetByTouristId(touristId) ?? throw new InvalidOperationException("User wallet not found.");
+
             var cart = _cartRepo.GetByTouristId(touristId);
             if (cart == null || !cart.Items.Any())
                 throw new InvalidOperationException("Shopping cart is empty.");
@@ -177,6 +180,9 @@ namespace Explorer.Payments.Core.UseCases
 
                 // Calculate final price with Sale + Coupon
                 var finalPrice = CalculateFinalPrice(item.TourId, item.Price, cart.Subtotal, cart.TotalDiscount, cart.Items.Count);
+
+                if (finalPrice > (decimal)userWallet.Balance)
+                    continue;
 
                 // Create TourPurchase record
                 var purchase = new TourPurchase(touristId, item.TourId, finalPrice);
