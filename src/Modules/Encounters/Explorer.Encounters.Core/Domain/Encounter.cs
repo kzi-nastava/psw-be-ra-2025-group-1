@@ -16,8 +16,15 @@ public class Encounter : AggregateRoot
     public int? RequiredPeopleCount { get; private set; }
     public List<string> Requirements { get; private set; }
     public double? Range { get; private set; }
+    public string? ImagePath { get; private set; }
+    public List<string>? Hints { get; private set; }
 
-    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null)
+    private Encounter() 
+    {
+        Requirements = new List<string>();
+        Hints = new List<string>();
+    }
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null) : this()
     {
         Title = title;
         Description = description;
@@ -28,7 +35,9 @@ public class Encounter : AggregateRoot
         RequiredPeopleCount = requiredPeopleCount;
         Range = range;
         Status = EncounterStatus.Draft;
+        ImagePath = imgPath;
         Requirements = reqs;
+        Hints = hints;
 
         Validate();
     }
@@ -40,17 +49,8 @@ public class Encounter : AggregateRoot
         if (Longitude < -180 || Longitude > 180) throw new EntityValidationException("Invalid longitude.");
         if (Latitude < -90 || Latitude > 90) throw new EntityValidationException("Invalid latitude.");
         if (Xp <= 0) throw new ArgumentException("XP must be > 0.");
-        
-        if (Type == EncounterType.Social)
-        {
-            if (!RequiredPeopleCount.HasValue || RequiredPeopleCount <= 0)
-                throw new EntityValidationException("Social encounters must have RequiredPeopleCount > 0.");
-            if (!Range.HasValue || Range <= 0)
-                throw new EntityValidationException("Social encounters must have Range > 0.");
-        }
+        if (Type == EncounterType.Location && string.IsNullOrEmpty(ImagePath)) throw new EntityValidationException("Location encounters must have an image.");
     }
-
-    private Encounter() { }
 
     public void Publish() // publish = draft->active (Activate doesn't sound like a good name for this so publish it is)
     {
@@ -66,7 +66,7 @@ public class Encounter : AggregateRoot
         Status = EncounterStatus.Archived;
     }
 
-    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, int? requiredPeopleCount = null, double? range = null)
+    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null)
     {
         if (Status != EncounterStatus.Draft)
             throw new InvalidOperationException("Only draft encounters can be updated.");
@@ -79,6 +79,8 @@ public class Encounter : AggregateRoot
         Type = type;
         RequiredPeopleCount = requiredPeopleCount;
         Range = range;
+        ImagePath = imgPath;
+        Hints = hints;
 
         Validate();
     }

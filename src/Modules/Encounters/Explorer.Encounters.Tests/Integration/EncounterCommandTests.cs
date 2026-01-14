@@ -90,8 +90,12 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             RequiredPeopleCount = -1
         };
 
-        // Act & Assert
-        Should.Throw<EntityValidationException>(() => controller.Create(newEntity));
+        // Act
+        var result = controller.Create(newEntity).Result as BadRequestObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(400);
     }
 
     [Fact]
@@ -146,8 +150,12 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope, 1);
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.GetById(-1000));
+        // Act
+        var result = controller.GetById(-1000).Result as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -164,7 +172,8 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             Longitude = 21.0,
             Latitude = 45.0,
             Xp = 150,
-            Type = "Location"
+            Type = "Location",
+            ImagePath = "some/path"
         };
 
         // Act
@@ -198,8 +207,12 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             Type = "Social"
         };
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.Update(-1000, updatedEntity));
+        // Act
+        var result = controller.Update(-1000, updatedEntity).Result as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -211,14 +224,14 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<EncounterContext>();
 
         // Act
-        var result = (OkResult)controller.Publish(-1);
+        var result = controller.Publish(-1) as OkResult;
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.Encounters.FirstOrDefault(i => i.Id == -2);
+        var storedEntity = dbContext.Encounters.FirstOrDefault(i => i.Id == -1);
         storedEntity.ShouldNotBeNull();
         storedEntity.Status.ShouldBe(Explorer.Encounters.Core.Domain.EncounterStatus.Active);
     }
@@ -230,8 +243,12 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope, 1);
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.Publish(-1000));
+        // Act
+        var result = controller.Publish(-1000) as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -243,7 +260,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<EncounterContext>();
 
         // Act
-        var result = (OkResult)controller.Archive(-1);
+        var result = controller.Archive(-1) as OkResult;
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -262,8 +279,12 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope, 1);
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.Archive(-1000));
+        // Act
+        var result = controller.Archive(-1000) as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -275,7 +296,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<EncounterContext>();
 
         // Act
-        var result = (OkResult)controller.Delete(-3);
+        var result = controller.Delete(-3) as OkResult;
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -293,7 +314,11 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope, 1);
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.Delete(-1000));
+        // Act
+        var result = controller.Delete(-1000) as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 }
