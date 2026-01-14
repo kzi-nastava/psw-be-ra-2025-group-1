@@ -135,6 +135,9 @@ namespace Explorer.API.Controllers.Author
                 if (bundle.CreatorId != authorId)
                     return Forbid();
 
+                if (bundle.Status == TourBundleStatus.Published)
+                    return BadRequest(new { error = "Cannot delete a published bundle. Archive it first." });
+
                 _repository.Delete(id);
 
                 return NoContent();
@@ -148,5 +151,100 @@ namespace Explorer.API.Controllers.Author
                 return StatusCode(500, new { error = ex.Message });
             }
         }
+
+
+        // PUT: /api/author/tour-bundles/{id}/publish
+        [HttpPut("{id}/publish")]
+        public IActionResult Publish(long id)
+        {
+            try
+            {
+                var authorId = User.UserId();
+                var bundle = _repository.Get(id);
+
+                if (bundle.CreatorId != authorId)
+                    return Forbid();
+
+                bundle.Publish();
+                _repository.Update(bundle);
+
+                return Ok(bundle);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // PUT: /api/author/tour-bundles/{id}/archive
+        [HttpPut("{id}/archive")]
+        public IActionResult Archive(long id)
+        {
+            try
+            {
+                var authorId = User.UserId();
+                var bundle = _repository.Get(id);
+
+                if (bundle.CreatorId != authorId)
+                    return Forbid();
+
+                bundle.Archive();
+                _repository.Update(bundle);
+
+                return Ok(bundle);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
+        // PUT: /api/author/tour-bundles/{id}/activate
+        [HttpPut("{id}/activate")]
+        public IActionResult Activate(long id)
+        {
+            try
+            {
+                var authorId = User.UserId();
+                var bundle = _repository.Get(id);
+
+                if (bundle.CreatorId != authorId)
+                    return Forbid();
+
+                bundle.Activate();
+                _repository.Update(bundle);
+
+                return Ok(bundle);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
     }
 }
