@@ -99,6 +99,16 @@ public class EncounterRepository : IEncounterRepository
             ?? throw new KeyNotFoundException($"ActiveEncounter with ID {activeEncounterId} not found.");
     }
 
+    public void DeleteActiveEncounter(long activeEncounterId)
+    {
+        var activeEncounter = _context.ActiveEncounters.Find(activeEncounterId);
+        if (activeEncounter != null)
+        {
+            _context.ActiveEncounters.Remove(activeEncounter);
+            _context.SaveChanges();
+        }
+    }
+
     // Completed encounter methods
     public CompletedEncounter CompleteEncounter(CompletedEncounter completedEncounter)
     {
@@ -132,8 +142,12 @@ public class EncounterRepository : IEncounterRepository
     public Requirement CreateRequirement(Requirement requirement, long activeEncounterId)
     {
         var activeEncounter = GetActiveById(activeEncounterId);
-        activeEncounter?.AddRequirement(requirement);
-        _context.SaveChanges();
+        if (activeEncounter != null)
+        {
+            activeEncounter.AddRequirement(requirement);
+            _context.Requirements.Add(requirement);
+            _context.SaveChanges();
+        }
         return requirement;
     }
 
