@@ -89,7 +89,7 @@ jobs:
       - name: Run tests – Payments
         continue-on-error: true
         run: |
-          dotnet test ./src/Modules/Payments/Explorer.Payments.Tests/Explorer.Payments.Tests.csproj \
+          dotnet test ./src/Explorer.Payments.Tests/Explorer.Payments.Tests.csproj \
             --no-build \
             --configuration Release \
             --results-directory TestReport \
