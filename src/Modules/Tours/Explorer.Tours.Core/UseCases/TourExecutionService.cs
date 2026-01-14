@@ -131,11 +131,10 @@ public class TourExecutionService : ITourExecutionService
         if (reached != null)
             return true; // Already reached
 
-        const double nearbyDistance = 0.00018; // approximately 20 meters
+        const double nearbyDistance = 0.00025; // approximately 20m
         double longDiff = Math.Abs(userLocation.Longitude - keypoint.Longitude);
         double latDiff = Math.Abs(userLocation.Latitude - keypoint.Latitude);
-
-        if (Math.Sqrt(longDiff * longDiff - latDiff * latDiff) < nearbyDistance)
+        if (Math.Sqrt(longDiff * longDiff + latDiff * latDiff) < nearbyDistance)
         {
             // Mark keypoint as reached and create a new Keypoint Progress for it
             execution.ReachKeypoint(keypoint.Id, tour.Keypoints.Count);
