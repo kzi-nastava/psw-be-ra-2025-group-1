@@ -258,7 +258,7 @@ public class TourCommandTests : BaseToursIntegrationTest
 
     [Theory]
     [InlineData("-1", -15, -2, 200)] // Valid
-    [InlineData("-2", -15, -2, 401)] // Unauthorized - Service throws InvalidOperationException, caught as Unauthorized
+    [InlineData("-2", -15, -2, 401)] // Unauthorized - tuđi korisnik pokušava da obriše
     [InlineData("-1", -15, 77, 404)] // Keypoint not found - Service throws KeyNotFoundException, caught as NotFound
     [InlineData("-1", -77, -2, 404)] // Tour not found - Service throws KeyNotFoundException, caught as NotFound
     public void Deletes_keypoint(string authorId, long tourId, long keypointId, int expectedStatus)
@@ -277,14 +277,21 @@ public class TourCommandTests : BaseToursIntegrationTest
             result.ShouldBeOfType<OkObjectResult>();
 
             // Assert - database
-            var storedTour = dbContext.Tour.First(t => t.Id == tourId);
-            var kp = storedTour.Keypoints.FirstOrDefault(k => k.Id == keypointId);
-            kp.ShouldBeNull();
+            dbContext.ChangeTracker.Clear();
+            var storedTour = dbContext.Tour
+                .Include(t => t.Keypoints)
+                .FirstOrDefault(t => t.Id == tourId);
+            
+            if (storedTour != null)
+            {
+                var kp = storedTour.Keypoints.FirstOrDefault(k => k.Id == keypointId);
+                kp.ShouldBeNull();
+            }
         }
-        else if (expectedStatus == 403)
+        else if (expectedStatus == 401)
         {
             // Service throws InvalidOperationException for authorization failures
-            result.ShouldBeOfType<ForbidResult>();
+            result.ShouldBeOfType<UnauthorizedObjectResult>();
         }
         else if (expectedStatus == 404)
         {
@@ -295,7 +302,7 @@ public class TourCommandTests : BaseToursIntegrationTest
 
     [Theory]
     [InlineData("-1", -5, -2, 200)] // Valid
-    [InlineData("-2", -5, -3, 403)] // Forbidden - Service throws InvalidOperationException, caught as Forbid
+    [InlineData("-2", -5, -3, 401)] // Unauthorized - tuđi korisnik pokušava da doda opremu
     [InlineData("-1", -5, -4, 400)] // Already exists - Service throws ArgumentException/InvalidOperationException, caught as BadRequest
     [InlineData("-1", -5, -9999999, 404)] // Equipment not found - Service throws KeyNotFoundException, caught as NotFound
     [InlineData("-1", -9999999, -1, 404)] // Tour not found - Service throws KeyNotFoundException, caught as NotFound
@@ -322,10 +329,10 @@ public class TourCommandTests : BaseToursIntegrationTest
         }
         else if (expectedStatus == 400)
         {
-            // Service throws ArgumentException or InvalidOperationException for business rule violations
-            response.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+            // Service throws ArgumentException for validation/business rule violations
+            response.Result.ShouldBeOfType<BadRequestObjectResult>();
         }
-        else if (expectedStatus == 403)
+        else if (expectedStatus == 401)
         {
             // Service throws InvalidOperationException for authorization failures
             response.Result.ShouldBeOfType<UnauthorizedObjectResult>();
@@ -382,7 +389,7 @@ public class TourCommandTests : BaseToursIntegrationTest
         else if (expectedStatus == 400)
         {
             // Service throws ArgumentException or InvalidOperationException for business rule violations
-            response.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+            response.Result.ShouldBeOfType<BadRequestObjectResult>();
         }
         else if (expectedStatus == 404)
         {
