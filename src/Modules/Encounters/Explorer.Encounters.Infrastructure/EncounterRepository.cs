@@ -51,4 +51,64 @@ public class EncounterRepository : IEncounterRepository
     {
         return _context.Encounters.ToList();
     }
+
+    // Active encounter methods
+    public ActiveEncounter ActivateEncounter(ActiveEncounter activeEncounter)
+    {
+        _context.ActiveEncounters.Add(activeEncounter);
+        _context.SaveChanges();
+        return activeEncounter;
+    }
+
+    public ActiveEncounter UpdateActiveEncounter(ActiveEncounter activeEncounter)
+    {
+        _context.ActiveEncounters.Update(activeEncounter);
+        _context.SaveChanges();
+        return activeEncounter;
+    }
+
+    public List<ActiveEncounter> GetActiveByTourist(long touristId)
+    {
+        return _context.ActiveEncounters
+            .Where(ae => ae.TouristId == touristId)
+            .ToList();
+    }
+
+    public List<ActiveEncounter> GetActiveByEncounter(long encounterId)
+    {
+        return _context.ActiveEncounters
+            .Where(ae => ae.EncounterId == encounterId)
+            .ToList();
+    }
+
+    public ActiveEncounter? GetActiveTouristEncounter(long touristId, long encounterId)
+    {
+        return _context.ActiveEncounters
+            .FirstOrDefault(ae => ae.TouristId == touristId && ae.EncounterId == encounterId);
+    }
+
+    // Completed encounter methods
+    public CompletedEncounter CompleteEncounter(CompletedEncounter completedEncounter)
+    {
+        _context.CompletedEncounters.Add(completedEncounter);
+        var activeEncounter = _context.ActiveEncounters.Where(ae =>
+            ae.TouristId == completedEncounter.TouristId &&
+            ae.EncounterId == completedEncounter.EncounterId);
+        _context.ActiveEncounters.RemoveRange(activeEncounter);
+        _context.SaveChanges();
+        return completedEncounter;
+    }
+
+    public bool HasCompletedEncounter(long touristId, long encounterId)
+    {
+        return _context.CompletedEncounters
+            .Any(ce => ce.TouristId == touristId && ce.EncounterId == encounterId);
+    }
+
+    public List<CompletedEncounter> GetCompletedByTourist(long touristId)
+    {
+        return _context.CompletedEncounters
+            .Where(ce => ce.TouristId == touristId)
+            .ToList();
+    }
 }

@@ -13,8 +13,10 @@ public class Encounter : Entity
     public int Xp { get; private set; }
     public EncounterStatus Status { get; private set; }
     public EncounterType Type { get; private set; }
+    public int? RequiredPeopleCount { get; private set; }
+    public double? Range { get; private set; }
 
-    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type)
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, int? requiredPeopleCount = null, double? range = null)
     {
         Title = title;
         Description = description;
@@ -22,6 +24,8 @@ public class Encounter : Entity
         Latitude = latitude;
         Xp = xp;
         Type = type;
+        RequiredPeopleCount = requiredPeopleCount;
+        Range = range;
         Status = EncounterStatus.Draft;
 
         Validate();
@@ -34,6 +38,14 @@ public class Encounter : Entity
         if (Longitude < -180 || Longitude > 180) throw new EntityValidationException("Invalid longitude.");
         if (Latitude < -90 || Latitude > 90) throw new EntityValidationException("Invalid latitude.");
         if (Xp <= 0) throw new ArgumentException("XP must be > 0.");
+        
+        if (Type == EncounterType.Social)
+        {
+            if (!RequiredPeopleCount.HasValue || RequiredPeopleCount <= 0)
+                throw new EntityValidationException("Social encounters must have RequiredPeopleCount > 0.");
+            if (!Range.HasValue || Range <= 0)
+                throw new EntityValidationException("Social encounters must have Range > 0.");
+        }
     }
 
     private Encounter() { }
@@ -52,7 +64,7 @@ public class Encounter : Entity
         Status = EncounterStatus.Archived;
     }
 
-    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type)
+    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, int? requiredPeopleCount = null, double? range = null)
     {
         if (Status != EncounterStatus.Draft)
             throw new InvalidOperationException("Only draft encounters can be updated.");
@@ -63,6 +75,8 @@ public class Encounter : Entity
         Latitude = latitude;
         Xp = xp;
         Type = type;
+        RequiredPeopleCount = requiredPeopleCount;
+        Range = range;
 
         Validate();
     }

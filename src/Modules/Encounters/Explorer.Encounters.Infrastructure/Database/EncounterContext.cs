@@ -6,6 +6,8 @@ namespace Explorer.Encounters.Infrastructure.Database;
 public class EncounterContext : DbContext
 {
     public DbSet<Encounter> Encounters { get; set; }
+    public DbSet<ActiveEncounter> ActiveEncounters { get; set; }
+    public DbSet<CompletedEncounter> CompletedEncounters { get; set; }
 
     public EncounterContext(DbContextOptions<EncounterContext> options) : base(options) { }
 
