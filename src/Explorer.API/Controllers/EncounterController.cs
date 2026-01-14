@@ -4,6 +4,7 @@ using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public;
 using System.Security.Claims;
 using Explorer.Stakeholders.Infrastructure.Authentication;
+using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.API.Controllers;
 [Route("api/[controller]")]
@@ -21,7 +22,14 @@ public class EncounterController : ControllerBase
     [Authorize(Policy = "administratorPolicy")]
     public ActionResult<List<EncounterDto>> GetAll()
     {
-        return Ok(_encounterService.GetAll());
+        try
+        {
+            return Ok(_encounterService.GetAll());
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("active")]
@@ -29,62 +37,177 @@ public class EncounterController : ControllerBase
     public ActionResult<List<EncounterDto>> GetActive()
     {
         var touristId = User.UserId();
-        return Ok(_encounterService.GetAvailableForTourist(touristId));
+        try
+        {
+            return Ok(_encounterService.GetAvailableForTourist(touristId));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("{id}")]
     [Authorize(Policy = "touristOrAdministratorPolicy")]
     public ActionResult<EncounterDto> GetById(long id)
     {
-        return Ok(_encounterService.GetById(id));
+        try
+        {
+            return Ok(_encounterService.GetById(id));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost]
     [Authorize(Policy = "administratorPolicy")]
     public ActionResult<EncounterDto> Create([FromBody] EncounterCreateDto dto)
     {
-        return Ok(_encounterService.Create(dto));
+        try
+        {
+            return Ok(_encounterService.Create(dto));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (EntityValidationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id}")]
     [Authorize(Policy = "administratorPolicy")]
     public ActionResult<EncounterDto> Update(long id, [FromBody] EncounterCreateDto dto)
     {
-        return Ok(_encounterService.Update(id, dto));
+        try
+        {
+            return Ok(_encounterService.Update(id, dto));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (EntityValidationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id}/publish")]
     [Authorize(Policy = "administratorPolicy")]
     public IActionResult Publish(long id)
     {
-        _encounterService.Publish(id);
-        return Ok();
+        try
+        {
+            _encounterService.Publish(id);
+            return Ok();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{id}/archive")]
     [Authorize(Policy = "administratorPolicy")]
     public IActionResult Archive(long id)
     {
-        _encounterService.Archive(id);
-        return Ok();
+        try
+        {
+            _encounterService.Archive(id);
+            return Ok();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpDelete("{id}")]
     [Authorize(Policy = "administratorPolicy")]
     public IActionResult Delete(long id)
     {
-        _encounterService.Delete(id);
-        return Ok();
+        try
+        {
+            _encounterService.Delete(id);
+            return Ok();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
-    // Tourist activation and location tracking endpoints
     [HttpPost("{id}/activate")]
     [Authorize(Policy = "touristPolicy")]
     public ActionResult<ActiveEncounterDto> Activate(long id, [FromBody] LocationDto location)
     {
         var touristId = User.UserId();
-        var result = _encounterService.ActivateEncounter(id, touristId, location.Latitude, location.Longitude);
-        return Ok(result);
+        try
+        {
+            var result = _encounterService.ActivateEncounter(id, touristId, location.Latitude, location.Longitude);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPost("location-update")]
@@ -92,8 +215,23 @@ public class EncounterController : ControllerBase
     public ActionResult<List<ActiveEncounterDto>> UpdateLocation([FromBody] LocationDto location)
     {
         var touristId = User.UserId();
-        var result = _encounterService.UpdateTouristLocation(touristId, location.Latitude, location.Longitude);
-        return Ok(result);
+        try
+        {
+            var result = _encounterService.UpdateTouristLocation(touristId, location.Latitude, location.Longitude);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("my-active")]
@@ -101,36 +239,134 @@ public class EncounterController : ControllerBase
     public ActionResult<List<ActiveEncounterDto>> GetMyActiveEncounters()
     {
         var touristId = User.UserId();
-        return Ok(_encounterService.GetActiveTouristEncounters(touristId));
+        try
+        {
+            return Ok(_encounterService.GetActiveTouristEncounters(touristId));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("{id}/active-count")]
     [Authorize(Policy = "touristOrAdministratorPolicy")]
     public ActionResult<int> GetActiveCount(long id)
     {
-        return Ok(_encounterService.GetActiveCountInRange(id));
+        try
+        {
+            return Ok(_encounterService.GetActiveCountInRange(id));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpGet("{id}/requirements")]
     [Authorize(Policy = "touristOrAdministratorPolicy")]
     public ActionResult<List<RequirementDto>> GetRequirements(long id)
     {
-        return Ok(_encounterService.GetRequirementsByActiveEncounter(id));
+        try
+        {
+            return Ok(_encounterService.GetRequirementsByActiveEncounter(id));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{activeId}/requirements/{reqId}/complete")]
     [Authorize(Policy = "touristPolicy")]
     public IActionResult CompleteRequirement(long activeId, long reqId)
     {
-        _encounterService.CompleteRequirement(activeId, reqId);
-        return Ok();
+        try
+        {
+            _encounterService.CompleteRequirement(activeId, reqId);
+            return Ok();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     [HttpPut("{activeId}/requirements/{reqId}/reset")]
     [Authorize(Policy = "touristPolicy")]
     public IActionResult ResetRequirement(long activeId, long reqId)
     {
-        _encounterService.ResetRequirement(activeId, reqId);
-        return Ok();
+        try
+        {
+            _encounterService.ResetRequirement(activeId, reqId);
+            return Ok();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("{activeId}/hint")]
+    [Authorize(Policy = "touristPolicy")]
+    public ActionResult<List<string>> GetNextHint(long activeId)
+    {
+        var tourist = User.UserId();
+        try
+        {
+            return Ok(_encounterService.GetNextHint(activeId, tourist));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }
