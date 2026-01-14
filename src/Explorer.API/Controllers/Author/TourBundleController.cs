@@ -5,6 +5,8 @@ using Explorer.Tours.API.Dtos;
 using Microsoft.AspNetCore.Authorization;
 using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Tours.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.API.Controllers.Author
 {
@@ -15,11 +17,16 @@ namespace Explorer.API.Controllers.Author
     {
         private readonly ITourBundleRepository _repository;
         private readonly ITourRepository _tourRepository;
+        private readonly ToursContext _dbContext;
 
-        public TourBundleController(ITourBundleRepository repository, ITourRepository tourRepository)
+        public TourBundleController(
+            ITourBundleRepository repository,
+            ITourRepository tourRepository,
+            ToursContext dbContext)
         {
             _repository = repository;
             _tourRepository = tourRepository;
+            _dbContext = dbContext;
         }
 
         // GET: /api/author/tour-bundles/my
@@ -152,7 +159,6 @@ namespace Explorer.API.Controllers.Author
             }
         }
 
-
         // PUT: /api/author/tour-bundles/{id}/publish
         [HttpPut("{id}/publish")]
         public IActionResult Publish(long id)
@@ -160,13 +166,18 @@ namespace Explorer.API.Controllers.Author
             try
             {
                 var authorId = User.UserId();
-                var bundle = _repository.Get(id);
+
+                // Eksplicitno učitaj bundle sa svim Tours
+                var bundle = _dbContext.Set<TourBundle>()
+                    .Include(b => b.Tours)
+                    .FirstOrDefault(b => b.Id == id)
+                    ?? throw new NotFoundException($"Bundle {id} not found");
 
                 if (bundle.CreatorId != authorId)
                     return Forbid();
 
                 bundle.Publish();
-                _repository.Update(bundle);
+                _dbContext.SaveChanges();
 
                 return Ok(bundle);
             }
@@ -191,13 +202,18 @@ namespace Explorer.API.Controllers.Author
             try
             {
                 var authorId = User.UserId();
-                var bundle = _repository.Get(id);
+
+                // Eksplicitno učitaj bundle sa svim Tours
+                var bundle = _dbContext.Set<TourBundle>()
+                    .Include(b => b.Tours)
+                    .FirstOrDefault(b => b.Id == id)
+                    ?? throw new NotFoundException($"Bundle {id} not found");
 
                 if (bundle.CreatorId != authorId)
                     return Forbid();
 
                 bundle.Archive();
-                _repository.Update(bundle);
+                _dbContext.SaveChanges();
 
                 return Ok(bundle);
             }
@@ -222,13 +238,18 @@ namespace Explorer.API.Controllers.Author
             try
             {
                 var authorId = User.UserId();
-                var bundle = _repository.Get(id);
+
+                // Eksplicitno učitaj bundle sa svim Tours
+                var bundle = _dbContext.Set<TourBundle>()
+                    .Include(b => b.Tours)
+                    .FirstOrDefault(b => b.Id == id)
+                    ?? throw new NotFoundException($"Bundle {id} not found");
 
                 if (bundle.CreatorId != authorId)
                     return Forbid();
 
                 bundle.Activate();
-                _repository.Update(bundle);
+                _dbContext.SaveChanges();
 
                 return Ok(bundle);
             }
@@ -245,6 +266,5 @@ namespace Explorer.API.Controllers.Author
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
     }
 }

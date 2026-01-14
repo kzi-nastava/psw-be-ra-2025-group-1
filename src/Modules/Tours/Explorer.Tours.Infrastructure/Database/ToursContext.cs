@@ -58,6 +58,10 @@ public class ToursContext : DbContext
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Tour>()
+        .Property(t => t.Status)
+        .HasConversion<int>();
+
         // One-Many relationship between TourRating and TourRatingReaction
         modelBuilder.Entity<TourRating>()
             .HasMany<TourRatingReaction>()
