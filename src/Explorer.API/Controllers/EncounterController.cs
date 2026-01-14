@@ -372,13 +372,13 @@ public class EncounterController : ControllerBase
         }
     }
 
-    [HttpGet("stats/{touristId}")]
+    [HttpGet("stats/my")]
     [Authorize(Policy = "touristOrAdministratorPolicy")]
-    public ActionResult<TouristStatsDto> GetTouristStats(long touristId)
+    public ActionResult<TouristStatsDto> GetTouristStats()
     {
         try
         {
-            return Ok(_statsService.GetByTourist(touristId));
+            return Ok(_statsService.GetByTourist(User.UserId()));
         }
         catch (KeyNotFoundException ex)
         {
