@@ -33,5 +33,14 @@ namespace Explorer.API.Controllers.Tourist
                 ? Ok(tour)
                 : NotFound();
         }
+
+        [HttpGet("on-sale")]
+        public ActionResult<PagedResult<TourDto>> GetToursOnSale(
+            [FromQuery] int page = 0,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? sortBy = null)
+        {
+            return Ok(_tourService.GetToursOnSale(page, pageSize, sortBy));
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Explorer.BuildingBlocks.Tests;
 using Explorer.Payments.Infrastructure.Database;
+using Explorer.Tours.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -14,15 +15,18 @@ namespace Explorer.Payments.Tests
     {
         protected override IServiceCollection ReplaceNeededDbContexts(IServiceCollection services)
         {
+            // Replace PaymentsContext
             var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<PaymentsContext>));
             services.Remove(descriptor!);
             services.AddDbContext<PaymentsContext>(SetupTestContext());
 
-            //Dato u postavci na tutoru ukoliko payments bude zavisio od drugih modula
-            //Obrisati kasnije ako ne bude potrebe
-           /* descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<OTHER_MODULE_NAMEContext>));
-            services.Remove(descriptor!);
-            services.AddDbContext<OTHER_MODULE_NAMEContext>(SetupTestContext());*/
+            // Replace ToursContext - needed for checkout tests that reference tours
+            descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ToursContext>));
+            if (descriptor != null)
+            {
+                services.Remove(descriptor);
+                services.AddDbContext<ToursContext>(SetupTestContext());
+            }
 
             return services;
         }

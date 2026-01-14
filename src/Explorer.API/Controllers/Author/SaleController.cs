@@ -1,4 +1,5 @@
-﻿using Explorer.Payments.API.Dtos.Sales;
+﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Payments.API.Dtos.Sales;
 using Explorer.Payments.API.Public.Author;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,10 +28,10 @@ public class SaleController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<List<SaleDto>> GetAllByAuthor()
+    public ActionResult<PagedResult<SaleDto>> GetAllByAuthor([FromQuery] int page = 0, [FromQuery] int pageSize = 0)
     {
         long authorId = User.PersonId();
-        var result = _saleService.GetByAuthor(authorId);
+        var result = _saleService.GetByAuthor(authorId, page, pageSize);
         return Ok(result);
     }
 
