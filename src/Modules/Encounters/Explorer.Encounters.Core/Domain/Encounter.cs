@@ -4,7 +4,7 @@ using System.Xml.Linq;
 
 namespace Explorer.Encounters.Core.Domain;
 
-public class Encounter : Entity
+public class Encounter : AggregateRoot
 {
     public string Title { get; private set; } = "";
     public string Description { get; private set; } = "";
@@ -14,8 +14,11 @@ public class Encounter : Entity
     public EncounterStatus Status { get; private set; }
     public EncounterType Type { get; private set; }
     public string? ImagePath { get; private set; }
+    public int? RequiredPeopleCount { get; private set; }
+    public List<string> Requirements { get; private set; }
+    public double? Range { get; private set; }
 
-    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type)
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null)
     {
         Title = title;
         Description = description;
@@ -23,6 +26,8 @@ public class Encounter : Entity
         Latitude = latitude;
         Xp = xp;
         Type = type;
+        RequiredPeopleCount = requiredPeopleCount;
+        Range = range;
         Status = EncounterStatus.Draft;
 
         Validate();
@@ -68,7 +73,7 @@ public class Encounter : Entity
         Status = EncounterStatus.Archived;
     }
 
-    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type)
+    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, int? requiredPeopleCount = null, double? range = null)
     {
         if (Status != EncounterStatus.Draft)
             throw new InvalidOperationException("Only draft encounters can be updated.");
@@ -79,6 +84,8 @@ public class Encounter : Entity
         Latitude = latitude;
         Xp = xp;
         Type = type;
+        RequiredPeopleCount = requiredPeopleCount;
+        Range = range;
 
         Validate();
     }
