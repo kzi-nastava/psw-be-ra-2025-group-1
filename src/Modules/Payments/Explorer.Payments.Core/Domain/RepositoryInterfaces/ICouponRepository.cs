@@ -1,0 +1,11 @@
+﻿using Explorer.Payments.Core.Domain.Coupons;
+
+namespace Explorer.Payments.Core.Domain.RepositoryInterfaces
+{
+    public interface ICouponRepository
+    {
+        Coupon? GetByCode(string codeNormalized);
+        Coupon Create(Coupon coupon);
+        void Update(Coupon coupon);
+    }
+}

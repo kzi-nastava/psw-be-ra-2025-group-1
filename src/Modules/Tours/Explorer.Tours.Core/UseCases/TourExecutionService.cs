@@ -4,7 +4,8 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using System;
+using Explorer.BuildingBlocks.Core.Services;
+
 
 namespace Explorer.Tours.Core.UseCases;
 
@@ -13,20 +14,20 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourExecutionRepository _tourExecutionRepository;
     private readonly ITourRepository _tourRepository;
     private readonly IUserLocationRepository _userLocationRepository;
-    private readonly ITourPurchaseTokenRepository _tourPurchaseTokenRepository;
     private readonly IMapper _mapper;
+    private readonly ITourPurchaseTokenChecker _tourPurchaseTokenChecker;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
-        ITourPurchaseTokenRepository tourPurchaseTokenRepository,
+        ITourPurchaseTokenChecker tourPurchaseTokenChecker,
         IUserLocationRepository userLocationService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _userLocationRepository = userLocationService;
-        _tourPurchaseTokenRepository = tourPurchaseTokenRepository;
+        _tourPurchaseTokenChecker  = tourPurchaseTokenChecker;
         _mapper = mapper;
     }
 
@@ -40,7 +41,7 @@ public class TourExecutionService : ITourExecutionService
             throw new InvalidOperationException("Can only start published or archived tours");
 
         // Check if tour has been purchased (using token repository)
-        if (!_tourPurchaseTokenRepository.ExistsForUserAndTour(touristId, startTourDto.TourId))
+        if (!_tourPurchaseTokenChecker.ExistsForUserAndTour(touristId, startTourDto.TourId))
             throw new InvalidOperationException("You must purchase the tour before starting it");
 
         var activeTour = _tourExecutionRepository.GetActiveTourByTourist(touristId);
@@ -130,11 +131,10 @@ public class TourExecutionService : ITourExecutionService
         if (reached != null)
             return true; // Already reached
 
-        const double nearbyDistance = 0.00018; // approximately 20 meters
+        const double nearbyDistance = 0.00025; // approximately 20m
         double longDiff = Math.Abs(userLocation.Longitude - keypoint.Longitude);
         double latDiff = Math.Abs(userLocation.Latitude - keypoint.Latitude);
-
-        if (Math.Sqrt(longDiff * longDiff - latDiff * latDiff) < nearbyDistance)
+        if (Math.Sqrt(longDiff * longDiff + latDiff * latDiff) < nearbyDistance)
         {
             // Mark keypoint as reached and create a new Keypoint Progress for it
             execution.ReachKeypoint(keypoint.Id, tour.Keypoints.Count);

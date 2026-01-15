@@ -17,8 +17,15 @@ namespace Explorer.API.Demo
         private readonly ITourRatingService _tourRatingService;
         private readonly IRestaurantService _restaurantService;
 
-
-        public DemoSeeder(IAuthenticationService authenticationService, IEquipmentService equipmentService, IFacilityService facilityService, ITourService tourService, IUserLocationService userLocationService, ITourExecutionService tourExecution, ITourRatingService tourRatingService, IRestaurantService restaurantService)
+        public DemoSeeder(
+            IAuthenticationService authenticationService, 
+            IEquipmentService equipmentService, 
+            IFacilityService facilityService, 
+            ITourService tourService, 
+            IUserLocationService userLocationService, 
+            ITourExecutionService tourExecution, 
+            ITourRatingService tourRatingService, 
+            IRestaurantService restaurantService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
