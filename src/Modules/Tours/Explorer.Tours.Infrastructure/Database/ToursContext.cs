@@ -18,6 +18,8 @@ public class ToursContext : DbContext
     public DbSet<TourRatingReaction> TourRatingReactions { get; set; }
     public DbSet<PersonEquipment> PersonEquipment { get; set; }
     public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<TourBundle> TourBundles { get; set; }
+
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
@@ -56,6 +58,10 @@ public class ToursContext : DbContext
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Tour>()
+        .Property(t => t.Status)
+        .HasConversion<int>();
+
         // One-Many relationship between TourRating and TourRatingReaction
         modelBuilder.Entity<TourRating>()
             .HasMany<TourRatingReaction>()
@@ -74,6 +80,10 @@ public class ToursContext : DbContext
             .HasIndex(r => new { r.TourExecutionId, r.UserId })
             .IsUnique();
 
+        modelBuilder.Entity<TourBundle>()
+       .HasMany(tb => tb.Tours)
+       .WithMany() 
+       .UsingEntity(j => j.ToTable("TourBundleTours"));
 
         modelBuilder.Entity<Restaurant>(cfg =>
         {
