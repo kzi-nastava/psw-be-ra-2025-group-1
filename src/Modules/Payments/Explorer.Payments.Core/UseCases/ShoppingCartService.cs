@@ -20,7 +20,7 @@ namespace Explorer.Payments.Core.UseCases
         private readonly ICouponRepository _couponRepo;
         private readonly ICouponRedemptionRepository _couponRedemptionRepo;
         private readonly ISaleService _saleService;
-        private readonly IWalletRepository _walletRepo;
+        private readonly IWalletService _walletService;
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
@@ -29,7 +29,7 @@ namespace Explorer.Payments.Core.UseCases
             ITourPurchaseRepository purchaseRepo,
             ICouponRepository couponRepo,
             ICouponRedemptionRepository couponRedemptionRepo,
-            IWalletRepository walletRepo,
+            IWalletService walletRepo,
             ISaleService saleService)
         {
             _cartRepo = cartRepo;
@@ -39,7 +39,7 @@ namespace Explorer.Payments.Core.UseCases
             _couponRepo = couponRepo;
             _couponRedemptionRepo = couponRedemptionRepo;
             _saleService = saleService;
-            _walletRepo = walletRepo;
+            _walletService = walletRepo;
         }
 
         public void AddToCart(long touristId, long tourId)
@@ -145,7 +145,7 @@ namespace Explorer.Payments.Core.UseCases
 
         public List<TourPurchaseTokenDto> Checkout(long touristId)
         {
-            Wallet? userWallet = _walletRepo.GetByTouristId(touristId) ?? throw new InvalidOperationException("User wallet not found.");
+            WalletDto userWallet = _walletService.GetByTouristId(touristId) ?? throw new InvalidOperationException("User wallet not found.");
 
             var cart = _cartRepo.GetByTouristId(touristId);
             if (cart == null || !cart.Items.Any())
