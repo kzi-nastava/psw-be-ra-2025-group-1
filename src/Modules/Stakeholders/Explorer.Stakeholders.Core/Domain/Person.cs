@@ -9,6 +9,7 @@ public class Person : Entity
     public string Name { get; set; }
     public string Surname { get; set; }
     public string Email { get; set; }
+
     public string? ProfileImageUrl { get; set; }
     public string? Biography { get; set; }
     public string? Quote { get; set; }

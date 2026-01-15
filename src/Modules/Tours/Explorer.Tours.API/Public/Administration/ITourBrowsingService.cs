@@ -7,4 +7,5 @@ public interface ITourBrowsingService
 {
     PagedResult<TourDto> GetPublished(int page, int pageSize);
     TourDto? GetPublishedById(long id);
+    PagedResult<TourDto> GetToursOnSale(int page, int pageSize, string? sortBy = null);
 }

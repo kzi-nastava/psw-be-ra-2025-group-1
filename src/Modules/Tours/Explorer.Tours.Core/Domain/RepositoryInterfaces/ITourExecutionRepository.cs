@@ -9,5 +9,4 @@ public interface ITourExecutionRepository
     TourExecution? Get(long id);
     TourExecution? GetActiveTourByTourist(long touristId);
     List<TourExecution> GetByTourist(long touristId);
-    TourExecution? GetLastExecutionForTour(long touristId, long tourId);
 }

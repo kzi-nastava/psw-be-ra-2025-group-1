@@ -12,8 +12,9 @@ public class Vote : Entity
 
     public DateTime CreationTime { get; private set; }
 
-    public Vote(long userId, VoteType voteType) 
+    public Vote(long blogId, long userId, VoteType voteType) 
     {
+        BlogId = blogId;
         UserId = userId;
         VoteType = voteType;
         CreationTime = DateTime.UtcNow; 

@@ -23,6 +23,15 @@ namespace Explorer.API.Controllers.Administrator.Administration
             return Ok(_userManagementService.GetAll());
         }
 
+        [HttpGet("all")]
+        [AllowAnonymous]  
+        [Authorize]       
+        public ActionResult<List<AccountDto>> GetAllUsers()
+        {
+            return Ok(_userManagementService.GetAll());
+        }
+
+
         [HttpPut("{id}/block")]
         public ActionResult BlockUser(long id)
         {

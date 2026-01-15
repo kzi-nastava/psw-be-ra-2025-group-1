@@ -1,13 +1,11 @@
-﻿using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 
-namespace Explorer.Tours.API.Public.Tourist
+namespace Explorer.Tours.API.Public.Tourist;
+
+public interface IShoppingCartService
 {
-    public interface IShoppingCartService
-    {
-        void AddToCart(long touristId, long tourId);
-        void RemoveFromCart(long touristId, long tourId);
-        ShoppingCartDto GetCart(long touristId);
-        List<TourPurchaseTokenDto> Checkout(long touristId);
-    }
+    void AddToCart(long touristId, long tourId);
+    void RemoveFromCart(long touristId, long tourId);
+    ShoppingCartDto GetCart(long touristId);
+    List<TourPurchaseTokenDto> Checkout(long touristId);
 }

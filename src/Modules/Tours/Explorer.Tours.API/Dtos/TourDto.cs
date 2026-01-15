@@ -16,7 +16,7 @@ public class TourDto
     public int Difficulty { get; init; } = -1;
     public string[] Tags { get; init; }= Array.Empty<string>();
     public TourStatusDto Status { get; init; }= TourStatusDto.Draft;
-    public double Price { get; init; } = -1;
+    public double Price { get; set; } = -1;  // Changed from init to set so we can apply discounts
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
     public DateTime PublishedAt { get; init; }
@@ -24,5 +24,13 @@ public class TourDto
     public List<TransportTimeDto> TransportTimes { get; init; } = [];
     public List<KeypointDto> Keypoints { get; init; }
     public List<EquipmentDto> Equipment { get; init; }
+    
+    // Sale/Discount fields
+    public double? OriginalPrice { get; set; }
+    public double? DiscountedPrice { get; set; }
+    public bool IsOnSale { get; set; }
+    public int? SaleDiscountPercentage { get; set; }
+    public long? SaleId { get; set; }
+    public string? SaleName { get; set; }
 }
 

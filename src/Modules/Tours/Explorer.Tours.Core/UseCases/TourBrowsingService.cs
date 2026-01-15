@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.BuildingBlocks.Core.Services;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Dtos.Enums;
 using Explorer.Tours.API.Public.Tourist;
@@ -10,10 +11,12 @@ namespace Explorer.Tours.Core.UseCases.Tourist;
 public class TourBrowsingService : ITourBrowsingService
 {
     private readonly ITourRepository _repository;
+    private readonly ISaleService _saleService;
 
-    public TourBrowsingService(ITourRepository repository)
+    public TourBrowsingService(ITourRepository repository, ISaleService saleService)
     {
         _repository = repository;
+        _saleService = saleService;
     }
 
     private static TourDto ToDto(Tour t)
@@ -36,14 +39,36 @@ public class TourBrowsingService : ITourBrowsingService
         };
     }
 
+    private TourDto ApplySaleDiscount(TourDto tour)
+    {
+        var activeSales = _saleService.GetActiveSalesForTour(tour.Id);
+        
+        if (!activeSales.Any())
+            return tour;
+
+        // Uzmi sale sa najvećim popustom
+        var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
+        
+        tour.IsOnSale = true;
+        tour.OriginalPrice = tour.Price; // Čuvamo originalnu cenu
+        tour.SaleDiscountPercentage = bestSale.DiscountPercentage;
+        tour.DiscountedPrice = tour.Price * (1 - bestSale.DiscountPercentage / 100.0);
+        tour.SaleId = bestSale.Id;
+        tour.SaleName = bestSale.Name;
+        
+        // KLJUČNO: Setujemo Price na sniženu cenu jer frontend koristi Price property!
+        tour.Price = tour.DiscountedPrice.Value;
+        
+        return tour;
+    }
+
     public PagedResult<TourDto> GetPublished(int page, int pageSize)
     {
         var result = _repository.GetPublished(page, pageSize);
 
-        // result je PagedResult<Tour>
-        // radimo mapiranje SAMO nad listom:
         var mapped = result.Results
             .Select(ToDto)
+            .Select(ApplySaleDiscount)
             .ToList();
 
         return new PagedResult<TourDto>(mapped, result.TotalCount);
@@ -52,6 +77,43 @@ public class TourBrowsingService : ITourBrowsingService
     public TourDto? GetPublishedById(long id)
     {
         var entity = _repository.GetPublishedById(id);
-        return entity == null ? null : ToDto(entity);
+        if (entity == null) return null;
+        
+        var dto = ToDto(entity);
+        return ApplySaleDiscount(dto);
+    }
+
+    public PagedResult<TourDto> GetToursOnSale(int page, int pageSize, string? sortBy = null)
+    {
+        var allPublished = _repository.GetPublished(page, pageSize);
+        var activeSales = _saleService.GetActiveSales();
+        
+        // Uzmi sve TourIds koji su na sale
+        var tourIdsOnSale = activeSales
+            .SelectMany(s => s.TourIds)
+            .Distinct()
+            .ToHashSet();
+
+        var toursOnSale = allPublished.Results
+            .Where(t => tourIdsOnSale.Contains(t.Id))
+            .Select(ToDto)
+            .Select(ApplySaleDiscount)
+            .ToList();
+
+        // Sortiranje
+        if (sortBy == "discount-desc")
+        {
+            toursOnSale = toursOnSale
+                .OrderByDescending(t => t.SaleDiscountPercentage ?? 0)
+                .ToList();
+        }
+        else if (sortBy == "discount-asc")
+        {
+            toursOnSale = toursOnSale
+                .OrderBy(t => t.SaleDiscountPercentage ?? 0)
+                .ToList();
+        }
+
+        return new PagedResult<TourDto>(toursOnSale, toursOnSale.Count);
     }
 }

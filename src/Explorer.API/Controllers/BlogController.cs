@@ -92,6 +92,26 @@ public class BlogController : ControllerBase
         }
     }
 
+    [HttpDelete("{id}")]
+    public ActionResult DeleteBlog(long id)
+    {
+        try
+        {
+            var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value ?? "0");
+            _blogService.DeleteBlog(id, userId);
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException e)
+        {
+            return NotFound(e.Message);
+        }
+    }
+
+
     [HttpGet("comments/get/blogId={blogId}/commentId={commentId}")]
     public ActionResult<CommentDto> GetComment(long blogId, long commentId)
     {
