@@ -20,8 +20,7 @@ namespace Explorer.API.Controllers
             IUserLocationService userLocation, 
             ITourExecutionService tourExecution,
             ITourRatingService tourRatingService,
-            IRestaurantService restaurantService,
-            Explorer.Payments.API.Public.Author.ISaleService saleService)
+            IRestaurantService restaurantService)
         {
             _demoSeeder = new DemoSeeder(
                 authenticationService, 
@@ -31,8 +30,7 @@ namespace Explorer.API.Controllers
                 userLocation, 
                 tourExecution, 
                 tourRatingService, 
-                restaurantService,
-                saleService);
+                restaurantService);
         }
 
         [HttpPost]

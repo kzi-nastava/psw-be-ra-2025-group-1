@@ -7,7 +7,9 @@ $env:DATABASE_SCHEMA = "explorer-v1"
 $migrationFolders = @(
     "Modules\Stakeholders\Explorer.Stakeholders.Infrastructure\Migrations",
     "Modules\Tours\Explorer.Tours.Infrastructure\Migrations",
-    "Modules\Blog\Explorer.Blog.Infrastructure\Migrations"
+    "Modules\Blog\Explorer.Blog.Infrastructure\Migrations",
+    "Modules\Payments\Explorer.Payments.Infrastructure\Migrations",
+    "Modules\Encounters\Explorer.Encounters.Infrastructure\Migrations"
 )
 
 foreach ($folder in $migrationFolders) {
@@ -57,3 +59,32 @@ dotnet ef database update `
     --context BlogContext `
     --project Modules/Blog/Explorer.Blog.Infrastructure `
     --startup-project Explorer.API
+
+Write-Host ""
+
+Write-Host "=== Migrating PaymentsContext ===" -ForegroundColor Cyan
+dotnet ef migrations add Init_Payments `
+    --context PaymentsContext `
+    --project Modules/Payments/Explorer.Payments.Infrastructure `
+    --startup-project Explorer.API
+
+dotnet ef database update `
+    --context PaymentsContext `
+    --project Modules/Payments/Explorer.Payments.Infrastructure `
+    --startup-project Explorer.API
+
+Write-Host ""
+
+Write-Host "=== Migrating EncounterContext ===" -ForegroundColor Cyan
+dotnet ef migrations add Init_Encounters `
+    --context EncounterContext `
+    --project Modules/Encounters/Explorer.Encounters.Infrastructure `
+    --startup-project Explorer.API
+
+dotnet ef database update `
+    --context EncounterContext `
+    --project Modules/Encounters/Explorer.Encounters.Infrastructure `
+    --startup-project Explorer.API
+
+Write-Host ""
+Write-Host "=== ALL MIGRATIONS COMPLETED ===" -ForegroundColor Green

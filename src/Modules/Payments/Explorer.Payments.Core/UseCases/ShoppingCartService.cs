@@ -29,6 +29,7 @@ namespace Explorer.Payments.Core.UseCases
             ITourPurchaseRepository purchaseRepo,
             ICouponRepository couponRepo,
             ICouponRedemptionRepository couponRedemptionRepo,
+            IWalletRepository walletRepo,
             ISaleService saleService)
         {
             _cartRepo = cartRepo;
@@ -38,6 +39,7 @@ namespace Explorer.Payments.Core.UseCases
             _couponRepo = couponRepo;
             _couponRedemptionRepo = couponRedemptionRepo;
             _saleService = saleService;
+            _walletRepo = walletRepo;
         }
 
         public void AddToCart(long touristId, long tourId)
@@ -54,14 +56,8 @@ namespace Explorer.Payments.Core.UseCases
                 cart = _cartRepo.Create(cart);
             }
 
-            // ✅ Apply sale discount if available
+            // ✅ Use tour.Price directly - Sale discount is already applied in TourBrowsingService
             var priceToUse = (decimal)tour.Price;
-            var activeSales = _saleService.GetActiveSalesForTour(tourId);
-            if (activeSales.Any())
-            {
-                var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
-                priceToUse = (decimal)(tour.Price * (1 - bestSale.DiscountPercentage / 100.0));
-            }
 
             cart.AddItem(tour.Id, tour.Title, priceToUse);
 
@@ -184,6 +180,10 @@ namespace Explorer.Payments.Core.UseCases
                 if (finalPrice > (decimal)userWallet.Balance)
                     continue;
 
+                // ✅ DEDUCT MONEY FROM WALLET
+                userWallet.Update(userWallet.Balance - (double)finalPrice);
+                _walletRepo.Update(userWallet);
+
                 // Create TourPurchase record
                 var purchase = new TourPurchase(touristId, item.TourId, finalPrice);
                 _purchaseRepo.Create(purchase);
@@ -225,24 +225,17 @@ namespace Explorer.Payments.Core.UseCases
 
         private decimal CalculateFinalPrice(long tourId, decimal basePrice, decimal cartSubtotal, decimal cartTotalDiscount, int itemCount)
         {
-            // 1. Apply Sale discount first
-            var activeSales = _saleService.GetActiveSalesForTour(tourId);
-            var salePrice = basePrice;
-            
-            if (activeSales.Any())
-            {
-                var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
-                salePrice = basePrice * (1 - bestSale.DiscountPercentage / 100m);
-            }
+            // basePrice already includes Sale discount from TourBrowsingService
+            var finalPrice = basePrice;
 
-            // 2. Apply proportional Coupon discount (if any)
+            // Apply proportional Coupon discount (if any)
             if (cartTotalDiscount > 0 && cartSubtotal > 0)
             {
                 var proportionalCouponDiscount = (basePrice / cartSubtotal) * cartTotalDiscount;
-                salePrice -= proportionalCouponDiscount;
+                finalPrice -= proportionalCouponDiscount;
             }
 
-            return Math.Max(0, salePrice); // Ne može biti negativna cena
+            return Math.Max(0, finalPrice); // Ne može biti negativna cena
         }
 
         private Coupon ValidateCouponOrThrow(string code, long userId)
