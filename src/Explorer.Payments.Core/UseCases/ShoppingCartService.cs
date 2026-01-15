@@ -29,6 +29,7 @@ namespace Explorer.Payments.Core.UseCases
             ITourPurchaseRepository purchaseRepo,
             ICouponRepository couponRepo,
             ICouponRedemptionRepository couponRedemptionRepo,
+            IWalletRepository walletRepo,
             ISaleService saleService)
         {
             _cartRepo = cartRepo;
@@ -38,6 +39,7 @@ namespace Explorer.Payments.Core.UseCases
             _couponRepo = couponRepo;
             _couponRedemptionRepo = couponRedemptionRepo;
             _saleService = saleService;
+            _walletRepo = walletRepo;
         }
 
         public void AddToCart(long touristId, long tourId)
