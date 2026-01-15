@@ -1,5 +1,6 @@
 using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.BuildingBlocks.Core.Services;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
@@ -13,20 +14,20 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourExecutionRepository _tourExecutionRepository;
     private readonly ITourRepository _tourRepository;
     private readonly IUserLocationRepository _userLocationRepository;
-    private readonly ITourPurchaseTokenRepository _tourPurchaseTokenRepository;
+    private readonly ITourPurchaseTokenChecker _tourPurchaseTokenChecker;
     private readonly IMapper _mapper;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
-        ITourPurchaseTokenRepository tourPurchaseTokenRepository,
+        ITourPurchaseTokenChecker tourPurchaseTokenChecker,
         IUserLocationRepository userLocationService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _userLocationRepository = userLocationService;
-        _tourPurchaseTokenRepository = tourPurchaseTokenRepository;
+        _tourPurchaseTokenChecker = tourPurchaseTokenChecker;
         _mapper = mapper;
     }
 
@@ -39,8 +40,8 @@ public class TourExecutionService : ITourExecutionService
         if (tour.Status != TourStatus.Published && tour.Status != TourStatus.Archived)
             throw new InvalidOperationException("Can only start published or archived tours");
 
-        // Check if tour has been purchased (using token repository)
-        if (!_tourPurchaseTokenRepository.ExistsForUserAndTour(touristId, startTourDto.TourId))
+        // Check if tour has been purchased (using token checker)
+        if (!_tourPurchaseTokenChecker.ExistsForUserAndTour(touristId, startTourDto.TourId))
             throw new InvalidOperationException("You must purchase the tour before starting it");
 
         var activeTour = _tourExecutionRepository.GetActiveTourByTourist(touristId);

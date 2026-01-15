@@ -1,6 +1,6 @@
-using Explorer.Payments.API.Dtos;
+using Explorer.Tours.API.Dtos;
 
-namespace Explorer.Payments.API.Public.Tourist;
+namespace Explorer.Tours.API.Public.Tourist;
 
 public interface ITourPurchaseTokenService
 {

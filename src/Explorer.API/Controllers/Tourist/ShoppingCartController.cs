@@ -1,7 +1,8 @@
-﻿using Explorer.Tours.API.Public.Tourist;
+﻿using Explorer.Payments.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Explorer.Tours.API.Dtos;
+using Explorer.Payments.API.Dtos.ShoppingCart;
+using Explorer.Payments.API.Dtos;
 
 namespace Explorer.API.Controllers.Tourist
 {

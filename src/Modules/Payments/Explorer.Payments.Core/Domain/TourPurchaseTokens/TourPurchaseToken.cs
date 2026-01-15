@@ -1,6 +1,6 @@
 using Explorer.BuildingBlocks.Core.Domain;
 
-namespace Explorer.Tours.Core.Domain.TourPurchaseTokens;
+namespace Explorer.Payments.Core.Domain.TourPurchaseTokens;
 
 public enum TourPurchaseTokenStatus
 {
@@ -16,10 +16,8 @@ public class TourPurchaseToken : AggregateRoot
     public DateOnly PurchaseDate { get; private set; }
     public TourPurchaseTokenStatus Status { get; private set; }
 
-    // Ovo AutoMapper može da mapira bez problema (bool ⇄ bool)
     public bool IsValid => Status == TourPurchaseTokenStatus.Active;
 
-    // EF Core traži prazan konstruktor – neka bude protected
     protected TourPurchaseToken() { }
 
     public TourPurchaseToken(long tourId, long userId, DateOnly purchaseDate)
@@ -35,7 +33,6 @@ public class TourPurchaseToken : AggregateRoot
         PurchaseDate = purchaseDate;
         Status = TourPurchaseTokenStatus.Active;
     }
-
 
     public void MarkAsUsed()
     {
