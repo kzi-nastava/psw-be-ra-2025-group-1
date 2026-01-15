@@ -1,5 +1,4 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Net.Mail;
 
 namespace Explorer.Stakeholders.Core.Domain;
@@ -11,7 +10,6 @@ public class Person : Entity
     public string Surname { get; set; }
     public string Email { get; set; }
 
-    [Column("ProfileImagePath")]
     public string? ProfileImageUrl { get; set; }
     public string? Biography { get; set; }
     public string? Quote { get; set; }

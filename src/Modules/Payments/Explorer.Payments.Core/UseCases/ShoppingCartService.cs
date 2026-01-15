@@ -181,8 +181,13 @@ namespace Explorer.Payments.Core.UseCases
                     continue;
 
                 // ✅ DEDUCT MONEY FROM WALLET
-                userWallet.Update(userWallet.Balance - (double)finalPrice);
-                _walletRepo.Update(userWallet);
+                var updatedWalletDto = new WalletDto
+                {
+                    Id = userWallet.Id,
+                    TouristId = userWallet.TouristId,
+                    Balance = userWallet.Balance - (double)finalPrice
+                };
+                userWallet = _walletService.UpdateBalance(userWallet.Id, updatedWalletDto);
 
                 // Create TourPurchase record
                 var purchase = new TourPurchase(touristId, item.TourId, finalPrice);
