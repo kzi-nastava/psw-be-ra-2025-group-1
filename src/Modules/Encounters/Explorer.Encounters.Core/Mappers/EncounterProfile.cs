@@ -11,5 +11,9 @@ public class EncounterProfile : Profile
         CreateMap<Encounter, EncounterDto>()
             .ForMember(d => d.Status, opt => opt.MapFrom(s => s.Status.ToString()))
             .ForMember(d => d.Type, opt => opt.MapFrom(s => s.Type.ToString()));
+
+        CreateMap<Requirement, RequirementDto>().ReverseMap();
+
+        CreateMap<TouristStats, TouristStatsDto>().ReverseMap();
     }
 }

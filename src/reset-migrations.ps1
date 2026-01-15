@@ -7,7 +7,7 @@ $env:DATABASE_SCHEMA = "explorer-v1"
 $migrationFolders = @(
     "Modules\Stakeholders\Explorer.Stakeholders.Infrastructure\Migrations",
     "Modules\Tours\Explorer.Tours.Infrastructure\Migrations",
-    "Modules\Blog\Explorer.Blog.Infrastructure\Migrations",
+    "Modules\Blog\Explorer.Blog.Infrastructure\Migrations", 
     "Modules\Payments\Explorer.Payments.Infrastructure\Migrations",
     "Modules\Encounters\Explorer.Encounters.Infrastructure\Migrations"
 )
