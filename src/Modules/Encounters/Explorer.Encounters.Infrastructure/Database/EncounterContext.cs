@@ -9,6 +9,7 @@ public class EncounterContext : DbContext
     public DbSet<ActiveEncounter> ActiveEncounters { get; set; }
     public DbSet<CompletedEncounter> CompletedEncounters { get; set; }
     public DbSet<Requirement> Requirements { get; set; }
+    public DbSet<TouristStats> TouristStats { get; set; }
     public EncounterContext(DbContextOptions<EncounterContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

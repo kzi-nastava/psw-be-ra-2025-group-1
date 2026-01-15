@@ -12,10 +12,12 @@ namespace Explorer.API.Controllers;
 public class EncounterController : ControllerBase
 {
     private readonly IEncounterService _encounterService;
+    private readonly ITouristStatsService _statsService;
 
-    public EncounterController(IEncounterService encounterService)
+    public EncounterController(IEncounterService encounterService, ITouristStatsService statsService)
     {
         _encounterService = encounterService;
+        _statsService = statsService;
     }
 
     [HttpGet("all")]
@@ -359,6 +361,72 @@ public class EncounterController : ControllerBase
         catch (InvalidOperationException ex)
         {
             return BadRequest(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("stats/my")]
+    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    public ActionResult<TouristStatsDto> GetTouristStats()
+    {
+        try
+        {
+            return Ok(_statsService.GetByTourist(User.UserId()));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("stats/update/{touristId}")]
+    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    public ActionResult<TouristStatsDto> UpdateStatsForTourist([FromBody]TouristStatsDto stats, long touristId)
+    {
+        try
+        {
+            return Ok(_statsService.Update(stats));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPost("stats/create/{touristId}")]
+    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    public ActionResult<TouristStatsDto> CreateStatsForTourist(long touristId)
+    {
+        try
+        {
+            return Ok(_statsService.Create(touristId));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
         }
         catch (UnauthorizedAccessException ex)
         {
