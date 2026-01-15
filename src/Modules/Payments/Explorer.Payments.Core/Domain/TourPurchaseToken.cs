@@ -1,6 +1,6 @@
 using Explorer.BuildingBlocks.Core.Domain;
 
-namespace Explorer.Payments.Core.Domain.TourPurchaseTokens;
+namespace Explorer.Tours.Core.Domain.TourPurchaseTokens;
 
 public enum TourPurchaseTokenStatus
 {

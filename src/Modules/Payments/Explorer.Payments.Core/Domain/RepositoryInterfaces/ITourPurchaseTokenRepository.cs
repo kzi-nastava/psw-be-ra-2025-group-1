@@ -1,6 +1,7 @@
-using Explorer.Payments.Core.Domain.TourPurchaseTokens;
+using System.Collections.Generic;
+using Explorer.Tours.Core.Domain.TourPurchaseTokens;
 
-namespace Explorer.Payments.Core.Domain.RepositoryInterfaces
+namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
 {
     public interface ITourPurchaseTokenRepository
     {

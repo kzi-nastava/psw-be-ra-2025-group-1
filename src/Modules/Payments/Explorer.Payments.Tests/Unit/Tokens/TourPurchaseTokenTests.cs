@@ -1,7 +1,7 @@
-
-using Explorer.Payments.Core.Domain.TourPurchaseTokens;
+using System;
+using Explorer.Tours.Core.Domain.TourPurchaseTokens;
 using Shouldly;
-
+using Xunit;
 
 namespace Explorer.Tours.Tests.Unit.TourPurchaseTokensFolder
 {

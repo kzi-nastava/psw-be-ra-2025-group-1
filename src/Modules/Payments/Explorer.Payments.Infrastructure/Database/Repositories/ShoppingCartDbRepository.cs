@@ -1,15 +1,15 @@
-﻿using Explorer.Payments.Core.Domain.RepositoryInterfaces;
-using Explorer.Payments.Core.Domain.Shopping;
+﻿using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.Core.Domain.Shopping;
 using Microsoft.EntityFrameworkCore;
 
-namespace Explorer.Payments.Infrastructure.Database.Repositories
+namespace Explorer.Tours.Infrastructure.Database.Repositories
 {
 
     public class ShoppingCartDbRepository : IShoppingCartRepository
     {
-        private readonly PaymentsContext _db;
+        private readonly ToursContext _db;
 
-        public ShoppingCartDbRepository(PaymentsContext db)
+        public ShoppingCartDbRepository(ToursContext db)
         {
             _db = db;
         }

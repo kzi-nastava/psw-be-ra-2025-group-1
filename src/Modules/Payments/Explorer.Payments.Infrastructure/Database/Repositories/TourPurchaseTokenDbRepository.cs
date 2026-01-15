@@ -1,13 +1,15 @@
-using Explorer.Payments.Core.Domain.RepositoryInterfaces;
-using Explorer.Payments.Core.Domain.TourPurchaseTokens;
+using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.Core.Domain.TourPurchaseTokens;
+using Explorer.Tours.Infrastructure.Database;
+using Microsoft.EntityFrameworkCore;
 
-namespace Explorer.Payments.Infrastructure.Database.Repositories;
+namespace Explorer.Tours.Infrastructure.Database.Repositories;
 
 public class TourPurchaseTokenDbRepository : ITourPurchaseTokenRepository
 {
-    private readonly PaymentsContext _context;
+    private readonly ToursContext _context;
 
-    public TourPurchaseTokenDbRepository(PaymentsContext context)
+    public TourPurchaseTokenDbRepository(ToursContext context)
     {
         _context = context;
     }

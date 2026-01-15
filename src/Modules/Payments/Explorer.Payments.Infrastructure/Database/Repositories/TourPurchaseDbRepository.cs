@@ -1,15 +1,16 @@
-using Explorer.Payments.Core.Domain;
-using Explorer.Payments.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.Core.Domain;
+using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 
-namespace Explorer.Payments.Infrastructure.Database.Repositories;
+namespace Explorer.Tours.Infrastructure.Database.Repositories;
 
 public class TourPurchaseDbRepository : ITourPurchaseRepository
 {
-    private readonly PaymentsContext _dbContext;
+    private readonly ToursContext _dbContext;
     private readonly DbSet<TourPurchase> _dbSet;
 
-    public TourPurchaseDbRepository(PaymentsContext dbContext)
+    public TourPurchaseDbRepository(ToursContext dbContext)
     {
         _dbContext = dbContext;
         _dbSet = dbContext.Set<TourPurchase>();

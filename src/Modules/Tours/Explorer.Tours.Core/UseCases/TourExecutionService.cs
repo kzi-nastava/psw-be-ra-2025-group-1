@@ -4,8 +4,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using Explorer.BuildingBlocks.Core.Services;
-
+using System;
 
 namespace Explorer.Tours.Core.UseCases;
 
@@ -14,20 +13,20 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourExecutionRepository _tourExecutionRepository;
     private readonly ITourRepository _tourRepository;
     private readonly IUserLocationRepository _userLocationRepository;
+    private readonly ITourPurchaseTokenRepository _tourPurchaseTokenRepository;
     private readonly IMapper _mapper;
-    private readonly ITourPurchaseTokenChecker _tourPurchaseTokenChecker;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
-        ITourPurchaseTokenChecker tourPurchaseTokenChecker,
+        ITourPurchaseTokenRepository tourPurchaseTokenRepository,
         IUserLocationRepository userLocationService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _userLocationRepository = userLocationService;
-        _tourPurchaseTokenChecker  = tourPurchaseTokenChecker;
+        _tourPurchaseTokenRepository = tourPurchaseTokenRepository;
         _mapper = mapper;
     }
 
@@ -41,7 +40,7 @@ public class TourExecutionService : ITourExecutionService
             throw new InvalidOperationException("Can only start published or archived tours");
 
         // Check if tour has been purchased (using token repository)
-        if (!_tourPurchaseTokenChecker.ExistsForUserAndTour(touristId, startTourDto.TourId))
+        if (!_tourPurchaseTokenRepository.ExistsForUserAndTour(touristId, startTourDto.TourId))
             throw new InvalidOperationException("You must purchase the tour before starting it");
 
         var activeTour = _tourExecutionRepository.GetActiveTourByTourist(touristId);
