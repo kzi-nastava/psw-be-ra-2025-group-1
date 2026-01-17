@@ -52,4 +52,9 @@ public class BundleRepository : IBundleRepository
     {
         return _dbContext.Set<Bundle>().Where(b => b.Status == BundleStatus.Published).ToList();
     }
+
+    public List<Bundle> GetAll()
+    {
+        return _dbContext.Set<Bundle>().ToList();
+    }
 }

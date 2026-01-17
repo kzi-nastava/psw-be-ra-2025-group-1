@@ -24,6 +24,14 @@ public class BundleController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
+    [HttpGet("all")]
+    public ActionResult<List<BundleDto>> GetAll()
+    {
+        var result = _bundleService.GetAll();
+        return Ok(result);
+    }
+
     [HttpGet("{id:long}")]
     public ActionResult<BundleDto> Get(long id)
     {

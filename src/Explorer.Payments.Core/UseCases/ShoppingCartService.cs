@@ -208,15 +208,9 @@ namespace Explorer.Payments.Core.UseCases
             {
                 if (item.TourId.HasValue)
                 {
-                    var tour = _tourRepo.Get(item.TourId.Value);
+                    var tour = _tourBrowsingInfo.GetPublishedTourById(item.TourId.Value);
                     if (tour == null)
-                        throw new InvalidOperationException("Tour does not exist.");
-
-                    if (tour.Status == TourStatus.Archived)
-                        throw new InvalidOperationException("Archived tour cannot be purchased.");
-
-                    if (tour.Status != TourStatus.Published)
-                        throw new InvalidOperationException("Only published tours can be purchased.");
+                        throw new InvalidOperationException("Tour does not exist or is not published.");
 
                     if (_tokenRepo.ExistsForUserAndTour(touristId, item.TourId.Value))
                         continue;
@@ -224,12 +218,12 @@ namespace Explorer.Payments.Core.UseCases
                     // Calculate final price with Sale + Coupon
                     var finalPrice = CalculateFinalPrice(item.TourId.Value, item.Price, cart.Subtotal, cart.TotalDiscount, cart.Items.Count);
 
-                if (finalPrice > (decimal)userWallet.Balance)
-                    continue;
+                    if (finalPrice > (decimal)userWallet.Balance)
+                        continue;
 
-                // Create TourPurchase record
-                var purchase = new TourPurchase(touristId, item.TourId, finalPrice);
-                _purchaseRepo.Create(purchase);
+                    // Update wallet
+                    userWallet.Update(userWallet.Balance - (double)finalPrice);
+                    _walletRepo.Update(userWallet);
 
                     // Create TourPurchase record
                     var purchase = new TourPurchase(touristId, item.TourId.Value, finalPrice);
@@ -252,6 +246,10 @@ namespace Explorer.Payments.Core.UseCases
 
                     if (item.Price > (decimal)userWallet.Balance)
                         continue;
+
+                    // Update wallet
+                    userWallet.Update(userWallet.Balance - (double)item.Price);
+                    _walletRepo.Update(userWallet);
 
                     // Create BundlePurchase
                     var bundlePurchase = new Explorer.Payments.Core.Domain.Bundles.BundlePurchase(touristId, bundle.Id, item.Price);

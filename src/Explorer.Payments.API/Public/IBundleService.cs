@@ -12,5 +12,6 @@ public interface IBundleService
     BundleDto Archive(long authorId, long bundleId);
     List<BundleDto> GetByAuthorId(long authorId);
     List<BundleDto> GetAllPublished();
+    List<BundleDto> GetAll();
     BundleDto Get(long id);
 }

@@ -10,4 +10,5 @@ public interface IBundleRepository
     Bundle? Get(long id);
     List<Bundle> GetByAuthorId(long authorId);
     List<Bundle> GetAllPublished();
+    List<Bundle> GetAll();
 }

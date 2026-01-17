@@ -92,6 +92,12 @@ public class BundleService : IBundleService
         return _mapper.Map<List<BundleDto>>(results);
     }
 
+    public List<BundleDto> GetAll()
+    {
+        var results = _bundleRepository.GetAll();
+        return _mapper.Map<List<BundleDto>>(results);
+    }
+
     public BundleDto Get(long id)
     {
         var result = _bundleRepository.Get(id);
