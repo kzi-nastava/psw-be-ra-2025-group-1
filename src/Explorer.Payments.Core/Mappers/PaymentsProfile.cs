@@ -12,5 +12,6 @@ public class PaymentsProfile : Profile
     {
         CreateMap<TourPurchaseTokenDto, TourPurchaseToken>().ReverseMap();
         CreateMap<WalletDto,Wallet>().ReverseMap();
+        CreateMap<BundleDto, Explorer.Payments.Core.Domain.Bundles.Bundle>().ReverseMap();
     }
 }

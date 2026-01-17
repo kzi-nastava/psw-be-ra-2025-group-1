@@ -8,6 +8,8 @@ namespace Explorer.Payments.API.Public.Tourist
     {
         void AddToCart(long touristId, long tourId);
         void RemoveFromCart(long touristId, long tourId);
+        void AddBundleToCart(long touristId, long bundleId);
+        void RemoveBundleFromCart(long touristId, long bundleId);
         ShoppingCartDto GetCart(long touristId);
         List<TourPurchaseTokenDto> Checkout(long touristId);
         void ApplyCoupon(long touristId, string code);

@@ -35,12 +35,29 @@ namespace Explorer.API.Controllers.Tourist
             return Ok(updatedCart);
         }
 
+        [HttpPost("add-bundle/{bundleId}")]
+        public IActionResult AddBundleToCart(long bundleId)
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            _service.AddBundleToCart(touristId, bundleId);
+            var updatedCart = _service.GetCart(touristId);
+            return Ok(updatedCart);
+        }
+
         [HttpDelete("remove/{tourId}")]
         public IActionResult RemoveFromCart(long tourId)
         {
             long touristId = long.Parse(User.FindFirst("id")!.Value);
             _service.RemoveFromCart(touristId, tourId);
             return Ok(new { message = "Tour removed from cart successfully" });
+        }
+
+        [HttpDelete("remove-bundle/{bundleId}")]
+        public IActionResult RemoveBundleFromCart(long bundleId)
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            _service.RemoveBundleFromCart(touristId, bundleId);
+            return Ok(new { message = "Bundle removed from cart successfully" });
         }
         
         [HttpPost("coupon")]

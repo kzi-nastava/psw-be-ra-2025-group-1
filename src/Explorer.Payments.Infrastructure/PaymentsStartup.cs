@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.Payments.API.Public;
 using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
@@ -36,6 +37,7 @@ namespace Explorer.Payments.Infrastructure
             services.AddScoped<Explorer.Payments.API.Public.Author.ISaleService, SaleService>();
             services.AddScoped<ISalePublicService, SalePublicService>();
             services.AddScoped<IWalletService, WalletService>();
+            services.AddScoped<IBundleService, BundleService>();
             
             // Adapter za Sale servic za Tours modul
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ISaleService, Explorer.Payments.Core.Services.SaleServiceAdapter>();
@@ -51,6 +53,8 @@ namespace Explorer.Payments.Infrastructure
             services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
             services.AddScoped<IWalletRepository, WalletRepository>();
             services.AddScoped<ITourPurchaseRepository, TourPurchaseDbRepository>();
+            services.AddScoped<IBundleRepository, BundleRepository>();
+            services.AddScoped<IBundlePurchaseRepository, BundlePurchaseRepository>();
 
             var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
             dataSourceBuilder.EnableDynamicJson();
