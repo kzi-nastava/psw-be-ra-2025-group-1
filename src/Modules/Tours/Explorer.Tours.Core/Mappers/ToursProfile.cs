@@ -12,10 +12,9 @@ public class ToursProfile : Profile
         CreateMap<TourDto, Tour>().ReverseMap();
         CreateMap<FacilityDto, Facility>().ReverseMap();
         CreateMap<MeetUpDto, MeetUp>().ReverseMap();
-        CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap(); //dodala sam
+        CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();
         CreateMap<CreateTourDto, Tour>().ForMember(dest => dest.Keypoints, opt => opt.Ignore()).ForMember(dest => dest.Equipment, opt => opt.Ignore());
         CreateMap<KeypointDto, Keypoint>().ReverseMap();
-        CreateMap<PersonEquipmentDto, PersonEquipment>().ReverseMap();
         CreateMap<TransportTimeDto, TransportTime>().ReverseMap();
         CreateMap<TourRatingDto, TourRating>().ReverseMap();
         CreateMap<TourRatingReactionDto, TourRatingReaction>().ReverseMap();

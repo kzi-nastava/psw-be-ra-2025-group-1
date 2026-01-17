@@ -7,10 +7,6 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Explorer.Payments.Tests
 {
@@ -28,24 +24,41 @@ namespace Explorer.Payments.Tests
             if (descriptor != null)
             {
                 services.Remove(descriptor);
-                services.AddDbContext<ToursContext>(SetupTestContext());
             }
+            services.AddDbContext<ToursContext>(SetupTestContext());
 
             return services;
         }
 
-        private static void InitializeContext(DbContext context)
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            context.Database.EnsureCreated();
-            try
+            base.ConfigureWebHost(builder);
+
+            // After base initialization, ensure Tours test data is also loaded
+            builder.ConfigureServices(services =>
             {
-                var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
-                databaseCreator.CreateTables();
-            }
-            catch (Exception)
-            {
-                // Tables might already exist
-            }
+                using var scope = BuildServiceProvider(services).CreateScope();
+                var toursContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<PaymentsTestFactory>>();
+
+                try
+                {
+                    // The tours tables are already created by EnsureCreated() in BaseTestFactory
+                    // But we need to load the tour test data from the Payments TestData folder
+                    // The BaseTestFactory already loaded all SQL files from Explorer.Payments.Tests/TestData
+                    // which includes f-tours.sql
+                    logger.LogInformation("Tours context is ready and test data should be loaded from Payments TestData folder");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error during Tours context verification: {Message}", ex.Message);
+                }
+            });
+        }
+
+        private ServiceProvider BuildServiceProvider(IServiceCollection services)
+        {
+            return ReplaceNeededDbContexts(services).BuildServiceProvider();
         }
     }
 }

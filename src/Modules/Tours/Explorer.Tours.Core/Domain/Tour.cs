@@ -151,7 +151,7 @@ public class Tour : AggregateRoot
     public void AddEquipment(Equipment equipment)
     {
         if (Equipment.Any(e => e.Id == equipment.Id))
-            throw new InvalidOperationException("Equipment already added to the tour");
+            throw new ArgumentException("Equipment already added to the tour");
 
         if (Status == TourStatus.Archived)
             throw new InvalidOperationException("Cannot add equipment to an archived tour");
@@ -162,7 +162,7 @@ public class Tour : AggregateRoot
     public void RemoveEquipment(Equipment equipment)
     { 
         if (!Equipment.Any(e => e.Id == equipment.Id))
-            throw new InvalidOperationException("Equipment not found in the tour");
+            throw new ArgumentException("Equipment not found in the tour");
 
         if (Status == TourStatus.Archived)
             throw new InvalidOperationException("Cannot remove equipment from an archived tour");

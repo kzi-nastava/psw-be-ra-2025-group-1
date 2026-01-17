@@ -7,8 +7,6 @@ using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
-using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 
 
 namespace Explorer.Payments.Core.UseCases
@@ -16,7 +14,7 @@ namespace Explorer.Payments.Core.UseCases
     public class ShoppingCartService : IShoppingCartService
     {
         private readonly IShoppingCartRepository _cartRepo;
-        private readonly ITourRepository _tourRepo;
+        private readonly ITourBrowsingInfo _tourBrowsingInfo;
         private readonly ITourPurchaseTokenRepository _tokenRepo;
         private readonly ITourPurchaseRepository _purchaseRepo;
         private readonly ICouponRepository _couponRepo;
@@ -28,7 +26,7 @@ namespace Explorer.Payments.Core.UseCases
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
-            ITourRepository tourRepo,
+            ITourBrowsingInfo tourBrowsingInfo,
             ITourPurchaseTokenRepository tokenRepo,
             ITourPurchaseRepository purchaseRepo,
             ICouponRepository couponRepo,
@@ -39,7 +37,7 @@ namespace Explorer.Payments.Core.UseCases
             IBundlePurchaseRepository bundlePurchaseRepo)
         {
             _cartRepo = cartRepo;
-            _tourRepo = tourRepo;
+            _tourBrowsingInfo = tourBrowsingInfo;
             _tokenRepo = tokenRepo;
             _purchaseRepo = purchaseRepo;
             _couponRepo = couponRepo;
@@ -52,8 +50,8 @@ namespace Explorer.Payments.Core.UseCases
 
         public void AddToCart(long touristId, long tourId)
         {
-            var tour = _tourRepo.GetPublishedById(tourId);
-            if (tour == null)
+            var tour = _tourBrowsingInfo.GetPublishedTourById(tourId);
+            if (tour == null || !tour.IsPublished)
                 throw new ArgumentException("Tour does not exist or is not published.");
 
             var cart = GetOrCreateCart(touristId);
@@ -226,8 +224,12 @@ namespace Explorer.Payments.Core.UseCases
                     // Calculate final price with Sale + Coupon
                     var finalPrice = CalculateFinalPrice(item.TourId.Value, item.Price, cart.Subtotal, cart.TotalDiscount, cart.Items.Count);
 
-                    if (finalPrice > (decimal)userWallet.Balance)
-                        continue;
+                if (finalPrice > (decimal)userWallet.Balance)
+                    continue;
+
+                // Create TourPurchase record
+                var purchase = new TourPurchase(touristId, item.TourId, finalPrice);
+                _purchaseRepo.Create(purchase);
 
                     // Create TourPurchase record
                     var purchase = new TourPurchase(touristId, item.TourId.Value, finalPrice);
