@@ -13,4 +13,6 @@ public class EncounterCreateDto
     public double? Range { get; set; }
     public string? ImagePath { get; set; }
     public List<string>? Hints { get; set; }
+    public double? HiddenLongitude { get; set; }
+    public double? HiddenLatitude { get; set; }
 }

@@ -5,6 +5,7 @@ using Explorer.Encounters.API.Public;
 using System.Security.Claims;
 using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.BuildingBlocks.Core.Exceptions;
+using Explorer.Encounters.Core.Domain;
 
 namespace Explorer.API.Controllers;
 [Route("api/[controller]")]
@@ -95,7 +96,10 @@ public class EncounterController : ControllerBase
     {
         try
         {
-            return Ok(_encounterService.Update(id, dto));
+            if(dto.Type == "Location")
+                return Ok(_encounterService.UpdateHidden(id, dto));
+            else
+                return Ok(_encounterService.Update(id, dto));
         }
         catch (KeyNotFoundException ex)
         {

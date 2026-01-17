@@ -20,4 +20,6 @@ public class ActiveEncounterDto
     public int? CurrentPeopleInRange { get; set; }
     public List<RequirementDto>? Requirements { get; set; } = new List<RequirementDto>();
     public string? ImagePath { get; set; }
+    public double? HiddenLongitude { get; set; }
+    public double? HiddenLatitude { get; set; }
 }

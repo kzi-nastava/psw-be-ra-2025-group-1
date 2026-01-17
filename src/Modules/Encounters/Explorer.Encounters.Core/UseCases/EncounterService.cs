@@ -52,7 +52,9 @@ public class EncounterService : IEncounterService
             dto.RequiredPeopleCount,
             dto.Range,
             dto.ImagePath,
-            dto.Hints
+            dto.Hints,
+            dto.HiddenLatitude,
+            dto.HiddenLongitude
         );
 
         var created = _repository.Create(encounter);
@@ -67,6 +69,22 @@ public class EncounterService : IEncounterService
             Enum.Parse<EncounterType>(dto.Type), dto.RequiredPeopleCount, dto.Range, dto.ImagePath, dto.Hints);
         var updated = _repository.Update(encounter);
         return _mapper.Map<EncounterDto>(updated);
+    }
+
+    /// <summary>
+    /// Used so the user can see the hidden encounter details while updating location encounters
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    public HiddenEncounterDto UpdateHidden(long id, EncounterCreateDto dto)
+    {
+        var encounter = _repository.GetById(id);
+
+        encounter.Update(dto.Title, dto.Description, dto.Longitude, dto.Latitude, dto.Xp,
+            Enum.Parse<EncounterType>(dto.Type), 1, dto.Range, dto.ImagePath, dto.Hints, dto.HiddenLatitude, dto.HiddenLongitude);
+        var updated = _repository.Update(encounter);
+        return _mapper.Map<HiddenEncounterDto>(updated);
     }
 
     public void Publish(long id)
@@ -156,7 +174,13 @@ public class EncounterService : IEncounterService
             // Calculate if within range
             var distance = CalculateDistance(latitude, longitude, encounter.Latitude, encounter.Longitude);
             var isWithinRange = encounter.Range.HasValue && distance <= encounter.Range.Value;
-            
+
+            if (encounter.Type == EncounterType.Location)
+            {
+                var check = HasFoundTreasure(latitude, longitude, encounter, activeEncounter);
+                if (check) continue;
+            }
+
             // Update location
             activeEncounter.UpdateLocation(latitude, longitude);
             
@@ -199,6 +223,23 @@ public class EncounterService : IEncounterService
         
         // Return updated active encounters
         return GetActiveTouristEncounters(touristId);
+    }
+
+    private bool HasFoundTreasure(double latitude, double longitude, Encounter encounter, ActiveEncounter activeEncounter)
+    {
+        var distance = CalculateDistance(latitude, longitude, encounter.HiddenLatitude.Value, encounter.HiddenLongitude.Value);
+
+        if (encounter.Range.HasValue && distance > encounter.Range.Value) return false;
+
+        if (_repository.HasCompletedEncounter(activeEncounter.TouristId, encounter.Id)) throw new Exception("Encounter already completed.");
+
+        var completed = new CompletedEncounter(activeEncounter.TouristId, encounter.Id, encounter.Xp);
+        _repository.CompleteEncounter(completed);
+        _repository.DeleteActiveEncounter(activeEncounter.Id);
+
+        // Update tourist stats
+        UpdateTouristStats(activeEncounter.TouristId, encounter.Xp);
+        return true;
     }
 
     private void UpdateTouristStats(long touristId, int xp)

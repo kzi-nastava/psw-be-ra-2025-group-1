@@ -24,4 +24,5 @@ public interface IEncounterService
     void CompleteRequirement(long activeEncounterId, long requirementId);
     void ResetRequirement(long activeEncounterId, long requirementId);
     List<string> GetNextHint(long activeId, long touristId);
+    public HiddenEncounterDto UpdateHidden(long id, EncounterCreateDto dto);
 }
