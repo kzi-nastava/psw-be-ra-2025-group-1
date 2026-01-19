@@ -2,7 +2,7 @@
 using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
-using Explorer.Payments.Core.Domain.Sales;  
+using Explorer.Payments.Core.Domain.Sales;
 using Explorer.Payments.Core.Domain.Bundles;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,30 +21,68 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<Bundle> Bundles { get; set; }
         public DbSet<BundlePurchase> BundlePurchases { get; set; }
 
-        public PaymentsContext(DbContextOptions<PaymentsContext> options)
-            : base(options) { }
+        public PaymentsContext(DbContextOptions<PaymentsContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // postavljanje default šeme u camelCase
+            base.OnModelCreating(modelBuilder);
+
+            // Set default schema
             modelBuilder.HasDefaultSchema("payments");
 
-            modelBuilder.Entity<TourPurchaseToken>(entity =>
-            {
-                entity.Property(t => t.Status)
-                    .HasConversion<string>();
-            });
+            // Configure tables
+            modelBuilder.Entity<ShoppingCart>().ToTable("ShoppingCarts");
+            modelBuilder.Entity<OrderItem>().ToTable("OrderItems");
+            modelBuilder.Entity<TourPurchase>().ToTable("TourPurchases");
+            modelBuilder.Entity<Coupon>().ToTable("Coupons");
+            modelBuilder.Entity<CouponRedemption>().ToTable("CouponRedemptions");
+            modelBuilder.Entity<TourPurchaseToken>().ToTable("TourPurchaseTokens");
+            modelBuilder.Entity<Sale>().ToTable("Sales");
+            modelBuilder.Entity<Wallet>().ToTable("Wallets");
+            modelBuilder.Entity<Bundle>().ToTable("Bundles");
+            modelBuilder.Entity<BundlePurchase>().ToTable("BundlePurchases");
 
-            modelBuilder.Entity<Bundle>(entity =>
-            {
-                entity.Property(b => b.Status)
-                    .HasConversion<string>();
-            });
+            // Enum conversions
+            modelBuilder.Entity<TourPurchaseToken>()
+                .Property(t => t.Status)
+                .HasConversion<string>();
 
-           
+            modelBuilder.Entity<Bundle>()
+                .Property(b => b.Status)
+                .HasConversion<string>();
+
+            // Apply configurations
             modelBuilder.ApplyConfiguration(new SaleConfiguration());
 
-            base.OnModelCreating(modelBuilder);
+            // Configure relationships
+            ConfigureShoppingCart(modelBuilder);
+            ConfigureTourPurchases(modelBuilder);
+        }
+
+        private static void ConfigureShoppingCart(ModelBuilder modelBuilder)
+        {
+            // ShoppingCart → OrderItems relationship
+            modelBuilder.Entity<ShoppingCart>()
+                .HasMany(sc => sc.Items)
+                .WithOne()
+                .HasForeignKey("ShoppingCartId")
+                .OnDelete(DeleteBehavior.Cascade);
+        }
+
+        private static void ConfigureTourPurchases(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<TourPurchase>(cfg =>
+            {
+                cfg.HasKey(tp => tp.Id);
+                cfg.Property(tp => tp.TouristId).IsRequired();
+                cfg.Property(tp => tp.TourId).IsRequired();
+                cfg.Property(tp => tp.PricePaid).IsRequired().HasColumnType("decimal(18,2)");
+                cfg.Property(tp => tp.PurchaseDate).IsRequired();
+
+                cfg.HasIndex(tp => tp.TouristId);
+                cfg.HasIndex(tp => tp.TourId);
+                cfg.HasIndex(tp => tp.PurchaseDate);
+            });
         }
     }
 }

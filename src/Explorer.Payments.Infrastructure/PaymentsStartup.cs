@@ -1,7 +1,8 @@
-﻿using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Payments.API.Public;
 using Explorer.Payments.API.Public.Author;
 using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Adapters;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Mappers;
 using Explorer.Payments.Core.UseCases; // AutoMapper profil
@@ -38,6 +39,7 @@ namespace Explorer.Payments.Infrastructure
             services.AddScoped<ISalePublicService, SalePublicService>();
             services.AddScoped<IWalletService, WalletService>();
             services.AddScoped<IBundleService, BundleService>();
+            services.AddScoped<ITourRepositoryAdapter, TourRepositoryAdapter>();
             
             // Adapter za Sale servic za Tours modul
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ISaleService, Explorer.Payments.Core.Services.SaleServiceAdapter>();
