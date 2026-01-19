@@ -21,6 +21,8 @@ namespace Explorer.Payments.Core.UseCases
         private readonly ICouponRedemptionRepository _couponRedemptionRepo;
         private readonly ISaleService _saleService;
         private readonly IWalletRepository _walletRepo;
+        private readonly IBundleRepository _bundleRepo;
+        private readonly IBundlePurchaseRepository _bundlePurchaseRepo;
 
         public ShoppingCartService(
             IShoppingCartRepository cartRepo,
@@ -29,7 +31,10 @@ namespace Explorer.Payments.Core.UseCases
             ITourPurchaseRepository purchaseRepo,
             ICouponRepository couponRepo,
             ICouponRedemptionRepository couponRedemptionRepo,
-            ISaleService saleService)
+            ISaleService saleService,
+            IWalletRepository walletRepo,
+            IBundleRepository bundleRepo,
+            IBundlePurchaseRepository bundlePurchaseRepo)
         {
             _cartRepo = cartRepo;
             _tourBrowsingInfo = tourBrowsingInfo;
@@ -38,6 +43,9 @@ namespace Explorer.Payments.Core.UseCases
             _couponRepo = couponRepo;
             _couponRedemptionRepo = couponRedemptionRepo;
             _saleService = saleService;
+            _walletRepo = walletRepo;
+            _bundleRepo = bundleRepo;
+            _bundlePurchaseRepo = bundlePurchaseRepo;
         }
 
         public void AddToCart(long touristId, long tourId)
@@ -46,13 +54,7 @@ namespace Explorer.Payments.Core.UseCases
             if (tour == null || !tour.IsPublished)
                 throw new ArgumentException("Tour does not exist or is not published.");
 
-            var cart = _cartRepo.GetByTouristId(touristId);
-
-            if (cart == null)
-            {
-                cart = new ShoppingCart(touristId);
-                cart = _cartRepo.Create(cart);
-            }
+            var cart = GetOrCreateCart(touristId);
 
             // ✅ Apply sale discount if available
             var priceToUse = (decimal)tour.Price;
@@ -63,12 +65,35 @@ namespace Explorer.Payments.Core.UseCases
                 priceToUse = (decimal)(tour.Price * (1 - bestSale.DiscountPercentage / 100.0));
             }
 
-            cart.AddItem(tour.Id, tour.Title, priceToUse);
-
-            // (opciono) ako želiš da popust uvek bude "fresh" kad se menja korpa:
+            cart.AddTour(tour.Id, tour.Title, priceToUse);
             RecalculateCouponDiscountIfApplied(cart);
 
             _cartRepo.Update(cart);
+        }
+
+        public void AddBundleToCart(long touristId, long bundleId)
+        {
+            var bundle = _bundleRepo.Get(bundleId);
+            if (bundle == null || bundle.Status != Explorer.Payments.Core.Domain.Bundles.BundleStatus.Published)
+                throw new ArgumentException("Bundle does not exist or is not published.");
+
+            var cart = GetOrCreateCart(touristId);
+
+            cart.AddBundle(bundle.Id, bundle.Name, bundle.Price);
+            RecalculateCouponDiscountIfApplied(cart);
+
+            _cartRepo.Update(cart);
+        }
+
+        private ShoppingCart GetOrCreateCart(long touristId)
+        {
+            var cart = _cartRepo.GetByTouristId(touristId);
+            if (cart == null)
+            {
+                cart = new ShoppingCart(touristId);
+                cart = _cartRepo.Create(cart);
+            }
+            return cart;
         }
 
         public ShoppingCartDto GetCart(long touristId)
@@ -99,6 +124,7 @@ namespace Explorer.Payments.Core.UseCases
                 Items = cart.Items.Select(i => new OrderItemDto
                 {
                     TourId = i.TourId,
+                    BundleId = i.BundleId,
                     TourName = i.TourName,
                     Price = i.Price,
                     Quantity = i.Quantity
@@ -111,13 +137,25 @@ namespace Explorer.Payments.Core.UseCases
             var cart = _cartRepo.GetByTouristId(touristId);
             if (cart == null) return;
 
-            cart.RemoveItem(tourId);
-            
+            cart.RemoveTour(tourId);
+
             RecalculateCouponDiscountIfApplied(cart);
 
             _cartRepo.Update(cart);
         }
-        
+
+        public void RemoveBundleFromCart(long touristId, long bundleId)
+        {
+            var cart = _cartRepo.GetByTouristId(touristId);
+            if (cart == null) return;
+
+            cart.RemoveBundle(bundleId);
+
+            RecalculateCouponDiscountIfApplied(cart);
+
+            _cartRepo.Update(cart);
+        }
+
         public void ApplyCoupon(long touristId, string code)
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -137,7 +175,7 @@ namespace Explorer.Payments.Core.UseCases
 
             _cartRepo.Update(cart);
         }
-        
+
         public void RemoveCoupon(long touristId)
         {
             var cart = _cartRepo.GetByTouristId(touristId);
@@ -154,12 +192,12 @@ namespace Explorer.Payments.Core.UseCases
             var cart = _cartRepo.GetByTouristId(touristId);
             if (cart == null || !cart.Items.Any())
                 throw new InvalidOperationException("Shopping cart is empty.");
-            
+
             Coupon? coupon = null;
             if (!string.IsNullOrWhiteSpace(cart.AppliedCouponCode))
             {
                 coupon = ValidateCouponOrThrow(cart.AppliedCouponCode!, touristId);
-                
+
                 var discount = coupon.CalculateDiscount(cart.Subtotal);
                 cart.ApplyCoupon(coupon.Code, discount);
             }
@@ -168,37 +206,68 @@ namespace Explorer.Payments.Core.UseCases
 
             foreach (var item in cart.Items)
             {
-                var tour = _tourBrowsingInfo.GetPublishedTourById(item.TourId);
-                if (tour == null)
-                    throw new InvalidOperationException("Tour does not exist.");
+                if (item.TourId.HasValue)
+                {
+                    var tour = _tourBrowsingInfo.GetPublishedTourById(item.TourId.Value);
+                    if (tour == null)
+                        throw new InvalidOperationException("Tour does not exist or is not published.");
 
-                if (!tour.IsPublished)
-                    throw new InvalidOperationException("Only published tours can be purchased.");
+                    if (_tokenRepo.ExistsForUserAndTour(touristId, item.TourId.Value))
+                        continue;
 
-                if (_tokenRepo.ExistsForUserAndTour(touristId, item.TourId))
-                    continue;
+                    // Calculate final price with Sale + Coupon
+                    var finalPrice = CalculateFinalPrice(item.TourId.Value, item.Price, cart.Subtotal, cart.TotalDiscount, cart.Items.Count);
 
-                // Calculate final price with Sale + Coupon
-                var finalPrice = CalculateFinalPrice(item.TourId, item.Price, cart.Subtotal, cart.TotalDiscount, cart.Items.Count);
+                    if (finalPrice > (decimal)userWallet.Balance)
+                        continue;
 
-                if (finalPrice > (decimal)userWallet.Balance)
-                    continue;
+                    // Update wallet
+                    userWallet.Update(userWallet.Balance - (double)finalPrice);
+                    _walletRepo.Update(userWallet);
 
-                // Create TourPurchase record
-                var purchase = new TourPurchase(touristId, item.TourId, finalPrice);
-                _purchaseRepo.Create(purchase);
+                    // Create TourPurchase record
+                    var purchase = new TourPurchase(touristId, item.TourId.Value, finalPrice);
+                    _purchaseRepo.Create(purchase);
 
-                // Create token
-                var token = new TourPurchaseToken(
-                    item.TourId,
-                    touristId,
-                    DateOnly.FromDateTime(DateTime.UtcNow)
-                );
+                    // Create token
+                    var token = new TourPurchaseToken(
+                        item.TourId.Value,
+                        touristId,
+                        DateOnly.FromDateTime(DateTime.UtcNow)
+                    );
 
-                _tokenRepo.Create(token);
-                createdTokens.Add(token);
+                    _tokenRepo.Create(token);
+                    createdTokens.Add(token);
+                }
+                else if (item.BundleId.HasValue)
+                {
+                    var bundle = _bundleRepo.Get(item.BundleId.Value);
+                    if (bundle == null) throw new InvalidOperationException("Bundle not found.");
+
+                    if (item.Price > (decimal)userWallet.Balance)
+                        continue;
+
+                    // Update wallet
+                    userWallet.Update(userWallet.Balance - (double)item.Price);
+                    _walletRepo.Update(userWallet);
+
+                    // Create BundlePurchase
+                    var bundlePurchase = new Explorer.Payments.Core.Domain.Bundles.BundlePurchase(touristId, bundle.Id, item.Price);
+                    _bundlePurchaseRepo.Create(bundlePurchase);
+
+                    // Create tokens for all tours
+                    foreach (var tourId in bundle.TourIds)
+                    {
+                        if (_tokenRepo.ExistsForUserAndTour(touristId, tourId))
+                            continue;
+
+                        var token = new TourPurchaseToken(tourId, touristId, DateOnly.FromDateTime(DateTime.UtcNow));
+                        _tokenRepo.Create(token);
+                        createdTokens.Add(token);
+                    }
+                }
             }
-            
+
             if (coupon != null)
             {
                 _couponRedemptionRepo.Create(new CouponRedemption(
@@ -228,7 +297,7 @@ namespace Explorer.Payments.Core.UseCases
             // 1. Apply Sale discount first
             var activeSales = _saleService.GetActiveSalesForTour(tourId);
             var salePrice = basePrice;
-            
+
             if (activeSales.Any())
             {
                 var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();

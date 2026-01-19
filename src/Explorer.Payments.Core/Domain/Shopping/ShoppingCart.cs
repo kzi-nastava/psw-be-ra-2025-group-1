@@ -29,7 +29,7 @@ public class ShoppingCart : AggregateRoot
         TouristId = touristId;
     }
 
-    public void AddItem(long tourId, string name, decimal price)
+    public void AddTour(long tourId, string name, decimal price)
     {
         var existing = _items.FirstOrDefault(i => i.TourId == tourId);
         if (existing != null)
@@ -38,16 +38,35 @@ public class ShoppingCart : AggregateRoot
             return;
         }
 
-        _items.Add(new OrderItem(tourId, name, price, 1));
+        _items.Add(new OrderItem(tourId, null, name, price, 1));
     }
 
-    public void RemoveItem(long tourId)
+    public void AddBundle(long bundleId, string name, decimal price)
+    {
+        var existing = _items.FirstOrDefault(i => i.BundleId == bundleId);
+        if (existing != null)
+        {
+            existing.IncreaseQuantity();
+            return;
+        }
+
+        _items.Add(new OrderItem(null, bundleId, name, price, 1));
+    }
+
+    public void RemoveTour(long tourId)
     {
         var item = _items.SingleOrDefault(i => i.TourId == tourId);
         if (item == null) return;
 
         _items.Remove(item);
-        // kupon ostaje, ali TotalDiscount je clampovan na Subtotal (ne može u minus)
+    }
+
+    public void RemoveBundle(long bundleId)
+    {
+        var item = _items.SingleOrDefault(i => i.BundleId == bundleId);
+        if (item == null) return;
+
+        _items.Remove(item);
     }
 
     // ✅ Apply/Remove kupona

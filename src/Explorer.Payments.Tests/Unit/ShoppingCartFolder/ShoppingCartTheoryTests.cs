@@ -14,7 +14,7 @@ namespace Explorer.Payments.Tests.Unit.ShoppingCartFolder
         [InlineData(1, 10, 50, 2, 2, 100)]  // dodavanje iste ture 2 puta 
         [InlineData(2, 5, 0, 3, 3, 0)]      // besplatna tura
         [InlineData(3, 7, 20, 5, 5, 100)]   // 5 puta -> 5 * 20 = 100
-        public void AddItem_behavior(
+        public void AddTour_behavior(
             long touristId,
             long tourId,
             decimal price,
@@ -28,7 +28,7 @@ namespace Explorer.Payments.Tests.Unit.ShoppingCartFolder
             // Act
             for (int i = 0; i < repeatCount; i++)
             {
-                cart.AddItem(tourId, "Test Tour", price);
+                cart.AddTour(tourId, "Test Tour", price);
             }
 
             // Assert
@@ -44,17 +44,17 @@ namespace Explorer.Payments.Tests.Unit.ShoppingCartFolder
         [Theory]
         [InlineData(1, 10, 50, true)]
         [InlineData(1, 10, 50, false)]
-        public void RemoveItem_behavior(long touristId, long tourId, decimal price, bool removeExisting)
+        public void RemoveTour_behavior(long touristId, long tourId, decimal price, bool removeExisting)
         {
             // Arrange
             var cart = new ShoppingCart(touristId);
-            cart.AddItem(tourId, "Tour", price);
+            cart.AddTour(tourId, "Tour", price);
 
             if (!removeExisting)
                 tourId = 999; // pokušaj brisanja nepostojeće ture
 
             // Act
-            cart.RemoveItem(tourId);
+            cart.RemoveTour(tourId);
 
             // Assert
             if (removeExisting)

@@ -3,6 +3,7 @@ using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.Shopping;
 using Explorer.Payments.Core.Domain.TourPurchaseTokens;
 using Explorer.Payments.Core.Domain.Sales;  
+using Explorer.Payments.Core.Domain.Bundles;
 using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Payments.Infrastructure.Database
@@ -17,6 +18,8 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
         public DbSet<Sale> Sales { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
+        public DbSet<Bundle> Bundles { get; set; }
+        public DbSet<BundlePurchase> BundlePurchases { get; set; }
 
         public PaymentsContext(DbContextOptions<PaymentsContext> options)
             : base(options) { }
@@ -29,6 +32,12 @@ namespace Explorer.Payments.Infrastructure.Database
             modelBuilder.Entity<TourPurchaseToken>(entity =>
             {
                 entity.Property(t => t.Status)
+                    .HasConversion<string>();
+            });
+
+            modelBuilder.Entity<Bundle>(entity =>
+            {
+                entity.Property(b => b.Status)
                     .HasConversion<string>();
             });
 
