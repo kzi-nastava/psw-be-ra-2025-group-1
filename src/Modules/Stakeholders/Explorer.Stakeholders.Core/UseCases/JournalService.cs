@@ -24,6 +24,7 @@ public class JournalService : IJournalService
     {
             var journal = new Journal(dto.Content, userId, dto.Title, dto.Latitude, dto.Longitude, dto.LocationName);
 
+            journal.SetMedia(dto.Images, dto.Videos);
             journal = _repo.Add(journal);
 
             return _mapper.Map<JournalDto>(journal);

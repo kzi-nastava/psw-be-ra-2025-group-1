@@ -19,7 +19,8 @@ public class InternalBlogService : IInternalBlogService
         {
             Title = title,
             Description = content ?? "",
-            Images = new List<string>()
+            Images = new List<string>(),
+            Videos = new List<string>()
         };
 
         // 1) kreiraj draft blog

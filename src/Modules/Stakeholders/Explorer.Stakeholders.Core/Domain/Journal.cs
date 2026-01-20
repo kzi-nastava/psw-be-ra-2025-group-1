@@ -66,4 +66,10 @@ public class Journal : Entity
         PublishedBlogId = blogId;
         Status = Status.Published;
     }
+
+    public void SetMedia(List<string> images, List<string> videos)
+    {
+        Images = images ?? new();
+        Videos = videos ?? new();
+    }
 }

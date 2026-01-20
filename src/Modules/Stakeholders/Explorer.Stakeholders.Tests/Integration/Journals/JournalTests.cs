@@ -26,7 +26,7 @@ public class JournalTests : BaseStakeholdersIntegrationTest
         var dto = new JournalCreateDto
         {
             Content = "Sadržaj dnevnika",
-            Location = "Novi Sad",
+            LocationName = "Novi Sad",
             Title = "Novi journal"
         };
 
@@ -106,7 +106,7 @@ public class JournalTests : BaseStakeholdersIntegrationTest
             title: "Test title",
             lat: 45.0,
             longit: 19.0,
-            location: "Test location"
+            locationName: "Test location"
         );
         db.Journals.Add(journal);
         db.SaveChanges();
