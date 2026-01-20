@@ -1,13 +1,19 @@
-﻿using Explorer.Payments.API.Public.Tourist;
+using Explorer.BuildingBlocks.Infrastructure.Database;
+using Explorer.Payments.API.Public;
+using Explorer.Payments.API.Public.Author;
+using Explorer.Payments.API.Public.Tourist;
+using Explorer.Payments.Core.Adapters;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
 using Explorer.Payments.Core.Mappers;
 using Explorer.Payments.Core.UseCases; // AutoMapper profil
 using Explorer.Payments.Infrastructure.Database;
 using Explorer.Payments.Infrastructure.Database.Repositories;
+using Explorer.Payments.Infrastructure.Repositories;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.UseCases;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 
 namespace Explorer.Payments.Infrastructure
 {
@@ -28,6 +34,18 @@ namespace Explorer.Payments.Infrastructure
             // npr. services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
             services.AddScoped<IShoppingCartService, ShoppingCartService>();
+            services.AddScoped<ICouponRepository, CouponRepository>();
+            services.AddScoped<ICouponRedemptionRepository, CouponRedemptionRepository>();
+            services.AddScoped<ISaleRepository, SaleRepository>();
+            services.AddScoped<Explorer.Payments.API.Public.Author.ISaleService, SaleService>();
+            services.AddScoped<ISalePublicService, SalePublicService>();
+            services.AddScoped<IWalletService, WalletService>();
+            services.AddScoped<IBundleService, BundleService>();
+            services.AddScoped<ITourRepositoryAdapter, TourRepositoryAdapter>();
+            
+            // Adapter za Sale servic za Tours modul
+            services.AddScoped<Explorer.BuildingBlocks.Core.Services.ISaleService, Explorer.Payments.Core.Services.SaleServiceAdapter>();
+
             services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourPurchaseTokenChecker,
                 Explorer.Payments.Core.Services.TourPurchaseTokenChecker>();
 
@@ -37,9 +55,21 @@ namespace Explorer.Payments.Infrastructure
         {
             services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
             services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
-            services.AddDbContext<PaymentsContext>(options =>
-                options.UseNpgsql("Host=localhost;Database=payments;Username=postgres;Password=postgres"));
+            services.AddScoped<IWalletRepository, WalletRepository>();
+            services.AddScoped<ITourPurchaseRepository, TourPurchaseDbRepository>();
+            services.AddScoped<IBundleRepository, BundleRepository>();
+            services.AddScoped<IBundlePurchaseRepository, BundlePurchaseRepository>();
+            services.AddScoped<ISaleRepository, SaleRepository>();
+            services.AddScoped<ICouponRepository, CouponRepository>();
+            services.AddScoped<ICouponRedemptionRepository, CouponRedemptionRepository>();
 
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("payments"));
+            dataSourceBuilder.EnableDynamicJson();
+            var dataSource = dataSourceBuilder.Build();
+
+            services.AddDbContext<PaymentsContext>(opt =>
+                opt.UseNpgsql(dataSource,
+                    x => x.MigrationsHistoryTable("__EFMigrationsHistory", "payments")));
         }
     }
 }
