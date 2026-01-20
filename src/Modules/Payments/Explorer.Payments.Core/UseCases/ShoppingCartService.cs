@@ -1,3 +1,4 @@
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.Services;
 using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Dtos.ShoppingCart;
@@ -187,7 +188,17 @@ namespace Explorer.Payments.Core.UseCases
 
         public List<TourPurchaseTokenDto> Checkout(long touristId)
         {
-            Wallet? userWallet = _walletRepo.GetByTouristId(touristId) ?? throw new InvalidOperationException("User wallet not found.");
+            Wallet userWallet;
+            try
+            {
+                userWallet = _walletRepo.GetByTouristId(touristId);
+            }
+            catch (NotFoundException)
+            {
+                // Create wallet if it doesn't exist
+                userWallet = new Wallet(touristId, 0);
+                userWallet = _walletRepo.Create(userWallet);
+            }
 
             var cart = _cartRepo.GetByTouristId(touristId);
             if (cart == null || !cart.Items.Any())
