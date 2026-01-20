@@ -104,6 +104,8 @@ public class JournalTests : BaseStakeholdersIntegrationTest
             content:"test",
             userId: 23,
             title: "Test title",
+            lat: 45.0,
+            longit: 19.0,
             location: "Test location"
         );
         db.Journals.Add(journal);

@@ -1,4 +1,5 @@
 using AutoMapper;
+using Explorer.Blog.API.Internal;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
@@ -9,17 +10,19 @@ namespace Explorer.Stakeholders.Core.UseCases;
 public class JournalService : IJournalService
 {
     private readonly IJournalRepository _repo;
-    private readonly IMapper _mapper;
+    private readonly IMapper _mapper; 
+    private readonly IInternalBlogService _internalBlogService;
 
-    public JournalService(IJournalRepository repo, IMapper mapper)
+    public JournalService(IJournalRepository repo, IMapper mapper, IInternalBlogService internalBlogService)
     {
         _repo = repo;
         _mapper = mapper;
+        _internalBlogService = internalBlogService;
     }
 
     public JournalDto Create(long userId, JournalCreateDto dto)
     {
-            var journal = new Journal(dto.Content, userId, dto.Title, dto.Location);
+            var journal = new Journal(dto.Content, userId, dto.Title, dto.Latitude, dto.Longitude, dto.LocationName);
 
             journal = _repo.Add(journal);
 
@@ -58,4 +61,31 @@ public class JournalService : IJournalService
 
         _repo.Delete(journal);
     }
+
+    public JournalDto Publish(long userId, long journalId)
+    {
+        var journal = _repo.GetById(journalId)
+                      ?? throw new KeyNotFoundException("Dnevnik nije pronađen.");
+
+        if (journal.UserId != userId)
+            throw new UnauthorizedAccessException("Nemate dozvolu.");
+
+        if (journal.PublishedBlogId != null)
+            throw new InvalidOperationException("Dnevnik je već objavljen.");
+
+        // 1) napravi Blog (minimalno: title + content)
+        var blogCreated = _internalBlogService.CreateFromJournal(
+            userId,
+            journal.Title,
+            journal.Content
+            );
+
+        // 2) markiraj journal kao published i upisi blogId
+        journal.Publish(blogCreated.Id);
+
+        _repo.Update(journal);
+
+        return _mapper.Map<JournalDto>(journal);
+    }
+
 }
