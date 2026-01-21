@@ -23,15 +23,7 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             DbContext.SaveChanges();
             return entity;
         }
-        public TourPreference Get(long id)
-        {
-            var entity = _dbSet.Find(id);
-            if (entity == null)
-            {
-                throw new NotFoundException($"TourPreference with id {id} not found.");
-            }
-            return entity;
-        }
+        public TourPreference? Get(long id) => _dbSet.Find(id);
 
         public TourPreference Update(TourPreference entity)
         {
@@ -46,12 +38,6 @@ namespace Explorer.Stakeholders.Infrastructure.Database.Repositories
             }
             return entity;
         }
-        public TourPreference GetByUser(long userId)
-        {
-            var entity = _dbSet.FirstOrDefault(p => p.UserId == userId);
-            if (entity == null)
-                throw new NotFoundException($"TourPreference with UserId {userId} not found.");
-            return entity;
-        }
+        public TourPreference? GetByUser(long userId) => _dbSet.FirstOrDefault(p => p.UserId == userId);
     }
 }
