@@ -6,6 +6,7 @@
 SET session_replication_role = 'replica';
 
 -- Delete from payments schema in any order (FK constraints disabled)
+DELETE FROM payments."Bundles";
 DELETE FROM payments."OrderItems" WHERE "Id" < 0 OR "ShoppingCartId" IN (SELECT "Id" FROM payments."ShoppingCarts" WHERE "Id" < 0 OR "TouristId" >= 100);
 DELETE FROM payments."CouponRedemptions" WHERE "CouponId" IN (SELECT "Id" FROM payments."Coupons" WHERE "Id" < 0);
 DELETE FROM payments."Coupons" WHERE "Id" < 0;

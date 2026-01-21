@@ -15,19 +15,16 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourRepository _tourRepository;
     private readonly IUserLocationRepository _userLocationRepository;
     private readonly IMapper _mapper;
-    private readonly ITourPurchaseTokenChecker _tourPurchaseTokenChecker;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
-        ITourPurchaseTokenChecker tourPurchaseTokenChecker,
         IUserLocationRepository userLocationService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _userLocationRepository = userLocationService;
-        _tourPurchaseTokenChecker  = tourPurchaseTokenChecker;
         _mapper = mapper;
     }
 
@@ -39,10 +36,6 @@ public class TourExecutionService : ITourExecutionService
 
         if (tour.Status != TourStatus.Published && tour.Status != TourStatus.Archived)
             throw new InvalidOperationException("Can only start published or archived tours");
-
-        // Check if tour has been purchased (using token repository)
-        if (!_tourPurchaseTokenChecker.ExistsForUserAndTour(touristId, startTourDto.TourId))
-            throw new InvalidOperationException("You must purchase the tour before starting it");
 
         var activeTour = _tourExecutionRepository.GetActiveTourByTourist(touristId);
         if (activeTour != null)
