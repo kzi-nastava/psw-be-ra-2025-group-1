@@ -168,4 +168,9 @@ public class EncounterRepository : IEncounterRepository
     {
         return GetActiveById(activeEncounterId).GetRequirementById(id);
     }
+
+    public Encounter? GetByKeypointId(long keypointId)
+    {
+        return _context.Encounters.FirstOrDefault(e => e.KeypointId == keypointId);
+    }
 }
