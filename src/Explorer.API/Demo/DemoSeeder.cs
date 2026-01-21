@@ -1,4 +1,5 @@
-﻿using Explorer.Stakeholders.API.Dtos;
+﻿using Explorer.Payments.API.Public.Tourist;
+using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
@@ -17,6 +18,8 @@ namespace Explorer.API.Demo
         private readonly ITourRatingService _tourRatingService;
         private readonly IRestaurantService _restaurantService;
         private readonly Explorer.Payments.API.Public.Author.ISaleService _saleService;
+        private readonly IUserManagementService _userManagementService;
+        private readonly IWalletService _walletService;
 
         public DemoSeeder(
             IAuthenticationService authenticationService, 
@@ -27,7 +30,9 @@ namespace Explorer.API.Demo
             ITourExecutionService tourExecution, 
             ITourRatingService tourRatingService, 
             IRestaurantService restaurantService,
-            Explorer.Payments.API.Public.Author.ISaleService saleService)
+            Explorer.Payments.API.Public.Author.ISaleService saleService,
+            IUserManagementService userManagementService,
+            IWalletService walletService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -38,12 +43,15 @@ namespace Explorer.API.Demo
             _tourRatingService = tourRatingService;
             _restaurantService = restaurantService;
             _saleService = saleService;
+            _userManagementService = userManagementService;
+            _walletService = walletService;
         }
 
         public void Seed()
         {
             SeedAdmin();
             SeedTourists();
+            SeedWallets();
             SeedAuthors();
             SeedEquipment();
             SeedFacilities();
@@ -99,6 +107,18 @@ namespace Explorer.API.Demo
             _authenticationService.RegisterTourist(tourist1);
             _authenticationService.RegisterTourist(tourist2);
             _authenticationService.RegisterTourist(tourist3);
+        }
+
+        private void SeedWallets()
+        {
+            var tourist1 = _userManagementService.GetByUsername("tourist1");
+            var tourist2 = _userManagementService.GetByUsername("tourist2");
+            var tourist3 = _userManagementService.GetByUsername("tourist3");
+
+            var wallet1 = _walletService.Create(tourist1.Id);
+            var wallet2 = _walletService.Create(tourist2.Id);
+            var wallet3 = _walletService.Create(tourist3.Id);
+
         }
 
         private void SeedAuthors()

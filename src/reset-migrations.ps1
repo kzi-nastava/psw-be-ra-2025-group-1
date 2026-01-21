@@ -9,7 +9,7 @@ $migrationFolders = @(
     "Modules\Tours\Explorer.Tours.Infrastructure\Migrations",
     "Modules\Blog\Explorer.Blog.Infrastructure\Migrations", 
     "Modules\Encounters\Explorer.Encounters.Infrastructure\Migrations",
-    "Modules\Payments\Explorer.Payments.Infrastructure\Migrations"
+	  "Modules\Payments\Explorer.Payments.Infrastructure\Migrations"
 )
 
 foreach ($folder in $migrationFolders) {
