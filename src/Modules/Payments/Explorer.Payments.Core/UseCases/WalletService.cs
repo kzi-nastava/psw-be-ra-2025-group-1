@@ -20,7 +20,12 @@ namespace Explorer.Payments.Core.UseCases
         public WalletDto Create(long touristId)
         {
             var wallet = new Wallet(touristId, 0);
+
+            // Hardcoded money, dont ask :D
+            wallet.Update(10000000);
+
             var result = walletRepository.Create(wallet);
+
             return _mapper.Map<WalletDto>(wallet);
         }
 

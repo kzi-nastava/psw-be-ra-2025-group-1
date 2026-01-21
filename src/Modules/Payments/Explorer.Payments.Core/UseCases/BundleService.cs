@@ -4,18 +4,17 @@ using Explorer.Payments.API.Dtos;
 using Explorer.Payments.API.Public;
 using Explorer.Payments.Core.Domain.Bundles;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
-using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Payments.Core.Adapters;
 
 namespace Explorer.Payments.Core.UseCases;
 
 public class BundleService : IBundleService
 {
     private readonly IBundleRepository _bundleRepository;
-    private readonly ITourRepository _tourRepository;
+    private readonly ITourRepositoryAdapter _tourRepository;
     private readonly IMapper _mapper;
 
-    public BundleService(IBundleRepository bundleRepository, ITourRepository tourRepository, IMapper mapper)
+    public BundleService(IBundleRepository bundleRepository, ITourRepositoryAdapter tourRepository, IMapper mapper)
     {
         _bundleRepository = bundleRepository;
         _tourRepository = tourRepository;
@@ -59,8 +58,7 @@ public class BundleService : IBundleService
         var publishedTourCount = 0;
         foreach (var tourId in bundle.TourIds)
         {
-            var tour = _tourRepository.Get(tourId);
-            if (tour != null && tour.Status == TourStatus.Published)
+            if (_tourRepository.IsTourPublished(tourId))
                 publishedTourCount++;
         }
 
