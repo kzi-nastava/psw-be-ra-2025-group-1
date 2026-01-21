@@ -18,9 +18,9 @@ INSERT INTO tours."Tour"(
 )
 OVERRIDING SYSTEM VALUE
 VALUES
-    (1, -11, 'Test Tour 1 - On Sale', 'Tour for sale testing', 2, ARRAY['test', 'sale'], 1, 15.0, '2024-01-01', '2024-01-01', '2024-01-01', '-infinity'),
-    (2, -11, 'Test Tour 2 - On Sale', 'Another tour for sale', 3, ARRAY['test'], 1, 20.0, '2024-01-02', '2024-01-02', '2024-01-02', '-infinity'),
-    (6, -11, 'Test Tour 6 - No Sale', 'Tour without sale', 1, ARRAY['test'], 1, 10.0, '2024-01-03', '2024-01-03', '2024-01-03', '-infinity');
+    (1, -11, 'Test Tour 1 - On Sale', 'Tour for sale testing', 2, ARRAY['test', 'sale'], 1, 15.0, '2026-01-01', '2026-01-01', '2026-01-01', '-infinity'),
+    (2, -11, 'Test Tour 2 - On Sale', 'Another tour for sale', 3, ARRAY['test'], 1, 20.0, '2026-01-02', '2026-01-02', '2026-01-02', '-infinity'),
+    (6, -11, 'Test Tour 6 - No Sale', 'Tour without sale', 1, ARRAY['test'], 1, 10.0, '2026-01-03', '2026-01-03', '2026-01-03', '-infinity');
 
 -- Reset sequence to avoid conflicts with future inserts
 SELECT setval('tours."Tour_Id_seq"', 100, false);
