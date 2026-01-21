@@ -11,5 +11,6 @@ namespace Explorer.Stakeholders.API.Public
     {
         List<AccountDto> GetAll();
         void BlockUser(long userId);
+        AccountDto GetByUsername(string username);
     }
 }
