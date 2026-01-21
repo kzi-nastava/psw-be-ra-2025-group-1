@@ -5,10 +5,11 @@ $env:DATABASE_SCHEMA = "explorer-v1"
 
 # Delete old migration folders
 $migrationFolders = @(
-    "Modules\Stakeholders\Explorer.Stakeholders.Infrastructure\Migrations",
-    "Modules\Tours\Explorer.Tours.Infrastructure\Migrations",
-    "Modules\Blog\Explorer.Blog.Infrastructure\Migrations", 
-    "Modules\Encounters\Explorer.Encounters.Infrastructure\Migrations"
+    "Modules\Stakeholders\Explorer.Stakeholders.Infrastructure.Migrations",
+    "Modules\Tours\Explorer.Tours.Infrastructure.Migrations",
+    "Modules\Blog\Explorer.Blog.Infrastructure.Migrations", 
+    "Modules\Encounters\Explorer.Encounters.Infrastructure\Migrations",
+    "Explorer.Payments.Infrastructure\Migrations"
 )
 
 foreach ($folder in $migrationFolders) {
@@ -70,4 +71,17 @@ dotnet ef migrations add Init_Encounters `
 dotnet ef database update `
     --context EncounterContext `
     --project Modules/Encounters/Explorer.Encounters.Infrastructure/Explorer.Encounters.Infrastructure.csproj `
+    --startup-project Explorer.API/Explorer.API.csproj
+
+Write-Host ""
+
+Write-Host "=== Migrating PaymentsContext ===" -ForegroundColor Cyan
+dotnet ef migrations add Init_Payments `
+    --context PaymentsContext `
+    --project Explorer.Payments.Infrastructure/Explorer.Payments.Infrastructure.csproj `
+    --startup-project Explorer.API/Explorer.API.csproj
+
+dotnet ef database update `
+    --context PaymentsContext `
+    --project Explorer.Payments.Infrastructure/Explorer.Payments.Infrastructure.csproj `
     --startup-project Explorer.API/Explorer.API.csproj

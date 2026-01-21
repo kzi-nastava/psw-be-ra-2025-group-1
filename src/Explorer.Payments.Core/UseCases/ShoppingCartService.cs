@@ -56,14 +56,9 @@ namespace Explorer.Payments.Core.UseCases
 
             var cart = GetOrCreateCart(touristId);
 
-            // ✅ Apply sale discount if available
+            // ✅ Cena iz tour objekta VEĆ IMA sale discount primenjen (ako postoji)
+            // TourBrowsingService.GetPublishedById() već poziva ApplySaleDiscount()
             var priceToUse = (decimal)tour.Price;
-            var activeSales = _saleService.GetActiveSalesForTour(tourId);
-            if (activeSales.Any())
-            {
-                var bestSale = activeSales.OrderByDescending(s => s.DiscountPercentage).First();
-                priceToUse = (decimal)(tour.Price * (1 - bestSale.DiscountPercentage / 100.0));
-            }
 
             cart.AddTour(tour.Id, tour.Title, priceToUse);
             RecalculateCouponDiscountIfApplied(cart);
