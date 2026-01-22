@@ -1,4 +1,4 @@
-﻿using Explorer.Payments.Core.Domain.Sales;
+using Explorer.Payments.Core.Domain.Sales;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Text.Json;
@@ -29,12 +29,18 @@ public class SaleConfiguration : IEntityTypeConfiguration<Sale>
         builder.Property(s => s.AuthorId)
             .IsRequired();
 
-        // ← KLJUČNA PROMENA: Koristi Value Converter umesto Column Type
         builder.Property(s => s.TourIds)
             .HasConversion(
                 v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null),
                 v => JsonSerializer.Deserialize<List<long>>(v, (JsonSerializerOptions)null) ?? new List<long>()
             )
-            .HasColumnType("jsonb");
+            .HasColumnType("jsonb")
+            .Metadata.SetValueComparer( // Ovo dodato zbog greske prlikom pokretanja migracija
+                new Microsoft.EntityFrameworkCore.ChangeTracking.ValueComparer<List<long>>(
+                    (c1, c2) => c1.SequenceEqual(c2),
+                    c => c.Aggregate(0, (h, v) => HashCode.Combine(h, v.GetHashCode())),
+                    c => c.ToList()
+                )
+            );
     }
 }

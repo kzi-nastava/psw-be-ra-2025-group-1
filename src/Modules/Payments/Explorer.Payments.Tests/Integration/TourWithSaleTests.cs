@@ -4,12 +4,12 @@ using Explorer.Tours.API.Public.Tourist;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 
-namespace Explorer.Tours.Tests.Integration.Tourist;
+namespace Explorer.Payments.Tests.Integration.Tourist;
 
 [Collection("Sequential")]
-public class TourWithSaleTests : BaseToursIntegrationTest
+public class TourWithSaleTests : BasePaymentsIntegrationTest
 {
-    public TourWithSaleTests(ToursTestFactory factory) : base(factory) { }
+    public TourWithSaleTests(PaymentsTestFactory factory) : base(factory) { }
 
     [Fact]
     public void Gets_published_tours_with_sale_discount()
@@ -19,7 +19,7 @@ public class TourWithSaleTests : BaseToursIntegrationTest
         var service = scope.ServiceProvider.GetRequiredService<ITourBrowsingService>();
 
         // Act
-        var result = service.GetPublished(0, 10);
+        var result = service.GetPublished(1, 10);
 
         // Assert
         result.ShouldNotBeNull();

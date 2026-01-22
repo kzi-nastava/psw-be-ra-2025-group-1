@@ -89,12 +89,12 @@ public class BundleTests : BasePaymentsIntegrationTest
         // Bundle -2 is seeded as Published
 
         // Act
-        var result = service.Archive(-11, -3);
+        var result = service.Archive(-11, -2);
 
         // Assert
         result.Status.ShouldBe("Archived");
 
-        var storedEntity = dbContext.Bundles.FirstOrDefault(b => b.Id == -3);
+        var storedEntity = dbContext.Bundles.FirstOrDefault(b => b.Id == -2);
         storedEntity.ShouldNotBeNull();
         storedEntity.Status.ShouldBe(BundleStatus.Archived);
     }

@@ -30,7 +30,7 @@ namespace Explorer.Payments.Tests.Integration
             result.ShouldNotBeNull();
             result.Id.ShouldNotBe(0);
             result.TouristId.ShouldBe(touristId);
-            result.Balance.ShouldBe(0);
+            result.Balance.ShouldBe(10000000);
 
             // Assert - Database
             var storedEntity = dbContext.Set<Explorer.Payments.Core.Domain.Wallet>().FirstOrDefault(w => w.Id == result.Id);

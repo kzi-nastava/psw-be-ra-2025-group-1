@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33829.357
@@ -55,13 +55,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Payments", "Payments", "{7881A8B8-E405-4988-A81C-3206B9126A31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Explorer.Payments.API", "Explorer.Payments.API\Explorer.Payments.API.csproj", "{F19D144D-EE6A-4EC3-ACB7-E622F5848CF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Explorer.Payments.API", "Modules\Payments\Explorer.Payments.API\Explorer.Payments.API.csproj", "{F19D144D-EE6A-4EC3-ACB7-E622F5848CF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Explorer.Payments.Core", "Explorer.Payments.Core\Explorer.Payments.Core.csproj", "{6D4032B9-2651-4367-8BFF-49286693BAAE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Explorer.Payments.Core", "Modules\Payments\Explorer.Payments.Core\Explorer.Payments.Core.csproj", "{6D4032B9-2651-4367-8BFF-49286693BAAE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Explorer.Payments.Infrastructure", "Explorer.Payments.Infrastructure\Explorer.Payments.Infrastructure.csproj", "{501C3E53-539F-4FB7-AEDB-56F5C6C45043}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Explorer.Payments.Infrastructure", "Modules\Payments\Explorer.Payments.Infrastructure\Explorer.Payments.Infrastructure.csproj", "{501C3E53-539F-4FB7-AEDB-56F5C6C45043}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Explorer.Payments.Tests", "Explorer.Payments.Tests\Explorer.Payments.Tests.csproj", "{67B7FCF5-819D-4AD3-BA3F-747F378EF974}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Explorer.Payments.Tests", "Modules\Payments\Explorer.Payments.Tests\Explorer.Payments.Tests.csproj", "{67B7FCF5-819D-4AD3-BA3F-747F378EF974}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Encounters", "Encounters", "{266B6011-12D8-E43F-5A5E-40EEA6AD0F7D}"
 EndProject
