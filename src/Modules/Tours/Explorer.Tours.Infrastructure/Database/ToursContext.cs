@@ -18,6 +18,7 @@ public class ToursContext : DbContext
     public DbSet<TourRatingReaction> TourRatingReactions { get; set; }
     public DbSet<PersonEquipment> PersonEquipment { get; set; }
     public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<MapMarker> MapMarkers { get; set; }
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
@@ -30,6 +31,13 @@ public class ToursContext : DbContext
             .WithOne()
             .HasForeignKey("TourId")
             .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // One-Ona relationship between Tour and MapMarker
+        modelBuilder.Entity<Tour>()
+            .HasOne(t => t.MapMarker)
+            .WithOne()
+            .HasForeignKey<Tour>("MapMarkerId")
             .OnDelete(DeleteBehavior.Cascade);
 
         // One-Many relationship between TourExecution and KeypointProgress

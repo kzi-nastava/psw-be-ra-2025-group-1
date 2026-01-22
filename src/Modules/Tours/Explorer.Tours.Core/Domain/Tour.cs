@@ -33,6 +33,7 @@ public class Tour : AggregateRoot
     public List<Keypoint> Keypoints { get; private set; }
     public List<Equipment> Equipment { get; private set; }
     public List<TransportTime> TransportTimes { get; private set; }
+    public MapMarker? MapMarker { get; private set; }
 
     public Tour()
     {
@@ -201,6 +202,17 @@ public class Tour : AggregateRoot
         var tt = TransportTimes.FirstOrDefault(k => k.Id == transportTimeId) ?? throw new NotFoundException("TransportTime not found");
         TransportTimes.Remove(tt);
         return tt;
+    }
+
+    public MapMarker AddMapMarker(MapMarker mapMarker)
+    {
+        MapMarker = mapMarker;
+        return MapMarker;
+    }
+
+    public MapMarker UpdateMapMarker(MapMarker mapMarker)
+    {
+        return MapMarker.Update(mapMarker);
     }
 
     private bool ValidateToPublish()
