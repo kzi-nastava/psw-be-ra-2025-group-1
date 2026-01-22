@@ -215,6 +215,11 @@ public class Tour : AggregateRoot
         return MapMarker.Update(mapMarker);
     }
 
+    public void DeleteMapMarker()
+    {
+        MapMarker = null;
+    }
+
     private bool ValidateToPublish()
     {
         if (Status == TourStatus.Published) return false;

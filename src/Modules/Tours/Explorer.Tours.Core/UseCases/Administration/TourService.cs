@@ -44,7 +44,7 @@ public class TourService : ITourService
     public bool Activate(long id)
     {
         var tour = _tourRepository.Get(id);
-        if(tour == null)
+        if (tour == null)
         {
             throw new NotFoundException("Tour not found");
         }
@@ -52,7 +52,7 @@ public class TourService : ITourService
         _tourRepository.Update(tour);
 
         return true;
-        
+
     }
 
     public TourDto Create(CreateTourDto createTourDto)
@@ -105,9 +105,9 @@ public class TourService : ITourService
         if (tourToUpdate != null)
         {
             if (tourToUpdate.Publish())
-            { 
+            {
                 _tourRepository.Update(tourToUpdate);
-                return true;    
+                return true;
             }
         }
         return false;
@@ -191,7 +191,7 @@ public class TourService : ITourService
     {
         if (timeDto.Type == TransportTypeDto.Unknown)
             throw new ArgumentException("Transport type cannot be unknown.");
-            
+
         var tour = _tourRepository.Get(tourId);
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add transport time to someone else's tour");
@@ -220,6 +220,37 @@ public class TourService : ITourService
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't delete transport time from someone else's tour");
         tour.DeleteTransportTime(timeId);
+        var result = _tourRepository.Update(tour);
+    }
+
+    public MapMarkerDto AddMapMarker(long tourId, MapMarkerDto mapMarkerDto, long authorId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        if (tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't add map marker to someone else's tour");
+        var mapMarker = tour.AddMapMarker(_mapper.Map<MapMarker>(mapMarkerDto));
+        _tourRepository.Update(tour);
+
+        return _mapper.Map<MapMarkerDto>(mapMarker);
+    }
+
+    public MapMarkerDto UpdateMapMarker(long tourId, MapMarkerDto mapMarkerDto, long authorId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        if (tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't update map marker from someone else's tour");
+        var mapMarker = tour.UpdateMapMarker(_mapper.Map<MapMarker>(mapMarkerDto));
+        _tourRepository.Update(tour);
+
+        return _mapper.Map<MapMarkerDto>(mapMarker);
+    }
+
+    public void DeleteMapMarker(long tourId, long authorId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        if (tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't delete map marker from someone else's tour");
+        tour.DeleteMapMarker();
         var result = _tourRepository.Update(tour);
     }
 }

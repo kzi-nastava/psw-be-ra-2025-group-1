@@ -25,9 +25,15 @@ public interface ITourService
     KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto, long authorId);
     KeypointDto UpdateKeypoint(long tourId, KeypointDto keypointDto, long authorId);
     void DeleteKeypoint(long tourId, long keypointId, long authorId);
+
     TourDto AddEquipment(long tourId, long equipmentId, long authorId);
     TourDto RemoveEquipment(long tourId, long equipmentId, long authorId);
+
     TransportTimeDto AddTransportTime(long tourId, TransportTimeDto transportTimeDto, long authorId);
     TransportTimeDto UpdateTransportTime(long tourId, TransportTimeDto transportTimeDto, long authorId);
     void DeleteTransportTime(long tourId, long transportTimeId, long authorId);
+
+    MapMarkerDto AddMapMarker(long tourId, MapMarkerDto mapMarkerDto, long authorId);
+    MapMarkerDto UpdateMapMarker(long tourId, MapMarkerDto mapMarkerDto, long authorId);
+    void DeleteMapMarker(long tourId, long mapMarkerId, long authorId);
 }
