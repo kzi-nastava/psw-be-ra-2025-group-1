@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Tours.API.Dtos;
@@ -13,25 +14,39 @@ namespace Explorer.Tours.Core.UseCases
     {
         private readonly ITourRatingRepository _tourRatingRepository;
         private readonly ITourExecutionRepository _tourExecutionRepository;
+        private readonly ITourRatingReactionRepository _tourReactionRepository;
         private readonly IMapper _mapper;
 
-        public TourRatingService(ITourRatingRepository tourRatingRepository, IMapper mapper, ITourExecutionRepository tourExecutionRepository)
+        public TourRatingService(
+            ITourRatingRepository tourRatingRepository,
+            ITourExecutionRepository tourExecutionRepository,
+            ITourRatingReactionRepository tourReactionRepository,
+            IMapper mapper)
         {
             _tourRatingRepository = tourRatingRepository;
             _tourExecutionRepository = tourExecutionRepository;
+            _tourReactionRepository = tourReactionRepository;
             _mapper = mapper;
         }
 
-        public TourRatingDto Get(long id)
+
+        public TourRatingDto Get(long id, long userId)
         {
-            var result = _tourRatingRepository.Get(id);
-            return _mapper.Map<TourRatingDto>(result);
+            var rating = _tourRatingRepository.Get(id);
+            var dto = _mapper.Map<TourRatingDto>(rating);
+
+            dto.IsThumbedUpByCurrentUser =
+                _tourReactionRepository.Exists(dto.Id, userId);
+
+            return dto;
         }
 
-        public PagedResult<TourRatingDto> GetPaged(int page, int pageSize)
+
+        public PagedResult<TourRatingDto> GetPaged(long userId, int page, int pageSize)
         {
             var result = _tourRatingRepository.GetPaged(page, pageSize);
             var items = result.Results.Select(_mapper.Map<TourRatingDto>).ToList();
+            ApplyReactionState(items, userId);
             return new PagedResult<TourRatingDto>(items, result.TotalCount);
         }
 
@@ -39,14 +54,26 @@ namespace Explorer.Tours.Core.UseCases
         {
             var result = _tourRatingRepository.GetPagedByUser(userId, page, pageSize);
             var items = result.Results.Select(_mapper.Map<TourRatingDto>).ToList();
+            ApplyReactionState(items, userId);
             return new PagedResult<TourRatingDto>(items, result.TotalCount);
         }
 
-        public PagedResult<TourRatingDto> GetPagedByTourExecution(long tourExecutionId, int page, int pageSize)
+        public PagedResult<TourRatingDto> GetPagedByTour(long tourId, long userId, int page, int pageSize)
         {
-            var result = _tourRatingRepository.GetPagedByTourExecution(tourExecutionId, page, pageSize);
-            var items = result.Results.Select(_mapper.Map<TourRatingDto>).ToList();
-            return new PagedResult<TourRatingDto>(items, result.TotalCount);
+            var executions = _tourExecutionRepository.GetByTourId(tourId);
+            if(executions.Count == 0)
+            {
+                throw new NotFoundException("Tour not found or has no executions.");
+            }
+            var result = new List<TourRatingDto>();
+            foreach (var execution in executions)
+                {
+                var ratings = _tourRatingRepository.GetPagedByTourExecution(execution.Id, 1, int.MaxValue);
+                result.AddRange(ratings.Results.Select(_mapper.Map<TourRatingDto>));
+            }
+            ApplyReactionState(result, userId);
+
+            return new PagedResult<TourRatingDto>(result.Skip((page - 1) * pageSize).Take(pageSize).ToList(), result.Count);
         }
 
         public TourRatingDto Create(TourRatingDto rating)
@@ -93,17 +120,33 @@ namespace Explorer.Tours.Core.UseCases
             existingRating.UpdateRating(rating.Comment, rating.Stars);
 
             var result = _tourRatingRepository.Update(existingRating);
-            return _mapper.Map<TourRatingDto>(result);
+
+            var dto = _mapper.Map<TourRatingDto>(result);
+            dto.IsThumbedUpByCurrentUser =
+                _tourReactionRepository.Exists(dto.Id, rating.UserId);
+            return dto;
         }
 
         public void Delete(long id, long userId)
         {
             // Check if the rating exists
-            var existingRating = Get(id); // This will throw NotFoundException if not found
+            var existingRating = Get(id, userId); // This will throw NotFoundException if not found
             // Check if the rating belongs to the user
             if (existingRating.UserId != userId) throw new System.UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
 
             _tourRatingRepository.Delete(id);
         }
+
+        private void ApplyReactionState(
+            IEnumerable<TourRatingDto> ratings,
+            long currentUserId)
+        {
+            foreach (var rating in ratings)
+            {
+                rating.IsThumbedUpByCurrentUser =
+                    _tourReactionRepository.Exists(rating.Id, currentUserId);
+            }
+        }
+
     }
 }

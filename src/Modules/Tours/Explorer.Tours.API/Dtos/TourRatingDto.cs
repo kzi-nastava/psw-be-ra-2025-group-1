@@ -15,6 +15,8 @@ namespace Explorer.Tours.API.Dtos
         public string Comment { get; set; }
         public double CompletedProcentage { get; set; }
         public int ThumbsUpCount { get; set; }
+        public bool IsThumbedUpByCurrentUser { get; set; }
+        public bool IsLocalGuide { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

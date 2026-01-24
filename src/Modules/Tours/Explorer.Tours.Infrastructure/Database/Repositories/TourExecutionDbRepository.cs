@@ -61,4 +61,13 @@ public class TourExecutionDbRepository : ITourExecutionRepository
             .OrderByDescending(te => te.StartTime)
             .ToList();
     }
+
+    public List<TourExecution> GetByTourId(long tourId)
+    {
+        return _dbSet
+            .Include(te => te.KeypointProgresses)
+            .Where(te => te.TourId == tourId)
+            .OrderByDescending(te => te.StartTime)
+            .ToList();
+    }
 }

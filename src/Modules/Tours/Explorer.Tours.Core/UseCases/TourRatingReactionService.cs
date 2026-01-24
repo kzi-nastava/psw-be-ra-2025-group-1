@@ -6,6 +6,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace Explorer.Tours.Core.UseCases
@@ -105,5 +106,14 @@ namespace Explorer.Tours.Core.UseCases
 
             return _mapper.Map<TourRatingDto>(tourRating);
         }
+
+        public bool HasUserReacted(long tourRatingId, long userId)
+        {
+            if (userId == 0) return false;
+
+            return _tourRatingReactionRepository.Exists(tourRatingId, userId);
+        }
+
+
     }
 }
