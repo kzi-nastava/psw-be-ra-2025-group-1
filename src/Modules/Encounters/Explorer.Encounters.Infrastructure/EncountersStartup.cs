@@ -1,5 +1,6 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Encounters.API.Public;
+using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using Explorer.Encounters.Core.Mappers;
 using Explorer.Encounters.Core.RepositoryInterfaces;
 using Explorer.Encounters.Core.UseCases;
@@ -23,11 +24,13 @@ public static class EncountersStartup
     private static void SetupCore(IServiceCollection services)
     {
         services.AddScoped<IEncounterService, EncounterService>();
+        services.AddScoped<ITouristStatsService, TouristStatsService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
     {
         services.AddScoped<IEncounterRepository, EncounterRepository>();
+        services.AddScoped<ITouristStatsRepository, TouristStatsRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("encounters"));
         dataSourceBuilder.EnableDynamicJson();
