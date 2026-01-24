@@ -1,11 +1,15 @@
 using Explorer.API.Controllers;
+using Explorer.API.Controllers.Tourist;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public;
 using Explorer.Encounters.Infrastructure.Database;
+using Explorer.Tours.API.Public;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
+using System.Security.Claims;
 
 namespace Explorer.Encounters.Tests.Integration;
 
@@ -14,12 +18,35 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
 {
     public EncounterCommandTests(EncountersTestFactory factory) : base(factory) { }
 
+    private static EncounterController CreateController(IServiceScope scope, long touristId)
+    {
+        var controller = new EncounterController(
+            scope.ServiceProvider.GetRequiredService<IEncounterService>(),
+            scope.ServiceProvider.GetRequiredService<ITouristStatsService>()
+        );
+
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim("personId", touristId.ToString()),
+                    new Claim("id", touristId.ToString()),
+                    new Claim(ClaimTypes.Role, "tourist")
+                }, "test"))
+            }
+        };
+
+        return controller;
+    }
+
     [Fact]
     public void Creates()
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1); //Admin
         var dbContext = scope.ServiceProvider.GetRequiredService<EncounterContext>();
         var newEntity = new EncounterCreateDto
         {
@@ -28,7 +55,9 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             Longitude = 20.5,
             Latitude = 44.8,
             Xp = 100,
-            Type = "Social"
+            Type = "Social",
+            RequiredPeopleCount = 1,
+            Range = 50
         };
 
         // Act
@@ -50,7 +79,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
         var newEntity = new EncounterCreateDto
         {
             Title = "",
@@ -58,11 +87,16 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             Longitude = 20.5,
             Latitude = 44.8,
             Xp = 100,
-            Type = "Social"
+            Type = "Social",
+            RequiredPeopleCount = -1
         };
 
-        // Act & Assert
-        Should.Throw<EntityValidationException>(() => controller.Create(newEntity));
+        // Act
+        var result = controller.Create(newEntity).Result as BadRequestObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(400);
     }
 
     [Fact]
@@ -70,7 +104,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
 
         // Act
         var result = ((ObjectResult)controller.GetAll().Result)?.Value as List<EncounterDto>;
@@ -85,7 +119,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 2);
 
         // Act
         var result = ((ObjectResult)controller.GetActive().Result)?.Value as List<EncounterDto>;
@@ -100,7 +134,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 2);
 
         // Act
         var result = ((ObjectResult)controller.GetById(-1).Result)?.Value as EncounterDto;
@@ -115,10 +149,14 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.GetById(-1000));
+        // Act
+        var result = controller.GetById(-1000).Result as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -126,7 +164,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
         var dbContext = scope.ServiceProvider.GetRequiredService<EncounterContext>();
         var updatedEntity = new EncounterCreateDto
         {
@@ -135,7 +173,8 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             Longitude = 21.0,
             Latitude = 45.0,
             Xp = 150,
-            Type = "Location"
+            Type = "Location",
+            ImagePath = "some/path"
         };
 
         // Act
@@ -158,7 +197,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
         var updatedEntity = new EncounterCreateDto
         {
             Title = "Test",
@@ -169,8 +208,12 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             Type = "Social"
         };
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.Update(-1000, updatedEntity));
+        // Act
+        var result = controller.Update(-1000, updatedEntity).Result as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -178,18 +221,18 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
         var dbContext = scope.ServiceProvider.GetRequiredService<EncounterContext>();
 
         // Act
-        var result = (OkResult)controller.Publish(-1);
+        var result = controller.Publish(-1) as OkResult;
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.Encounters.FirstOrDefault(i => i.Id == -2);
+        var storedEntity = dbContext.Encounters.FirstOrDefault(i => i.Id == -1);
         storedEntity.ShouldNotBeNull();
         storedEntity.Status.ShouldBe(Explorer.Encounters.Core.Domain.EncounterStatus.Active);
     }
@@ -199,10 +242,14 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.Publish(-1000));
+        // Act
+        var result = controller.Publish(-1000) as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -210,11 +257,11 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
         var dbContext = scope.ServiceProvider.GetRequiredService<EncounterContext>();
 
         // Act
-        var result = (OkResult)controller.Archive(-1);
+        var result = controller.Archive(-1) as OkResult;
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -231,10 +278,14 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.Archive(-1000));
+        // Act
+        var result = controller.Archive(-1000) as NotFoundObjectResult;
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 
     [Fact]
@@ -242,11 +293,11 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
         var dbContext = scope.ServiceProvider.GetRequiredService<EncounterContext>();
 
         // Act
-        var result = (OkResult)controller.Delete(-3);
+        var result = controller.Delete(-3) as OkResult;
 
         // Assert - Response
         result.ShouldNotBeNull();
@@ -262,17 +313,13 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
-        var controller = CreateController(scope);
+        var controller = CreateController(scope, 1);
 
-        // Act & Assert
-        Should.Throw<KeyNotFoundException>(() => controller.Delete(-1000));
-    }
+        // Act
+        var result = controller.Delete(-1000) as NotFoundObjectResult;
 
-    private static EncounterController CreateController(IServiceScope scope)
-    {
-        return new EncounterController(scope.ServiceProvider.GetRequiredService<IEncounterService>())
-        {
-            ControllerContext = BuildContext("-1")
-        };
+        // Assert
+        result.ShouldNotBeNull();
+        result.StatusCode.ShouldBe(404);
     }
 }

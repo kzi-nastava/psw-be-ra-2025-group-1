@@ -15,19 +15,16 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourRepository _tourRepository;
     private readonly IUserLocationRepository _userLocationRepository;
     private readonly IMapper _mapper;
-    private readonly ITourPurchaseTokenChecker _tourPurchaseTokenChecker;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
-        ITourPurchaseTokenChecker tourPurchaseTokenChecker,
         IUserLocationRepository userLocationService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _userLocationRepository = userLocationService;
-        _tourPurchaseTokenChecker  = tourPurchaseTokenChecker;
         _mapper = mapper;
     }
 
@@ -39,10 +36,6 @@ public class TourExecutionService : ITourExecutionService
 
         if (tour.Status != TourStatus.Published && tour.Status != TourStatus.Archived)
             throw new InvalidOperationException("Can only start published or archived tours");
-
-        // Check if tour has been purchased (using token repository)
-        if (!_tourPurchaseTokenChecker.ExistsForUserAndTour(touristId, startTourDto.TourId))
-            throw new InvalidOperationException("You must purchase the tour before starting it");
 
         var activeTour = _tourExecutionRepository.GetActiveTourByTourist(touristId);
         if (activeTour != null)
@@ -131,11 +124,10 @@ public class TourExecutionService : ITourExecutionService
         if (reached != null)
             return true; // Already reached
 
-        const double nearbyDistance = 0.00018; // approximately 20 meters
+        const double nearbyDistance = 0.00025; // approximately 20m
         double longDiff = Math.Abs(userLocation.Longitude - keypoint.Longitude);
         double latDiff = Math.Abs(userLocation.Latitude - keypoint.Latitude);
-
-        if (Math.Sqrt(longDiff * longDiff - latDiff * latDiff) < nearbyDistance)
+        if (Math.Sqrt(longDiff * longDiff + latDiff * latDiff) < nearbyDistance)
         {
             // Mark keypoint as reached and create a new Keypoint Progress for it
             execution.ReachKeypoint(keypoint.Id, tour.Keypoints.Count);

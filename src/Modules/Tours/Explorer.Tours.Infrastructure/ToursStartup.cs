@@ -40,6 +40,10 @@ public static class ToursStartup
         services.AddScoped<ITourRatingService, TourRatingService>();
         services.AddScoped<ITourRatingReactionService, TourRatingReactionService>();
         services.AddScoped<IRestaurantService, RestaurantService>();
+        
+        // Adapter for cross-module tour browsing
+        services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourBrowsingInfo, 
+            Explorer.Tours.Core.Services.TourBrowsingAdapter>();
     }
     
     private static void SetupInfrastructure(IServiceCollection services)
