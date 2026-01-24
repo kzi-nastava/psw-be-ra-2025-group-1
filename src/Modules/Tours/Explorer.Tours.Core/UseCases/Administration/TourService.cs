@@ -239,6 +239,11 @@ public class TourService : ITourService
         var tour = _tourRepository.Get(tourId);
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update map marker from someone else's tour");
+        if(tour.MapMarker == null)
+        {
+            throw new InvalidOperationException("Tour has no map marker to update");
+        }
+        mapMarkerDto.Id = tour.MapMarker.Id;
         var mapMarker = tour.UpdateMapMarker(_mapper.Map<MapMarker>(mapMarkerDto));
         _tourRepository.Update(tour);
 
@@ -250,7 +255,9 @@ public class TourService : ITourService
         var tour = _tourRepository.Get(tourId);
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't delete map marker from someone else's tour");
+        var marker = tour.MapMarker;
         tour.DeleteMapMarker();
+        _tourRepository.DeleteMapMarker(marker);
         var result = _tourRepository.Update(tour);
     }
 }

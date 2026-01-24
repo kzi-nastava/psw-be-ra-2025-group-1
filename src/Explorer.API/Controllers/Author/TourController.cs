@@ -347,4 +347,73 @@ public class TourController : ControllerBase
             return Unauthorized(new { message = ex.Message });
         }
     }
+
+    // Map marker
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPost("{tourId}/mapMarker")]
+    public ActionResult<MapMarkerDto> AddMapMarker(long tourId, [FromBody] MapMarkerDto mapMarkerDto)
+    {
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.AddMapMarker(tourId, mapMarkerDto, authorId);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPut("{tourId}/mapMarker")]
+    public ActionResult<KeypointDto> UpdateMapMarker(long tourId, [FromBody] MapMarkerDto mapMarkerDto)
+    {
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.UpdateMapMarker(tourId, mapMarkerDto, authorId);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpDelete("{tourId}/mapMarker")]
+    public ActionResult DeleteMapMarker(long tourId)
+    {
+        try
+        {
+            long authorId = User.PersonId();
+            _tourService.DeleteMapMarker(tourId, authorId);
+            return Ok(new { message = "Map marker successfully deleted" });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
 }

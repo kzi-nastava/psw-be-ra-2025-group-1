@@ -33,11 +33,12 @@ public class ToursContext : DbContext
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
 
-        // One-Ona relationship between Tour and MapMarker
+        // One-One relationship between Tour and MapMarker
         modelBuilder.Entity<Tour>()
             .HasOne(t => t.MapMarker)
             .WithOne()
             .HasForeignKey<Tour>("MapMarkerId")
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Cascade);
 
         // One-Many relationship between TourExecution and KeypointProgress

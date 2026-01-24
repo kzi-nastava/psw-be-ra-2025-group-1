@@ -18,6 +18,7 @@ public class ToursProfile : Profile
         CreateMap<TransportTimeDto, TransportTime>().ReverseMap();
         CreateMap<TourRatingDto, TourRating>().ReverseMap();
         CreateMap<TourRatingReactionDto, TourRatingReaction>().ReverseMap();
+        CreateMap<MapMarkerDto, MapMarker>().ReverseMap();
 
         CreateMap<MonumentDto, Monument>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<MonumentStatus>(src.Status)));

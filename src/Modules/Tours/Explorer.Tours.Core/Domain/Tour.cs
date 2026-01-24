@@ -33,7 +33,7 @@ public class Tour : AggregateRoot
     public List<Keypoint> Keypoints { get; private set; }
     public List<Equipment> Equipment { get; private set; }
     public List<TransportTime> TransportTimes { get; private set; }
-    public MapMarker? MapMarker { get; private set; }
+    public MapMarker? MapMarker { get; set; }
 
     public Tour()
     {
@@ -206,17 +206,25 @@ public class Tour : AggregateRoot
 
     public MapMarker AddMapMarker(MapMarker mapMarker)
     {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only add marker to tour in draft");
+        if (MapMarker != null)
+            throw new InvalidOperationException("Tour already has a marker");
         MapMarker = mapMarker;
         return MapMarker;
     }
 
     public MapMarker UpdateMapMarker(MapMarker mapMarker)
     {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only update marker in tour in draft");
         return MapMarker.Update(mapMarker);
     }
 
     public void DeleteMapMarker()
     {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only delete map marker from tour in draft status");
         MapMarker = null;
     }
 

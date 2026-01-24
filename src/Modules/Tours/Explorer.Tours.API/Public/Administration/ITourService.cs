@@ -35,5 +35,5 @@ public interface ITourService
 
     MapMarkerDto AddMapMarker(long tourId, MapMarkerDto mapMarkerDto, long authorId);
     MapMarkerDto UpdateMapMarker(long tourId, MapMarkerDto mapMarkerDto, long authorId);
-    void DeleteMapMarker(long tourId, long mapMarkerId, long authorId);
+    void DeleteMapMarker(long tourId, long authorId);
 }
