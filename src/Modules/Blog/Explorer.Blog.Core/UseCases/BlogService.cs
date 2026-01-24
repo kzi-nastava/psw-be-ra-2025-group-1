@@ -22,7 +22,7 @@ public class BlogService : IBlogService
 
     public BlogDto CreateBlog(long userId, BlogCreateDto blogDto)
     {
-        var blog = new Domain.Blog(userId, blogDto.Title, blogDto.Description, blogDto.Images);
+        var blog = new Domain.Blog(userId, blogDto.Title, blogDto.Description, blogDto.Images, blogDto.Videos);
         var createdBlog = _blogRepository.Create(blog);
         return _mapper.Map<BlogDto>(createdBlog);
     }
@@ -36,7 +36,7 @@ public class BlogService : IBlogService
     public BlogDto UpdateBlog(long blogId, BlogUpdateDto blogDto)
     {
         var blog = _blogRepository.GetById(blogId);
-        blog.Update(blogDto.Title, blogDto.Description, blogDto.Images); // The Aggregate (Blog.cs) now throws an exception if this is Invalid.
+        blog.Update(blogDto.Title, blogDto.Description, blogDto.Images, blogDto.Videos); // The Aggregate (Blog.cs) now throws an exception if this is Invalid.
         var updatedBlog = _blogRepository.Update(blog);
         return AddAuthorToComments(updatedBlog);
     }
