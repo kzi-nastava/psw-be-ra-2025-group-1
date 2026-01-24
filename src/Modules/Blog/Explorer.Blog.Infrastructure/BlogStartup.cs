@@ -7,6 +7,7 @@ using Explorer.BuildingBlocks.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
+using Explorer.Blog.API.Internal;
 
 namespace Explorer.Blog.Infrastructure;
 
@@ -24,6 +25,7 @@ public static class BlogStartup
     private static void SetupCore(IServiceCollection services)
     {
         services.AddScoped<IBlogService, BlogService>(); // creates one instance per HTTP request
+        services.AddScoped<IInternalBlogService, InternalBlogService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)

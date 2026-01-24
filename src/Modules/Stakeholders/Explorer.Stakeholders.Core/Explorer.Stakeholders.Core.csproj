@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Blog\Explorer.Blog.API\Explorer.Blog.API.csproj" />
     <ProjectReference Include="..\..\Tours\Explorer.Tours.API\Explorer.Tours.API.csproj" />
     <ProjectReference Include="..\Explorer.Stakeholders.API\Explorer.Stakeholders.API.csproj" />
   </ItemGroup>
