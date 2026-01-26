@@ -29,14 +29,14 @@ public class JournalService : IJournalService
             journal.SetMedia(dto.Images, dto.Videos);
             journal = _repo.Add(journal);
 
-            return _mapper.Map<JournalDto>(journal);
+            return MapForUser(journal, userId);
     }
 
     public List<JournalDto> GetMine(long userId)
     {
         var list = _repo.GetAccessibleByUserId(userId).ToList();
 
-        return _mapper.Map<List<JournalDto>>(list);
+        return list.Select(j => MapForUser(j, userId)).ToList();
     }
 
     public JournalDto Update(long userId, long journalId, JournalUpdateDto dto)
@@ -51,7 +51,7 @@ public class JournalService : IJournalService
 
         _repo.Update(journal);
 
-        return _mapper.Map<JournalDto>(journal);
+        return MapForUser(journal, userId);
     }
 
     public void Delete(long userId, long journalId)
@@ -88,7 +88,7 @@ public class JournalService : IJournalService
 
         _repo.Update(journal);
 
-        return _mapper.Map<JournalDto>(journal);
+        return MapForUser(journal, userId);
     }
 
 
@@ -103,14 +103,34 @@ public class JournalService : IJournalService
         journal.AddCollaborator(ownerId, user.Id);
         _repo.Update(journal);
 
-        return _mapper.Map<JournalDto>(journal);
+        return MapForUser(journal, ownerId);
     }
     public JournalDto RemoveCollaborator(long ownerId, long journalId, long collaboratorUserId)
     {
         var journal = _repo.GetById(journalId) ?? throw new KeyNotFoundException("Dnevnik nije pronađen.");
         journal.RemoveCollaborator(ownerId, collaboratorUserId);
         _repo.Update(journal);
-        return _mapper.Map<JournalDto>(journal);
+        return MapForUser(journal, ownerId);
+    }
+
+    private JournalDto MapForUser(Journal journal, long currentUserId)
+    {
+        var dto = _mapper.Map<JournalDto>(journal);
+
+        dto.CanManageCollaborators = journal.IsOwner(currentUserId);
+        dto.CanEdit = journal.IsOwner(currentUserId) || journal.IsCollaborator(currentUserId);
+        dto.CanDelete = journal.IsOwner(currentUserId);
+
+        // Collaborators + username 
+        dto.Collaborators = journal.Collaborators
+            .Select(c => new CollaboratorDto
+            {
+                UserId = c.UserId,
+                Username = c.User?.Username ?? "" 
+            })
+            .ToList();
+
+        return dto;
     }
 
 
