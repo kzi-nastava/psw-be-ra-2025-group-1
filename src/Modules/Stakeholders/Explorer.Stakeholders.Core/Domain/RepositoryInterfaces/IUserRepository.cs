@@ -11,4 +11,5 @@ public interface IUserRepository
     User Update(User user);
 
     User? FindByUsername(string username); //za kolaboratore
+    List<User> GetByIds(IEnumerable<long> ids);
 }
