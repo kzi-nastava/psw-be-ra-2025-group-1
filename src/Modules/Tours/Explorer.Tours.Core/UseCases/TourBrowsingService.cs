@@ -62,16 +62,44 @@ public class TourBrowsingService : ITourBrowsingService
         return tour;
     }
 
-    public PagedResult<TourDto> GetPublished(int page, int pageSize)
+    public PagedResult<TourDto> GetPublished(int page, int pageSize, string? searchTerm = null, string? sortBy = null)
     {
-        var result = _repository.GetPublished(page, pageSize);
+        var result = _repository.GetPublished(0, 0);
+        var tours = result.Results.AsEnumerable();
 
-        var mapped = result.Results
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            var searchTermLower = searchTerm.ToLower();
+            tours = tours.Where(t => 
+                t.Title.ToLower().Contains(searchTermLower) || 
+                t.Description.ToLower().Contains(searchTermLower));
+        }
+
+        tours = sortBy?.ToLower() switch
+        {
+            "tags" or "tags-asc" => tours.OrderBy(t => t.Tags.Length > 0 ? string.Join(",", t.Tags.OrderBy(tag => tag)) : string.Empty),
+            "difficulty-asc" => tours.OrderBy(t => t.Difficulty),
+            "difficulty-desc" => tours.OrderByDescending(t => t.Difficulty),
+            _ => tours
+        };
+
+        var tourList = tours.ToList();
+
+        var pagedTours = tourList;
+        if (pageSize > 0 && page > 0)
+        {
+            pagedTours = tourList
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+        }
+
+        var mapped = pagedTours
             .Select(ToDto)
             .Select(ApplySaleDiscount)
             .ToList();
 
-        return new PagedResult<TourDto>(mapped, result.TotalCount);
+        return new PagedResult<TourDto>(mapped, tourList.Count);
     }
 
     public TourDto? GetPublishedById(long id)
