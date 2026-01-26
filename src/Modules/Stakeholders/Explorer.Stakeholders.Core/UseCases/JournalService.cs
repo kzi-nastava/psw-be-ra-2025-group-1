@@ -12,12 +12,14 @@ public class JournalService : IJournalService
     private readonly IJournalRepository _repo;
     private readonly IMapper _mapper; 
     private readonly IInternalBlogService _internalBlogService;
+    private readonly IUserRepository _userRepo;
 
-    public JournalService(IJournalRepository repo, IMapper mapper, IInternalBlogService internalBlogService)
+    public JournalService(IJournalRepository repo, IMapper mapper, IInternalBlogService internalBlogService, IUserRepository userRepo)
     {
         _repo = repo;
         _mapper = mapper;
         _internalBlogService = internalBlogService;
+        _userRepo = userRepo;
     }
 
     public JournalDto Create(long userId, JournalCreateDto dto)
@@ -32,7 +34,7 @@ public class JournalService : IJournalService
 
     public List<JournalDto> GetMine(long userId)
     {
-        var list = _repo.GetByUserId(userId).ToList();
+        var list = _repo.GetAccessibleByUserId(userId).ToList();
 
         return _mapper.Map<List<JournalDto>>(list);
     }
@@ -42,7 +44,7 @@ public class JournalService : IJournalService
         var journal = _repo.GetById(journalId)
                       ?? throw new KeyNotFoundException("Dnevnik nije pronađen.");
 
-        if (journal.UserId != userId)
+        if (!(journal.IsOwner(userId) || journal.IsCollaborator(userId)))
             throw new UnauthorizedAccessException("Nemate dozvolu da menjate ovaj dnevnik.");
 
         journal.Update(dto.Content, dto.Title);
@@ -57,7 +59,7 @@ public class JournalService : IJournalService
         var journal = _repo.GetById(journalId)
                       ?? throw new KeyNotFoundException("Dnevnik nije pronađen.");
 
-        if (journal.UserId != userId)
+        if (!journal.IsOwner(userId))
             throw new UnauthorizedAccessException("Nemate dozvolu da obrišete ovaj dnevnik.");
 
         _repo.Delete(journal);
@@ -88,5 +90,28 @@ public class JournalService : IJournalService
 
         return _mapper.Map<JournalDto>(journal);
     }
+
+
+    public JournalDto AddCollaborator(long ownerId, long journalId, string query)
+    {
+        var journal = _repo.GetById(journalId) ?? throw new KeyNotFoundException("Dnevnik nije pronađen.");
+
+        // lookup user
+        var user = _userRepo.FindByUsername(query);
+        if (user == null) throw new ArgumentException("User does not exist.");
+
+        journal.AddCollaborator(ownerId, user.Id);
+        _repo.Update(journal);
+
+        return _mapper.Map<JournalDto>(journal);
+    }
+    public JournalDto RemoveCollaborator(long ownerId, long journalId, long collaboratorUserId)
+    {
+        var journal = _repo.GetById(journalId) ?? throw new KeyNotFoundException("Dnevnik nije pronađen.");
+        journal.RemoveCollaborator(ownerId, collaboratorUserId);
+        _repo.Update(journal);
+        return _mapper.Map<JournalDto>(journal);
+    }
+
 
 }

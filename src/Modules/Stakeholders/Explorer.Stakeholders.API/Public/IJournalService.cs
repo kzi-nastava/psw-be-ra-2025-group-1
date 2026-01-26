@@ -10,4 +10,7 @@ public interface IJournalService
     void Delete(long userId, long journalId);
     JournalDto Publish(long userId, long journalId);
 
+    JournalDto AddCollaborator(long ownerId, long journalId, string query);
+    JournalDto RemoveCollaborator(long ownerId, long journalId, long collaboratorUserId);
+
 }
