@@ -7,18 +7,22 @@ using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using System.Net.Sockets;
+using Explorer.Encounters.API.Public;
+using Explorer.Encounters.API.Dtos;
 namespace Explorer.Tours.Core.UseCases.Administration;
 
 public class TourService : ITourService
 {
     private readonly ITourRepository _tourRepository;
     private readonly IEquipmentRepository _equipmentRepository;
+    private readonly IEncounterService _encounterService;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
+    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IEncounterService encounterService, IMapper mapper)
     {
         _tourRepository = tourRepository;
         _equipmentRepository = equipmentRepository;
+        _encounterService = encounterService;
         _mapper = mapper;
     }
 
@@ -140,10 +144,50 @@ public class TourService : ITourService
         var tour = _tourRepository.Get(tourId);
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add keypoint to someone else's tour");
-        var keypoint = tour.AddKeypoint(_mapper.Map<Keypoint>(keypointDto));
-        _tourRepository.Update(tour);
 
-        return _mapper.Map<KeypointDto>(keypoint);
+        // If encounter data is provided, create the encounter first
+        long? encounterId = null;
+        if (keypointDto.Encounter != null)
+        {
+            var encounterDto = new EncounterCreateDto
+            {
+                Title = keypointDto.Encounter.Title,
+                Description = keypointDto.Encounter.Description,
+                Latitude = keypointDto.Latitude,
+                Longitude = keypointDto.Longitude,
+                Xp = keypointDto.Encounter.Xp,
+                Type = "KeypointChallenge",
+                KeypointId = null // will be bound after keypoint creation
+            };
+            
+            var createdEncounter = _encounterService.Create(encounterDto);
+            encounterId = createdEncounter.Id;
+            
+            // Publish the encounter immediately so tourists can use it
+            _encounterService.Publish(encounterId.Value);
+        }
+
+        var keypoint = tour.AddKeypoint(_mapper.Map<Keypoint>(keypointDto));
+        
+        // Set EncounterId on keypoint before saving
+        if (encounterId.HasValue)
+        {
+            keypoint.EncounterId = encounterId.Value;
+        }
+        
+        // Save the tour first - this assigns the keypoint.Id (mandatory))
+        var updatedTour = _tourRepository.Update(tour);
+        
+        // Get the fresh keypoint with the assigned ID from the db
+        var savedKeypoint = updatedTour.Keypoints.FirstOrDefault(k => k.EncounterId == encounterId);
+        
+        // and now FINALLY update the encounter with the keypoint ID (after keypoint.Id is assigned)
+        if (encounterId.HasValue && savedKeypoint != null)
+        {
+            _encounterService.SetKeypointId(encounterId.Value, savedKeypoint.Id);
+        }
+
+        return _mapper.Map<KeypointDto>(savedKeypoint ?? keypoint);
     }
 
     public KeypointDto UpdateKeypoint(long tourId, KeypointDto keypointDto, long authorId)

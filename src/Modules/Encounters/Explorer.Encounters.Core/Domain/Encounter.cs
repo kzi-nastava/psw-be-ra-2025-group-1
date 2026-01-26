@@ -18,13 +18,14 @@ public class Encounter : AggregateRoot
     public double? Range { get; private set; }
     public string? ImagePath { get; private set; }
     public List<string>? Hints { get; private set; }
+    public long? KeypointId { get; private set; }
 
     private Encounter() 
     {
         Requirements = new List<string>();
         Hints = new List<string>();
     }
-    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null) : this()
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, long? keypointId = null) : this()
     {
         Title = title;
         Description = description;
@@ -38,6 +39,7 @@ public class Encounter : AggregateRoot
         ImagePath = imgPath;
         Requirements = reqs;
         Hints = hints;
+        KeypointId = keypointId;
 
         Validate();
     }
@@ -83,5 +85,10 @@ public class Encounter : AggregateRoot
         Hints = hints;
 
         Validate();
+    }
+
+    public void SetKeypointId(long keypointId)
+    {
+        KeypointId = keypointId;
     }
 }
