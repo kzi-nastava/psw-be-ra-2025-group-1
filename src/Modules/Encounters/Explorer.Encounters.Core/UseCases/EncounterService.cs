@@ -52,7 +52,8 @@ public class EncounterService : IEncounterService
             dto.RequiredPeopleCount,
             dto.Range,
             dto.ImagePath,
-            dto.Hints
+            dto.Hints,
+            dto.KeypointId
         );
 
         var created = _repository.Create(encounter);
@@ -100,6 +101,21 @@ public class EncounterService : IEncounterService
         // Check if already completed
         if (_repository.HasCompletedEncounter(touristId, encounterId))
             throw new InvalidOperationException("Tourist has already completed this encounter.");
+        
+        // KeypointChallenge encounters are instantly completed
+        if (encounter.Type == EncounterType.KeypointChallenge)
+        {
+            // Mark as completed immediately and award XP
+            var completedEncounter = new CompletedEncounter(touristId, encounterId, encounter.Xp);
+            _repository.CompleteEncounter(completedEncounter);
+            
+            // Award XP to the tourist
+            UpdateTouristStats(touristId, encounter.Xp);
+            
+            // Return a temporary active encounter DTO just to show completion
+            var tempActive = new ActiveEncounter(touristId, encounterId, latitude, longitude, encounter.Hints, encounter.ImagePath);
+            return MapToDto(tempActive, encounter);
+        }
         
         // Check if already activated
         var existing = _repository.GetActiveTouristEncounter(touristId, encounterId);
@@ -203,9 +219,18 @@ public class EncounterService : IEncounterService
 
     private void UpdateTouristStats(long touristId, int xp)
     {
-        var stats = _statsRepository.GetByTourist(touristId);
-        stats.AddXp(xp);
-        _statsRepository.Update(stats);
+        try
+        {
+            var stats = _statsRepository.GetByTourist(touristId);
+            if (stats == null)
+                throw new InvalidOperationException($"Failed to create or retrieve TouristStats for tourist {touristId}");
+            stats.AddXp(xp);
+            _statsRepository.Update(stats);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to update XP for tourist {touristId}: {ex.Message}", ex);
+        }
     }
 
     public List<ActiveEncounterDto> GetActiveTouristEncounters(long touristId)
@@ -248,8 +273,9 @@ public class EncounterService : IEncounterService
         var completedEncounters = _repository.GetCompletedByTourist(touristId);
         var completedIds = completedEncounters.Select(c => c.EncounterId).ToHashSet();
         
+        // Filter out keypoint-specific encounters (they should only appear in tours)
         var availableEncounters = activeEncounters
-            .Where(e => !completedIds.Contains(e.Id))
+            .Where(e => !completedIds.Contains(e.Id) && e.KeypointId == null)
             .ToList();
         
         return _mapper.Map<List<EncounterDto>>(availableEncounters);
@@ -329,6 +355,26 @@ public class EncounterService : IEncounterService
         _repository.UpdateActiveEncounter(activeEncounter);
 
         return hints;
+    }
+
+    public EncounterDto GetByKeypointId(long keypointId)
+    {
+        var encounter = _repository.GetByKeypointId(keypointId);
+        if (encounter == null)
+            throw new KeyNotFoundException($"No encounter found for keypoint {keypointId}");
+        return _mapper.Map<EncounterDto>(encounter);
+    }
+
+    public bool HasKeypointEncounter(long keypointId)
+    {
+        return _repository.GetByKeypointId(keypointId) != null;
+    }
+
+    public void SetKeypointId(long encounterId, long keypointId)
+    {
+        var encounter = _repository.GetById(encounterId);
+        encounter.SetKeypointId(keypointId);
+        _repository.Update(encounter);
     }
 
     // ---------- HELPERS -------------
