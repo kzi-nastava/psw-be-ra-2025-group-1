@@ -104,6 +104,24 @@ public class JournalController : ControllerBase
     }
 
 
+    [HttpPost("{id:long}/collaborators")]
+    public ActionResult<JournalDto> AddCollaborator(long id, [FromBody] AddCollaboratorRequestDto request)
+    {
+        try { return Ok(_service.AddCollaborator(GetUserId(), id, request.CollaboratorUsername)); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpDelete("{id:long}/collaborators/{collaboratorUserId:long}")]
+    public ActionResult<JournalDto> RemoveCollaborator(long id, long collaboratorUserId)
+    {
+        try { return Ok(_service.RemoveCollaborator(GetUserId(), id, collaboratorUserId)); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+
 
     private long GetUserId()
         => long.Parse(User.FindFirstValue("id") ?? User.FindFirstValue(ClaimTypes.NameIdentifier)!);

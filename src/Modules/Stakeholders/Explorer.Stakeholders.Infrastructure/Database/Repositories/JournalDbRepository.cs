@@ -21,7 +21,10 @@ public class JournalDbRepository : IJournalRepository
     }
 
     public Journal? GetById(long id)
-        => _db.Journals.FirstOrDefault(j => j.Id == id);
+        => _db.Journals
+            .Include(j => j.Collaborators)
+                .ThenInclude(c => c.User)
+            .FirstOrDefault(j => j.Id == id);
 
     public IEnumerable<Journal> GetByUserId(long userId)
         => _db.Journals.AsNoTracking()
@@ -54,4 +57,17 @@ public class JournalDbRepository : IJournalRepository
     public Journal? GetSingleByUserId(long userId)
         => _db.Journals.AsNoTracking()
             .FirstOrDefault(j => j.UserId == userId);
+
+
+    public IEnumerable<Journal> GetAccessibleByUserId(long userId)
+    {
+        return _db.Journals
+            .AsNoTracking()
+            .Include(j => j.Collaborators)
+                .ThenInclude(c => c.User)
+            .Where(j => j.UserId == userId || j.Collaborators.Any(c => c.UserId == userId))
+            .OrderByDescending(j => j.CreatedAt)
+            .ToList();
+    }
+
 }

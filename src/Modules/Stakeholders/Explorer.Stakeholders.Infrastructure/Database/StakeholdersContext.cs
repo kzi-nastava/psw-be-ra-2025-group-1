@@ -13,7 +13,8 @@ public class StakeholdersContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Rating> Ratings { get; set; }
     public DbSet<Journal> Journals { get; set; }
-    
+    public DbSet<JournalCollaborator> JournalCollaborators { get; set; }
+
     public DbSet<UserLocation> UserLocations { get; set; }
     public DbSet<Problem> Problems { get; set; }
     public DbSet<ProblemMessage> ProblemMessages { get; set; }
@@ -53,6 +54,29 @@ public class StakeholdersContext : DbContext
             cfg.HasIndex(r => r.UserId);
             cfg.HasIndex(r => r.CreatedAt);
         });
+        
+        modelBuilder.Entity<JournalCollaborator>()
+            .ToTable("JournalCollaborators");
+
+        modelBuilder.Entity<JournalCollaborator>(cfg =>
+        {
+            cfg.ToTable("JournalCollaborators");
+
+            cfg.HasKey(x => new { x.JournalId, x.UserId }); 
+
+            cfg.HasIndex(x => new { x.JournalId, x.UserId }).IsUnique();
+
+            cfg.HasOne(x => x.User)
+               .WithMany()                 // User nema kolekciju Collaborations
+               .HasForeignKey(x => x.UserId)
+               .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<Journal>()
+            .HasMany(j => j.Collaborators)
+            .WithOne()
+            .HasForeignKey(c => c.JournalId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         ConfigureProblems(modelBuilder);
         ConfigureProblemMessages(modelBuilder);
