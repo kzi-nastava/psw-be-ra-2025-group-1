@@ -41,7 +41,6 @@ public static class ToursStartup
         services.AddScoped<ITourRatingReactionService, TourRatingReactionService>();
         services.AddScoped<IRestaurantService, RestaurantService>();
         
-        // Adapter for cross-module tour browsing
         services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourBrowsingInfo, 
             Explorer.Tours.Core.Services.TourBrowsingAdapter>();
     }
@@ -58,7 +57,15 @@ public static class ToursStartup
         services.AddScoped<ITourRatingRepository, TourRatingDbRepository>();
         services.AddScoped<ITourRatingReactionRepository, TourRatingReactionDbRepository>();
         services.AddScoped<IRestaurantRepository, RestaurantDbRepository>();
+        services.AddScoped<IKeypointRepository, KeypointDbRepository>();
 
+
+        services.AddMemoryCache();
+        services.AddHttpClient<IWeatherForecastService, OpenMeteoWeatherForecastService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
+        
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();

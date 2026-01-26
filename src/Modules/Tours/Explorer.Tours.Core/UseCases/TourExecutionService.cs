@@ -6,7 +6,6 @@ using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.BuildingBlocks.Core.Services;
 
-
 namespace Explorer.Tours.Core.UseCases;
 
 public class TourExecutionService : ITourExecutionService
@@ -15,17 +14,20 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourRepository _tourRepository;
     private readonly IUserLocationRepository _userLocationRepository;
     private readonly IMapper _mapper;
+    private readonly IKeypointRepository _keypointRepository;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
         IUserLocationRepository userLocationService,
-        IMapper mapper)
+        IMapper mapper,
+        IKeypointRepository keypointRepository)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _userLocationRepository = userLocationService;
         _mapper = mapper;
+        _keypointRepository = keypointRepository;
     }
 
     public TourExecutionDto StartTour(long touristId, StartTourDto startTourDto)
@@ -209,4 +211,22 @@ public class TourExecutionService : ITourExecutionService
         var result = _tourExecutionRepository.Create(execution);
         return _mapper.Map<TourExecutionDto>(result);
     }
+    public List<KeypointDto> GetTourKeypoints(long touristId, long tourId)
+    {
+        var keypoints = _keypointRepository.GetByTourId(tourId);
+
+        return keypoints.Select(k => new KeypointDto
+        {
+            Id = k.Id,
+            Title = k.Title,
+            Description = k.Description,
+            ImageUrl = k.ImageUrl,
+            Secret = k.Secret,
+            Latitude = k.Latitude,
+            Longitude = k.Longitude,
+            SequenceNumber = k.SequenceNumber
+        }).ToList();
+    }
+
+
 }
