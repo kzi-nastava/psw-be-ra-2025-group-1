@@ -351,6 +351,15 @@ namespace Explorer.API.Demo
             }, tour1.CreatorId);
 
             _tourService.AddKeypoint(tour1.Id, new KeypointDto
+            { 
+                Title = "Donji Dorćol – Ulica Cara Dušana",
+                Description = "Obilazak starog jevrejskog i trgovačkog centra Beograda.",
+                Secret = "Nekada je ovde bilo najveće trgovačko jezgro osmanskog Beograda.",
+                Latitude = 44.8179,
+                Longitude = 20.4564
+            }, tour1.CreatorId);
+
+            _tourService.AddKeypoint(tour1.Id, new KeypointDto
             {
                 Title = "Gardoš kula",
                 Description = "Vidikovac.",
