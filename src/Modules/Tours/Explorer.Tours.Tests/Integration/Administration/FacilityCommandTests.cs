@@ -75,7 +75,7 @@ public class FacilityCommandTests : BaseToursIntegrationTest
             Name = "Test Facility",
             Latitude = 100.0, // Invalid: exceeds valid range
             Longitude = -73.963244,
-            Category = API.Dtos.FacilityCategory.Restaurant
+            Category = API.Dtos.FacilityCategory.Store
         };
 
         // Act & Assert
@@ -93,7 +93,7 @@ public class FacilityCommandTests : BaseToursIntegrationTest
             Name = "Test Facility",
             Latitude = 40.779437,
             Longitude = 200.0, // Invalid: exceeds valid range
-            Category = API.Dtos.FacilityCategory.Restaurant
+            Category = API.Dtos.FacilityCategory.Store
         };
 
         // Act & Assert
@@ -125,7 +125,7 @@ public class FacilityCommandTests : BaseToursIntegrationTest
             Name = uniqueName, // Same name
             Latitude = 41.0,
             Longitude = -74.0,
-            Category = API.Dtos.FacilityCategory.Restaurant
+            Category = API.Dtos.FacilityCategory.Store
         };
 
         // Act & Assert
@@ -157,7 +157,7 @@ public class FacilityCommandTests : BaseToursIntegrationTest
             Name = "Updated Facility " + Guid.NewGuid().ToString().Substring(0, 8),
             Latitude = 40.785091,
             Longitude = -73.968285,
-            Category = API.Dtos.FacilityCategory.Restaurant
+            Category = API.Dtos.FacilityCategory.Store
         };
 
         // Act
