@@ -16,5 +16,7 @@ namespace Explorer.Tours.API.Dtos
         public double Latitude { get; set; }
         public double Longitude { get; set; } 
         public int SequenceNumber { get; set; }
+        public long? EncounterId { get; set; }
+        public EncounterDataDto? Encounter { get; set; }
     }
 }
