@@ -40,6 +40,8 @@ public static class ToursStartup
         services.AddScoped<ITourRatingService, TourRatingService>();
         services.AddScoped<ITourRatingReactionService, TourRatingReactionService>();
         services.AddScoped<IRestaurantService, RestaurantService>();
+        services.AddScoped<IMapMarkerService, MapMarkerService>();
+        services.AddScoped<ITouristMapMarkerService, TouristMapMarkerService>();
         
         // Adapter for cross-module tour browsing
         services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourBrowsingInfo, 
@@ -58,6 +60,8 @@ public static class ToursStartup
         services.AddScoped<ITourRatingRepository, TourRatingDbRepository>();
         services.AddScoped<ITourRatingReactionRepository, TourRatingReactionDbRepository>();
         services.AddScoped<IRestaurantRepository, RestaurantDbRepository>();
+        services.AddScoped<IMapMarkerRepository, MapMarkerDbRepository>();
+        services.AddScoped<ITouristMapMarkerRepository,  TouristMapMarkerDbRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
