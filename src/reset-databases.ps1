@@ -9,7 +9,8 @@
 
 param(
     [switch]$NoSeed,
-    [switch]$KeepDb
+    [switch]$KeepDb,
+	[switch]$ReseedData
 )
 
 Write-Host "=== RESETTING PostgreSQL DATABASES ===" -ForegroundColor Cyan
@@ -51,6 +52,63 @@ DROP DATABASE IF EXISTS "explorer-v1-test";
 CREATE DATABASE "explorer-v1-test";
 "@
 }
+
+if ($ReseedData) {
+    Write-Host "Mode: Clearing and reseeding data only (schema intact)" -ForegroundColor Yellow
+
+    # List of module schemas
+    $schemas = @("Tours", "Payments", "Blogs", "Stakeholders", "Encounters")
+
+    foreach ($schema in $schemas) {
+        Write-Host "Clearing data in schema $schema..." -ForegroundColor Cyan
+
+        $sql = @"
+DO \$\$ 
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT tablename 
+              FROM pg_tables 
+              WHERE schemaname = '$schema') 
+    LOOP
+        EXECUTE 'TRUNCATE TABLE ' || quote_ident('$schema') || '.' || quote_ident(r.tablename) || ' CASCADE;';
+    END LOOP;
+END
+\$\$;
+"@
+
+        try {
+            $sql | & "$pgExe" -h $pgHost -p $pgPort -U $pgUser -d "explorer-v1"
+
+            if ($LASTEXITCODE -ne 0) {
+                throw "Data truncation failed for schema $schema with exit code $LASTEXITCODE"
+            }
+
+            Write-Host "~~~~ Data cleared for $schema successfully ~~~~" -ForegroundColor Green
+        } catch {
+            Write-Host "!!!!! Error truncating data in $schema !!!!!" -ForegroundColor Red
+            Write-Host "Error details: $_" -ForegroundColor Red
+            exit 1
+        }
+    }
+
+    # Run seeding after clearing all data
+    Write-Host "`n=== SEEDING DATABASE ===" -ForegroundColor Cyan
+    try {
+        dotnet run --project ./Explorer.API/Explorer.API.csproj -- --seed
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "Database seeding failed with exit code $LASTEXITCODE"
+        }
+
+        Write-Host "~~~~ Database reseeded successfully ~~~~" -ForegroundColor Green
+    } catch {
+        Write-Host "!!!!! Error seeding database !!!!!" -ForegroundColor Red
+        Write-Host "Error details: $_" -ForegroundColor Red
+        exit 1
+    }
+}
+
 
 $sql = @"
 SELECT pg_terminate_backend(pid)

@@ -143,6 +143,17 @@ public class TourExecutionService : ITourExecutionService
             // Mark keypoint as reached and create a new Keypoint Progress for it
             execution.ReachKeypoint(keypoint.Id, tour.Keypoints.Count);
             _tourExecutionRepository.Update(execution);
+
+            // Check if tour is completed to collect marker, since TourExecutionService.Complete()
+            // never gets actually called
+            if(execution.Status == TourExecutionStatus.Completed)
+            {
+                // Automatically collect marker
+                if (tour.MapMarker != null)
+                {
+                    _touristMapMarkerService.CollectFromTour(touristId, execution.TourId);
+                }
+            }
             return true;
         }
 

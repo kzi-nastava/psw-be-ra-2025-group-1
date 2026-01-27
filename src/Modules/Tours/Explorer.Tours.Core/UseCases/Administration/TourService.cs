@@ -3,6 +3,7 @@ using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Dtos.Enums;
+using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
@@ -228,10 +229,10 @@ public class TourService : ITourService
         var tour = _tourRepository.Get(tourId);
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add map marker to someone else's tour");
-        var mapMarker = tour.AddMapMarker(_mapper.Map<MapMarker>(mapMarkerDto));
+        tour.AddMapMarker(_mapper.Map<MapMarker>(mapMarkerDto));
         _tourRepository.Update(tour);
 
-        return _mapper.Map<MapMarkerDto>(mapMarker);
+        return _mapper.Map<MapMarkerDto>(mapMarkerDto);
     }
 
     public MapMarkerDto UpdateMapMarker(long tourId, MapMarkerDto mapMarkerDto, long authorId)

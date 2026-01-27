@@ -20,12 +20,14 @@ namespace Explorer.Tours.Core.UseCases
         private readonly ITouristMapMarkerRepository _repository;
         private readonly IMapper _mapper;
         private readonly ITourService _tourService;
+        private readonly IMapMarkerService _mapMarkerService;
 
-        public TouristMapMarkerService(ITouristMapMarkerRepository repository, IMapper mapper, ITourService tourService)
+        public TouristMapMarkerService(ITouristMapMarkerRepository repository, IMapper mapper, ITourService tourService, IMapMarkerService mapMarkerService)
         {
             _repository = repository;
             _mapper = mapper;
             _tourService = tourService;
+            _mapMarkerService = mapMarkerService;
         }
 
         public PagedResult<TouristMapMarkerDto> GetPagedByTourist(int page, int pageSize, long touristId)
@@ -47,10 +49,11 @@ namespace Explorer.Tours.Core.UseCases
             return _mapper.Map<TouristMapMarkerDto>(activeMarker);
         }
 
-        public void Delete(long id)
-        {
-            _repository.Delete(id);
-        }
+        // Don't really need delete, keeping it just in case
+        //public void Delete(long id)
+        //{
+        //    _repository.Delete(id);
+        //}
 
         public TouristMapMarkerDto CollectFromTour(long touristId, long tourId)
         {
@@ -87,15 +90,17 @@ namespace Explorer.Tours.Core.UseCases
             var existing = _repository.GetAllByTourist(touristId)
                 .FirstOrDefault(tm => tm.MapMarkerId == mapMarkerId);
 
-            // Don't allow tourist to collect a marker by its id if its not standalone
-            if (!existing.IsStandalone)
-            {
-                throw new InvalidOperationException("User needs to fulfill a requirement to collect marker " + mapMarkerId);
-            }
-
             if (existing != null)
             {
                 return _mapper.Map<TouristMapMarkerDto>(existing);
+            }
+
+            var mapMarker = _mapMarkerService.Get(mapMarkerId);
+
+            // Don't allow tourist to collect a marker by its id if its not standalone
+            if (!mapMarker.IsStandalone)
+            {
+                throw new InvalidOperationException("User needs to fulfill a requirement to collect marker " + mapMarkerId);
             }
 
             var newMarker = new TouristMapMarker(touristId, mapMarkerId);
@@ -109,15 +114,21 @@ namespace Explorer.Tours.Core.UseCases
 
             var active = markers.FirstOrDefault(tm => tm.IsActive);
             // If the marker is already active, just return it
-            if(active != null)
+            if(active != null && active.MapMarkerId == mapMarkerId)
             {
                 return _mapper.Map<TouristMapMarkerDto>(active);
+            }
+            // Deactivate already active map marker
+            if(active != null)
+            {
+                active.SetActive(false);
+                _repository.Update(active);
             }
 
             // Find marker to activate, throw exc if tourist doesn't own it
             var markerToActivate = markers.FirstOrDefault(tm => tm.MapMarkerId == mapMarkerId) ?? throw new NotFoundException($"Map marker {mapMarkerId} not collected by tourist {touristId}");
 
-            markerToActivate.SetMarkerAsActive();
+            markerToActivate.SetActive(true);
 
             _repository.Update(markerToActivate);
 

@@ -1,5 +1,6 @@
 ﻿using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Explorer.API.Controllers.Tourist
 {
-    [AllowAnonymous]
+    [Authorize]
     [Route("api/tourist/mapMarkers")]
     [ApiController]
     public class TouristMapMarkerController : ControllerBase
@@ -76,11 +77,12 @@ namespace Explorer.API.Controllers.Tourist
             }
         }
 
+        [Authorize(Policy = "touristPolicy")]
         [HttpPost("collect")]
         public ActionResult<TouristMapMarkerDto> CollectMapMarker(
-            [FromQuery] long touristId,
             [FromQuery] long mapMarkerId)
         {
+            var touristId = User.UserId();
             try
             {
                 var dto = _service.Collect(touristId, mapMarkerId);
@@ -96,11 +98,12 @@ namespace Explorer.API.Controllers.Tourist
             }
         }
 
+        [Authorize(Policy = "touristPolicy")]
         [HttpPost("activate")]
         public ActionResult<TouristMapMarkerDto> SetActive(
-            [FromQuery] long touristId,
             [FromQuery] long mapMarkerId)
         {
+            var touristId = User.UserId();
             try
             {
                 var dto = _service.SetMapMarkerAsActive(touristId, mapMarkerId);
@@ -116,22 +119,24 @@ namespace Explorer.API.Controllers.Tourist
             }
         }
 
-        [HttpDelete("{id:long}")]
-        public IActionResult Delete(long id)
-        {
-            try
-            {
-                _service.Delete(id);
-                return NoContent();
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-        }
+        // Don't really need delete
+        //[Authorize(Policy = "touristPolicy")]
+        //[HttpDelete("{id:long}")]
+        //public IActionResult Delete(long id)
+        //{
+        //    try
+        //    {
+        //        _service.Delete(id);
+        //        return NoContent();
+        //    }
+        //    catch (NotFoundException ex)
+        //    {
+        //        return NotFound(new { error = ex.Message });
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return BadRequest(new { error = ex.Message });
+        //    }
+        //}
     }
 }

@@ -14,7 +14,6 @@ namespace Explorer.Tours.Core.Domain
         public long TouristId { get; private set; }
         public long MapMarkerId { get; private set; }
         public bool IsActive { get; private set; }
-        public bool IsStandalone { get; private set; } // false if marker is collected through a tour/encounter/etc, true if predefined
 
         public TouristMapMarker() { }
 
@@ -23,19 +22,14 @@ namespace Explorer.Tours.Core.Domain
             TouristId = touristId;
             MapMarkerId = mapMarkerId;
             IsActive = false;
-            IsStandalone = false;
         }
 
-        public bool SetMarkerAsActive()
+        public bool SetActive(bool active)
         {
-            IsActive = true;
+            IsActive = active;
             return IsActive; 
         }
 
-        public bool SetMarkerAsStandalone()
-        {
-            IsStandalone = true;
-            return IsStandalone;
-        }
+
     }
 }

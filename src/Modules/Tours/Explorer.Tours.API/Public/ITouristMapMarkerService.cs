@@ -13,7 +13,7 @@ namespace Explorer.Tours.API.Public
         PagedResult<TouristMapMarkerDto> GetPagedByTourist(int page, int pageSize, long touristId);
         List<TouristMapMarkerDto> GetAllByTourist(long touristId);
         TouristMapMarkerDto GetActiveByTourist(long touristId);
-        void Delete(long id);
+        //void Delete(long id);
 
         TouristMapMarkerDto SetMapMarkerAsActive(long touristId, long mapMarkerId);
         TouristMapMarkerDto Collect(long touristId, long mapMarkerId);
