@@ -3,9 +3,16 @@ namespace Explorer.Tours.API.Dtos;
 public enum FacilityCategory
 {
     WC,
-    Restaurant,
+    Store,
     Parking,
     Other
+}
+
+public enum EstimatedPrice
+{
+    Cheap,
+    Average,
+    Pricy
 }
 
 public class FacilityDto
@@ -15,6 +22,7 @@ public class FacilityDto
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public FacilityCategory Category { get; set; }
+    public EstimatedPrice EstimatedPrice { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; }
