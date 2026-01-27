@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
@@ -58,8 +59,20 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public UserLocationDto Update(UserLocationDto userLocation)
         {
-            var result = _locationRepository.Update(_mapper.Map<UserLocation>(userLocation));
-            return _mapper.Map<UserLocationDto>(result);
+            var entity = _locationRepository.GetByUserId(userLocation.UserId);
+
+            if(entity == null)
+            {
+                throw new NotFoundException("User location not found");
+            }
+
+            entity.Latitude = userLocation.Latitude;
+            entity.Longitude = userLocation.Longitude;
+            entity.Timestamp = DateTime.UtcNow;
+
+            return _mapper.Map<UserLocationDto>(_locationRepository.Update(entity));
+            //var result = _locationRepository.Update(_mapper.Map<UserLocation>(userLocation));
+            //return _mapper.Map<UserLocationDto>(result);
         }
     }
 }

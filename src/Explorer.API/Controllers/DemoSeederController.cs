@@ -24,7 +24,9 @@ namespace Explorer.API.Controllers
             IRestaurantService restaurantService,
             Explorer.Payments.API.Public.Author.ISaleService saleService,
             IUserManagementService userManagementService,
-            IWalletService walletService)
+            IWalletService walletService,
+            ITouristMapMarkerService touristMapMarkerService,
+            IShoppingCartService shoppingCartService)
         {
             _demoSeeder = new DemoSeeder(
                 authenticationService, 
@@ -37,7 +39,9 @@ namespace Explorer.API.Controllers
                 restaurantService,
                 saleService,
                 userManagementService,
-                walletService);
+                walletService,
+                touristMapMarkerService,
+                shoppingCartService);
         }
 
         [HttpPost]

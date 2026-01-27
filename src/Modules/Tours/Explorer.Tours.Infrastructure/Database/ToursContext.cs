@@ -18,6 +18,8 @@ public class ToursContext : DbContext
     public DbSet<TourRatingReaction> TourRatingReactions { get; set; }
     public DbSet<PersonEquipment> PersonEquipment { get; set; }
     public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<MapMarker> MapMarkers { get; set; }
+    public DbSet<TouristMapMarker> TouristMapMarkers { get; set; }
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
@@ -31,6 +33,16 @@ public class ToursContext : DbContext
             .HasForeignKey("TourId")
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+
+        // One-One relationship between Tour and MapMarker
+        modelBuilder.Entity<Tour>()
+            .HasOne(t => t.MapMarker)
+            .WithOne()
+            .HasForeignKey<Tour>("MapMarkerId")
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        
 
         // One-Many relationship between TourExecution and KeypointProgress
         modelBuilder.Entity<TourExecution>()
@@ -72,6 +84,17 @@ public class ToursContext : DbContext
         // Unique constraint: one reaction per tour execution
         modelBuilder.Entity<TourRating>()
             .HasIndex(r => new { r.TourExecutionId, r.UserId })
+            .IsUnique();
+
+        // Tourist - map marker
+        modelBuilder.Entity<TouristMapMarker>()
+            .HasIndex(tm => new { tm.TouristId, tm.MapMarkerId })
+            .IsUnique();
+
+        // Tourist - one active map marker
+        modelBuilder.Entity<TouristMapMarker>()
+            .HasIndex(tm => tm.TouristId)
+            .HasFilter("\"IsActive\" = true")
             .IsUnique();
 
 
