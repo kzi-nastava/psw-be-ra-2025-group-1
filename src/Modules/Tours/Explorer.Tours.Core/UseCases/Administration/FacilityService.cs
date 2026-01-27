@@ -54,7 +54,7 @@ public class FacilityService : IFacilityService
         }
 
         var facility = new Facility(facilityDto.Name, facilityDto.Latitude, facilityDto.Longitude, 
-            (DomainFacilityCategory)facilityDto.Category);
+            (DomainFacilityCategory)facilityDto.Category, (Domain.EstimatedPrice)facilityDto.EstimatedPrice);
         var result = _facilityRepository.Create(facility);
         return _mapper.Map<FacilityDto>(result);
     }
@@ -63,7 +63,7 @@ public class FacilityService : IFacilityService
     {
         var facility = _facilityRepository.Get(facilityDto.Id);
         facility.Update(facilityDto.Name, facilityDto.Latitude, facilityDto.Longitude, 
-            (DomainFacilityCategory)facilityDto.Category);
+            (DomainFacilityCategory)facilityDto.Category, (Domain.EstimatedPrice)facilityDto.EstimatedPrice);
         
         var result = _facilityRepository.Update(facility);
         return _mapper.Map<FacilityDto>(result);
