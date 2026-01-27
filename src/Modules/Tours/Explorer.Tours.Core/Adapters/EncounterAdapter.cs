@@ -1,7 +1,7 @@
-﻿using Explorer.Tours.API.Dtos;
+﻿//using Explorer.Tours.API.Dtos;
 using Explorer.Encounters.API.Public;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using AutoMapper;
+using Explorer.Encounters.API.Dtos;
 
 namespace Explorer.Tours.Core.Adapters;
 
@@ -18,7 +18,7 @@ public class EncounterAdapter : IEncounterAdapter
 
     public EncounterDto Create(EncounterCreateDto encounterDto)
     {
-        return _mapper.Map< Explorer.Tours.API.Dtos.EncounterDto>(_encounterService.Create(_mapper.Map<Explorer.Encounters.API.Dtos.EncounterCreateDto>(encounterDto)));
+        return _mapper.Map<EncounterDto>(_encounterService.Create(_mapper.Map<EncounterCreateDto>(encounterDto)));
     }
 
     public void Publish(long encounterId)

@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Encounters.API.Dtos;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Dtos.Enums;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Adapters;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 
@@ -147,7 +149,7 @@ public class TourService : ITourService
         long? encounterId = null;
         if (keypointDto.Encounter != null)
         {
-            var encounterDto = new EncounterCreateDto
+            var encounterDto = new Explorer.Encounters.API.Dtos.EncounterCreateDto
             {
                 Title = keypointDto.Encounter.Title,
                 Description = keypointDto.Encounter.Description,
