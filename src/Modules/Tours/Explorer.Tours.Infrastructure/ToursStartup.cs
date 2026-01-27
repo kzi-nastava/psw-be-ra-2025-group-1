@@ -1,18 +1,19 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.API.Public.Tourist;
+using Explorer.Tours.Core.Adapters;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
+using Explorer.Tours.Core.UseCases;
 using Explorer.Tours.Core.UseCases.Administration;
+using Explorer.Tours.Core.UseCases.Social;
+using Explorer.Tours.Core.UseCases.Tourist;
 using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
-using Explorer.Tours.Core.UseCases;
-using Explorer.Tours.API.Public.Tourist;
-using Explorer.Tours.Core.UseCases.Tourist;
-using Explorer.Tours.Core.UseCases.Social;
 
 namespace Explorer.Tours.Infrastructure;
 
@@ -40,7 +41,8 @@ public static class ToursStartup
         services.AddScoped<ITourRatingService, TourRatingService>();
         services.AddScoped<ITourRatingReactionService, TourRatingReactionService>();
         services.AddScoped<IRestaurantService, RestaurantService>();
-        
+        services.AddScoped<IEncounterAdapter, EncounterAdapter>();
+
         // Adapter for cross-module tour browsing
         services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourBrowsingInfo, 
             Explorer.Tours.Core.Services.TourBrowsingAdapter>();
