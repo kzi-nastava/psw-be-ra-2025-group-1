@@ -2,19 +2,21 @@ using Explorer.Blog.Infrastructure;
 using Explorer.Stakeholders.Infrastructure;
 using Explorer.Tours.Infrastructure;
 using Explorer.Payments.Infrastructure;
+using Explorer.ProjectAutopsy.Infrastructure;
 using Explorer.Encounters.Infrastructure;
 
 namespace Explorer.API.Startup;
 
 public static class ModulesConfiguration
 {
-    public static IServiceCollection RegisterModules(this IServiceCollection services)
+    public static IServiceCollection RegisterModules(this IServiceCollection services, IConfiguration configuration)
     {
         services.ConfigureStakeholdersModule();
         services.ConfigureToursModule();
         services.ConfigureBlogModule();
         services.ConfigurePaymentsModule();
         services.ConfigureEncountersModule();
+        services.ConfigureProjectAutopsyModule(configuration);
 
         return services;
     }

@@ -9,7 +9,8 @@ $migrationFolders = @(
     "Modules\Tours\Explorer.Tours.Infrastructure\Migrations",
     "Modules\Blog\Explorer.Blog.Infrastructure\Migrations", 
     "Modules\Encounters\Explorer.Encounters.Infrastructure\Migrations",
-	  "Modules\Payments\Explorer.Payments.Infrastructure\Migrations"
+    "Modules\Payments\Explorer.Payments.Infrastructure\Migrations",
+    "Modules\ProjectAutopsy\Explorer.ProjectAutopsy.Infrastructure\Migrations"
 )
 
 foreach ($folder in $migrationFolders) {
@@ -84,3 +85,19 @@ dotnet ef database update `
     --context PaymentsContext `
     --project Modules/Payments/Explorer.Payments.Infrastructure `
     --startup-project Explorer.API
+
+Write-Host ""
+
+Write-Host "=== Migrating ProjectAutopsyContext ===" -ForegroundColor Cyan
+dotnet ef migrations add Init_ProjectAutopsy `
+    --context ProjectAutopsyContext `
+    --project Modules/ProjectAutopsy/Explorer.ProjectAutopsy.Infrastructure `
+    --startup-project Explorer.API
+
+dotnet ef database update `
+    --context ProjectAutopsyContext `
+    --project Modules/ProjectAutopsy/Explorer.ProjectAutopsy.Infrastructure `
+    --startup-project Explorer.API
+
+Write-Host ""
+Write-Host "=== ALL MIGRATIONS COMPLETED ===" -ForegroundColor Green
