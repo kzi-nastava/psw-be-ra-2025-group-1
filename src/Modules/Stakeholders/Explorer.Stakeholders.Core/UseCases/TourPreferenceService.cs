@@ -3,11 +3,6 @@ using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Explorer.Stakeholders.Core.UseCases
 {
@@ -36,13 +31,25 @@ namespace Explorer.Stakeholders.Core.UseCases
 
         public TourPreferenceDto Get(long id)
         {
-            var result = _tourPreferenceRepository.Get(id);
-            return _mapper.Map<TourPreferenceDto>(result);
+            TourPreference? result = _tourPreferenceRepository.Get(id);
+
+            return result == null ? throw new Exception("TourPreference could not be created") : _mapper.Map<TourPreferenceDto>(result);
         }
 
         public TourPreferenceDto GetByUser(long userId)
         {
             var result = _tourPreferenceRepository.GetByUser(userId);
+            if (result == null)
+            {
+                TourPreferenceDto tpdto = new();
+                tpdto.UserId = userId;
+                Create(tpdto);
+            }
+            result = _tourPreferenceRepository.GetByUser(userId);
+
+            if (result == null)
+                throw new Exception("TourPreference could not be created");
+
             return _mapper.Map<TourPreferenceDto>(result);
         }
     }
