@@ -5,6 +5,7 @@ public enum FacilityCategory
     WC,
     Restaurant,
     Parking,
+    Store,
     Other
 }
 
@@ -15,6 +16,8 @@ public class FacilityDto
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public FacilityCategory Category { get; set; }
+    public long? CreatorId { get; set; }
+    public bool IsLocalPlace { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; }
