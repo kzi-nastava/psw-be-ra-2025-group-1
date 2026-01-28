@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>19085269-cc67-4858-b83d-c4fdf910fe0e</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +24,9 @@
     <ProjectReference Include="..\Modules\Payments\Explorer.Payments.Infrastructure\Explorer.Payments.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Blog\Explorer.Blog.Core\Explorer.Blog.Core.csproj" />
     <ProjectReference Include="..\Modules\Blog\Explorer.Blog.Infrastructure\Explorer.Blog.Infrastructure.csproj" />
+    <ProjectReference Include="..\Modules\ProjectAutopsy\Explorer.ProjectAutopsy.API\Explorer.ProjectAutopsy.API.csproj" />
+    <ProjectReference Include="..\Modules\ProjectAutopsy\Explorer.ProjectAutopsy.Core\Explorer.ProjectAutopsy.Core.csproj" />
+    <ProjectReference Include="..\Modules\ProjectAutopsy\Explorer.ProjectAutopsy.Infrastructure\Explorer.ProjectAutopsy.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Stakeholders\Explorer.Stakeholders.API\Explorer.Stakeholders.API.csproj" />
     <ProjectReference Include="..\Modules\Stakeholders\Explorer.Stakeholders.Infrastructure\Explorer.Stakeholders.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\Tours\Explorer.Tours.API\Explorer.Tours.API.csproj" />

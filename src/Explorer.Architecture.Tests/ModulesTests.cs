@@ -101,6 +101,10 @@ public class ModulesTests : BaseArchitecturalTests
         new object[]
         {
             "Encounters"
+        },
+        new object[]
+        {
+            "ProjectAutopsy"
         }
     };
 }

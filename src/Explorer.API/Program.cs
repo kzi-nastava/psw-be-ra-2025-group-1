@@ -45,7 +45,7 @@ builder.Services.AddScoped<Explorer.Tours.Core.Domain.RepositoryInterfaces.IUser
 builder.Services.AddScoped<DemoSeeder>();
 
 
-builder.Services.RegisterModules();
+builder.Services.RegisterModules(builder.Configuration);
 
 var app = builder.Build();
 
