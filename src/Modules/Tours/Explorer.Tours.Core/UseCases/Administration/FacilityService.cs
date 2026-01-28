@@ -54,7 +54,8 @@ public class FacilityService : IFacilityService
         }
 
     var facility = new Facility(facilityDto.Name, facilityDto.Latitude, facilityDto.Longitude,
-    (DomainFacilityCategory)facilityDto.Category, facilityDto.CreatorId, facilityDto.IsLocalPlace);
+    (DomainFacilityCategory)facilityDto.Category, (Domain.EstimatedPrice)facilityDto.EstimatedPrice, 
+    facilityDto.CreatorId, facilityDto.IsLocalPlace);
         var result = _facilityRepository.Create(facility);
         return _mapper.Map<FacilityDto>(result);
     }
