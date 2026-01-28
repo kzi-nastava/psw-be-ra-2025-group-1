@@ -15,5 +15,9 @@ public interface IJournalRepository
     Journal? GetSingleByUserId(long userId); // Ako ikada treba "jedan" dnevnik
 
     IEnumerable<Journal> GetAccessibleByUserId(long userId);
+
+    Journal? GetByPublishedBlogId(long blogId);
+
+
 }
 
