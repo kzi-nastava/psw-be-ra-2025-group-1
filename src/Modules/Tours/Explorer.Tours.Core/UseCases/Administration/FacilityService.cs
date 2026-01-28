@@ -53,8 +53,9 @@ public class FacilityService : IFacilityService
             throw new EntityValidationException("Facility with this name already exists.");
         }
 
-        var facility = new Facility(facilityDto.Name, facilityDto.Latitude, facilityDto.Longitude, 
-            (DomainFacilityCategory)facilityDto.Category, (Domain.EstimatedPrice)facilityDto.EstimatedPrice);
+    var facility = new Facility(facilityDto.Name, facilityDto.Latitude, facilityDto.Longitude,
+    (DomainFacilityCategory)facilityDto.Category, (Domain.EstimatedPrice)facilityDto.EstimatedPrice, 
+    facilityDto.CreatorId, facilityDto.IsLocalPlace);
         var result = _facilityRepository.Create(facility);
         return _mapper.Map<FacilityDto>(result);
     }
