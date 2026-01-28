@@ -1,24 +1,24 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Encounters.API.Dtos;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Dtos.Enums;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Adapters;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using System.Net.Sockets;
-using Explorer.Encounters.API.Public;
-using Explorer.Encounters.API.Dtos;
+
 namespace Explorer.Tours.Core.UseCases.Administration;
 
 public class TourService : ITourService
 {
     private readonly ITourRepository _tourRepository;
     private readonly IEquipmentRepository _equipmentRepository;
-    private readonly IEncounterService _encounterService;
+    private readonly IEncounterAdapter _encounterService;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IEncounterService encounterService, IMapper mapper)
+    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IEncounterAdapter encounterService, IMapper mapper)
     {
         _tourRepository = tourRepository;
         _equipmentRepository = equipmentRepository;
@@ -149,7 +149,7 @@ public class TourService : ITourService
         long? encounterId = null;
         if (keypointDto.Encounter != null)
         {
-            var encounterDto = new EncounterCreateDto
+            var encounterDto = new Explorer.Encounters.API.Dtos.EncounterCreateDto
             {
                 Title = keypointDto.Encounter.Title,
                 Description = keypointDto.Encounter.Description,
