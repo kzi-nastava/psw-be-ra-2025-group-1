@@ -15,13 +15,15 @@ public class BlogService : IBlogService
     private readonly IMapper _mapper;
     private readonly IInternalPersonService _personService;
     private readonly IInternalUserService _users;
+    private readonly IJournalRepository _journalRepo;
 
-    public BlogService(IBlogRepository blogRepository, IMapper mapper, IInternalPersonService personService, IInternalUserService users)
+    public BlogService(IBlogRepository blogRepository, IMapper mapper, IInternalPersonService personService, IInternalUserService users, IJournalRepository journalRepo)
     {
         _blogRepository = blogRepository;
         _mapper = mapper;
         _personService = personService;
         _users = users;
+        _journalRepo = journalRepo;
     }
 
     public BlogDto CreateBlog(long userId, BlogCreateDto blogDto)
@@ -189,17 +191,42 @@ public class BlogService : IBlogService
             ? null
             : (myVote.VoteType == VoteType.Upvote ? VoteTypeDto.Upvote : VoteTypeDto.Downvote);
 
-        dto.CanEdit = (blog.UserId == userId) || blog.Collaborators.Any(c => c.UserId == userId);
-        dto.CanManageCollaborators = (blog.UserId == userId);
+        // BLOG collaborators
+        var blogIds = blog.Collaborators.Select(c => c.UserId).Distinct().ToList();
+        var blogMap = _users.GetUsernamesByIds(blogIds);
 
-        var ids = blog.Collaborators.Select(c => c.UserId).Distinct().ToList();
-        var map = _users.GetUsernamesByIds(ids);
-
-        dto.Collaborators = blog.Collaborators.Select(c => new BlogCollaboratorDto
+        var blogCollabs = blog.Collaborators.Select(c => new BlogCollaboratorDto
         {
             UserId = c.UserId,
-            Username = map.TryGetValue(c.UserId, out var uname) ? uname : ""
+            Username = blogMap.TryGetValue(c.UserId, out var uname) ? uname : ""
         }).ToList();
+
+        // JOURNAL collaborators (ako je blog iz journala)
+        var journal = _journalRepo.GetByPublishedBlogId(blog.Id);
+
+        var journalCollabs = new List<BlogCollaboratorDto>();
+        if (journal != null)
+        {
+            journalCollabs = journal.Collaborators.Select(c => new BlogCollaboratorDto
+            {
+                UserId = c.UserId,
+                Username = c.User?.Username ?? ""
+            }).ToList();
+        }
+
+        dto.Collaborators = blogCollabs
+            .Concat(journalCollabs)
+            .GroupBy(c => c.UserId)
+            .Select(g => g.First())
+            .ToList();
+
+        var isBlogOwner = blog.UserId == userId;
+        var isBlogCollab = blog.Collaborators.Any(c => c.UserId == userId);
+        var isJournalCollab = journal != null && journal.Collaborators.Any(c => c.UserId == userId);
+
+        dto.CanEdit = isBlogOwner || isBlogCollab || isJournalCollab;
+
+        dto.CanManageCollaborators = isBlogOwner;
 
         return dto;
     }

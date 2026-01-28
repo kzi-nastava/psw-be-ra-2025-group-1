@@ -50,6 +50,17 @@ public class JournalController : ControllerBase
         catch (UnauthorizedAccessException) { return Forbid(); }
     }
 
+    [HttpGet("{id:long}")]
+    [ProducesResponseType(typeof(JournalDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<JournalDto> GetById(long id)
+    {
+        try { return Ok(_service.GetById(GetUserId(), id)); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpPut("{id:long}")]
     [ProducesResponseType(typeof(JournalDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

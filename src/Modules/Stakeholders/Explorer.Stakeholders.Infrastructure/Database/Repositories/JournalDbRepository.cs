@@ -70,4 +70,10 @@ public class JournalDbRepository : IJournalRepository
             .ToList();
     }
 
+    public Journal? GetByPublishedBlogId(long blogId)
+    => _db.Journals
+        .AsNoTracking()
+        .Include(j => j.Collaborators).ThenInclude(c => c.User)
+        .FirstOrDefault(j => j.PublishedBlogId == blogId);
+
 }

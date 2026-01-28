@@ -39,6 +39,17 @@ public class JournalService : IJournalService
         return list.Select(j => MapForUser(j, userId)).ToList();
     }
 
+    public JournalDto GetById(long userId, long journalId)
+    {
+        var journal = _repo.GetById(journalId)
+                      ?? throw new KeyNotFoundException("Dnevnik nije pronađen.");
+
+        if (!(journal.IsOwner(userId) || journal.IsCollaborator(userId)))
+            throw new UnauthorizedAccessException("Nemate pristup ovom dnevniku.");
+
+        return MapForUser(journal, userId);
+    }
+
     public JournalDto Update(long userId, long journalId, JournalUpdateDto dto)
     {
         var journal = _repo.GetById(journalId)
@@ -70,7 +81,7 @@ public class JournalService : IJournalService
         var journal = _repo.GetById(journalId)
                       ?? throw new KeyNotFoundException("Dnevnik nije pronađen.");
 
-        if (journal.UserId != userId)
+        if (!(journal.IsOwner(userId) || journal.IsCollaborator(userId)))
             throw new UnauthorizedAccessException("Nemate dozvolu.");
 
         if (journal.PublishedBlogId != null)
