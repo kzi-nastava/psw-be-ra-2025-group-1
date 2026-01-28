@@ -24,10 +24,18 @@ namespace Explorer.Encounters.Core.UseCases
 
         public TouristStatsDto Update(TouristStatsDto statsDto)
         {
-            var stats = _mapper.Map<TouristStats>(statsDto);
-            var updatedStats = _repository.Update(stats);
+            var original = _repository.GetByTourist(statsDto.TouristId);
+
+            if (original == null)
+                throw new Exception($"TouristStats not found for tourist {statsDto.TouristId}");
+
+            // Map DTO → EXISTING entity
+            _mapper.Map(statsDto, original);
+
+            var updatedStats = _repository.Update(original);
             return _mapper.Map<TouristStatsDto>(updatedStats);
         }
+
 
         public TouristStatsDto Create(long touristId)
         {

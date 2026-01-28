@@ -516,7 +516,7 @@ namespace Explorer.API.Demo
             var execution4 = _tourExecutionService.Create(tourExecution4);
             _tourExecutionService.CompleteTour(tourist4Id, execution4.Id);
         }
-        
+
         private void SeedTouristStats()
         {
             long tourist2Id = 2;
@@ -524,42 +524,33 @@ namespace Explorer.API.Demo
             long tourist4Id = 4;
 
             var touristStats2 = _touristStatsService.Create(tourist2Id);
-            var touristStats3 = _touristStatsService.Create(tourist3Id);
-            var touristStats4 = _touristStatsService.Create(tourist4Id);
-
-            touristStats2 = new TouristStatsDto()
-            {
-                TouristId = tourist2Id,
-                TotalXp = 500,
-                Level = 4,
-                IsLocalGuide = false,
-                RatingsGiven = 5,
-                ThumbsUpsReceived = 499
-            };
-
-            touristStats3 = new TouristStatsDto()
-            {
-                TouristId = tourist3Id,
-                TotalXp = 350,
-                Level = 3,
-                IsLocalGuide = false,
-                RatingsGiven = 2,
-                ThumbsUpsReceived = 150
-            };
-            touristStats4 = new TouristStatsDto()
-            {
-                TouristId = tourist4Id,
-                TotalXp = 800,
-                Level = 5,
-                IsLocalGuide = true,
-                RatingsGiven = 5,
-                ThumbsUpsReceived = 600
-            };
-
+            touristStats2.TouristId = tourist2Id;
+            touristStats2.TotalXp = 500;
+            touristStats2.Level = 4;
+            touristStats2.IsLocalGuide = false;
+            touristStats2.RatingsGiven = 5;
+            touristStats2.ThumbsUpsReceived = 499;
             _touristStatsService.Update(touristStats2);
+
+            var touristStats3 = _touristStatsService.Create(tourist3Id);
+            touristStats3.TouristId = tourist3Id;
+            touristStats3.TotalXp = 350;
+            touristStats3.Level = 3;
+            touristStats3.IsLocalGuide = false;
+            touristStats3.RatingsGiven = 2;
+            touristStats3.ThumbsUpsReceived = 150;
             _touristStatsService.Update(touristStats3);
+
+            var touristStats4 = _touristStatsService.Create(tourist4Id);
+            touristStats4.TouristId = tourist4Id;
+            touristStats4.TotalXp = 800;
+            touristStats4.Level = 5;
+            touristStats4.IsLocalGuide = true;
+            touristStats4.RatingsGiven = 5;
+            touristStats4.ThumbsUpsReceived = 600;
             _touristStatsService.Update(touristStats4);
         }
+
 
         private void SeedRatings()
         {
