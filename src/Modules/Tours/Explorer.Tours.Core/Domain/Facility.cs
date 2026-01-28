@@ -49,7 +49,19 @@ public class Facility : Entity
     }
 
     // Private constructor for EF Core
-    private Facility() { }
+    private Facility()
+    {
+        Name = string.Empty;
+        Latitude = 0;
+        Longitude = 0;
+        Category = FacilityCategory.Other;
+        CreatorId = null;
+        IsLocalPlace = false;
+        EstimatedPrice = EstimatedPrice.Average;
+        CreatedAt = DateTime.UtcNow;
+        UpdatedAt = null;
+        IsDeleted = false;
+    }
 
     public void Update(string name, double latitude, double longitude, FacilityCategory category, EstimatedPrice estimatedPrice)
     {
