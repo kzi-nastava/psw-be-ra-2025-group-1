@@ -5,10 +5,17 @@ namespace Explorer.Tours.Core.Domain;
 public enum FacilityCategory
 {
     WC,
-    Restaurant,
+    Store,
     Parking,
     Store,
     Other
+}
+
+public enum EstimatedPrice
+{
+    Cheap,
+    Average,
+    Pricy
 }
 
 public class Facility : Entity
@@ -19,11 +26,13 @@ public class Facility : Entity
     public FacilityCategory Category { get; private set; }
     public long? CreatorId { get; private set; }    
     public bool IsLocalPlace { get; private set; }    
+    public EstimatedPrice EstimatedPrice { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
 
     public Facility(string name, double latitude, double longitude, FacilityCategory category, long? creatorId = null, bool isLocalPlace = false)
+    public Facility(string name, double latitude, double longitude, FacilityCategory category, EstimatedPrice estimatedPrice)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name cannot be empty.");
         if (latitude < -90 || latitude > 90) throw new ArgumentException("Latitude must be between -90 and 90.");
@@ -37,12 +46,13 @@ public class Facility : Entity
         IsLocalPlace = isLocalPlace;
         CreatedAt = DateTime.UtcNow;
         IsDeleted = false;
+        EstimatedPrice = estimatedPrice;
     }
 
     // Private constructor for EF Core
     private Facility() { }
 
-    public void Update(string name, double latitude, double longitude, FacilityCategory category)
+    public void Update(string name, double latitude, double longitude, FacilityCategory category, EstimatedPrice estimatedPrice)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name cannot be empty.");
         if (latitude < -90 || latitude > 90) throw new ArgumentException("Latitude must be between -90 and 90.");
@@ -52,6 +62,7 @@ public class Facility : Entity
         Latitude = latitude;
         Longitude = longitude;
         Category = category;
+        EstimatedPrice = estimatedPrice;
         UpdatedAt = DateTime.UtcNow;
     }
 

@@ -57,7 +57,7 @@ public class TouristFacilityQueryTests : BaseToursIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
-        var category = FacilityCategory.Restaurant;
+        var category = FacilityCategory.Store;
 
         // Act
         var result = ((ObjectResult)controller.GetByCategory(category).Result)?.Value as List<FacilityDto>;
