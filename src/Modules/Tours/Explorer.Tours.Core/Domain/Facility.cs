@@ -5,9 +5,16 @@ namespace Explorer.Tours.Core.Domain;
 public enum FacilityCategory
 {
     WC,
-    Restaurant,
+    Store,
     Parking,
     Other
+}
+
+public enum EstimatedPrice
+{
+    Cheap,
+    Average,
+    Pricy
 }
 
 public class Facility : Entity
@@ -16,11 +23,12 @@ public class Facility : Entity
     public double Latitude { get; private set; }
     public double Longitude { get; private set; }
     public FacilityCategory Category { get; private set; }
+    public EstimatedPrice EstimatedPrice { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
 
-    public Facility(string name, double latitude, double longitude, FacilityCategory category)
+    public Facility(string name, double latitude, double longitude, FacilityCategory category, EstimatedPrice estimatedPrice)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name cannot be empty.");
         if (latitude < -90 || latitude > 90) throw new ArgumentException("Latitude must be between -90 and 90.");
@@ -32,12 +40,13 @@ public class Facility : Entity
         Category = category;
         CreatedAt = DateTime.UtcNow;
         IsDeleted = false;
+        EstimatedPrice = estimatedPrice;
     }
 
     // Private constructor for EF Core
     private Facility() { }
 
-    public void Update(string name, double latitude, double longitude, FacilityCategory category)
+    public void Update(string name, double latitude, double longitude, FacilityCategory category, EstimatedPrice estimatedPrice)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name cannot be empty.");
         if (latitude < -90 || latitude > 90) throw new ArgumentException("Latitude must be between -90 and 90.");
@@ -47,6 +56,7 @@ public class Facility : Entity
         Latitude = latitude;
         Longitude = longitude;
         Category = category;
+        EstimatedPrice = estimatedPrice;
         UpdatedAt = DateTime.UtcNow;
     }
 
