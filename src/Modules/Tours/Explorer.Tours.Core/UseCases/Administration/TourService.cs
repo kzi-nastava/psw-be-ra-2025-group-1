@@ -137,11 +137,15 @@ public class TourService : ITourService
     public void ArchiveTour(long tourId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         tour.Archive();
     }
     public KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add keypoint to someone else's tour");
 
@@ -193,6 +197,8 @@ public class TourService : ITourService
     public KeypointDto UpdateKeypoint(long tourId, KeypointDto keypointDto, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update keypoint from someone else's tour");
         var keypoint = tour.UpdateKeypoint(_mapper.Map<Keypoint>(keypointDto));
@@ -204,6 +210,8 @@ public class TourService : ITourService
     public void DeleteKeypoint(long tourId, long keypointId, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't delete keypoint from someone else's tour");
         tour.DeleteKeypoint(keypointId);
@@ -213,7 +221,11 @@ public class TourService : ITourService
     public TourDto AddEquipment(long id, long equipmentId, long authorId)
     {
         var tour = _tourRepository.Get(id);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {id} not found.");
         var equip = _equipmentRepository.Get(equipmentId);
+        if (equip == null)
+            throw new KeyNotFoundException($"Equipment with id {equipmentId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add equipment to someone else's tour");
         tour.AddEquipment(equip);
@@ -223,7 +235,11 @@ public class TourService : ITourService
     public TourDto RemoveEquipment(long id, long equipmentId, long authorId)
     {
         var tour = _tourRepository.Get(id);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {id} not found.");
         var equip = _equipmentRepository.Get(equipmentId);
+        if (equip == null)
+            throw new KeyNotFoundException($"Equipment with id {equipmentId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't remove equipment from someone else's tour");
         tour.RemoveEquipment(equip);
@@ -237,6 +253,8 @@ public class TourService : ITourService
             throw new ArgumentException("Transport type cannot be unknown.");
             
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add transport time to someone else's tour");
         var transportTime = tour.AddTransportTime(_mapper.Map<TransportTime>(timeDto));
@@ -250,6 +268,8 @@ public class TourService : ITourService
             throw new ArgumentException("Transport type cannot be unknown.");
 
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update transport time from someone else's tour");
         var tt = tour.UpdateTransportTime(_mapper.Map<TransportTime>(timeDto));
@@ -261,6 +281,8 @@ public class TourService : ITourService
     public void DeleteTransportTime(long tourId, long timeId, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't delete transport time from someone else's tour");
         tour.DeleteTransportTime(timeId);
