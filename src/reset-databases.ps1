@@ -25,7 +25,7 @@ $pgPassword = "root"
 
 # Set password for psql
 $env:PGPASSWORD = $pgPassword
-$pgExe = "E:\PostgreSQL\bin\psql.exe"    # MAKE SURE THAT THIS IS THE CORRECT PATH FOR YOU
+$pgExe = "C:\Program Files\PostgreSQL\18\bin\psql.exe"    # MAKE SURE THAT THIS IS THE CORRECT PATH FOR YOU
 
 # Determine which databases to drop based on flags
 if ($KeepDb) {
