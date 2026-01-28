@@ -6,6 +6,7 @@ using Explorer.ProjectAutopsy.Core.Services;
 using Explorer.ProjectAutopsy.Core.UseCases;
 using Explorer.ProjectAutopsy.Infrastructure.Database;
 using Explorer.ProjectAutopsy.Infrastructure.Database.Repositories;
+using Explorer.ProjectAutopsy.Infrastructure.ExternalClients;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,14 +20,14 @@ public static class ProjectAutopsyStartup
     {
         // AutoMapper
         services.AddAutoMapper(typeof(ProjectAutopsyProfile).Assembly);
-        
-        SetupCore(services, configuration);
-        SetupInfrastructure(services);
+
+        SetupCore(services);
+        SetupInfrastructure(services, configuration);
 
         return services;
     }
 
-    private static void SetupCore(IServiceCollection services, IConfiguration configuration)
+    private static void SetupCore(IServiceCollection services)
     {
         // Services
         services.AddScoped<IAutopsyProjectService, AutopsyProjectService>();
@@ -36,26 +37,22 @@ public static class ProjectAutopsyStartup
         services.AddSingleton<RiskEngine>();
         
         // LLM Client (use mock by default, can be replaced with real implementation)
-        // When you want to use a real GitHub API client, uncomment below and implement GitHubLLMClient
-        // var gitHubToken = configuration["ProjectAutopsy:GitHubToken"] ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
-        // if (!string.IsNullOrEmpty(gitHubToken))
-        // {
-        //     services.AddSingleton<ILLMClient>(sp => new GitHubLLMClient(gitHubToken));
-        // }
-        // else
-        // {
-        //     services.AddSingleton<ILLMClient, MockLLMClient>();
-        // }
-        
         services.AddSingleton<ILLMClient, MockLLMClient>();
     }
 
-    private static void SetupInfrastructure(IServiceCollection services)
+    private static void SetupInfrastructure(IServiceCollection services, IConfiguration configuration)
     {
         // Repositories
         services.AddScoped<IAutopsyProjectRepository, AutopsyProjectRepository>();
         services.AddScoped<IRiskSnapshotRepository, RiskSnapshotRepository>();
         services.AddScoped<IAIReportRepository, AIReportRepository>();
+
+        // GitHub Client - reads token from environment variable
+        var githubToken = configuration["GITHUB_TOKEN"] ?? Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+        services.AddSingleton<GitHubClient>(sp => new GitHubClient(githubToken ?? string.Empty));
+
+        // GitHub Data Service - wraps GitHubClient with interface for Core layer
+        services.AddScoped<IGitHubDataService, GitHubDataService>();
 
         // Database context with proper connection string
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("autopsy"));

@@ -4,6 +4,7 @@ using Explorer.Tours.Infrastructure;
 using Explorer.Payments.Infrastructure;
 using Explorer.ProjectAutopsy.Infrastructure;
 using Explorer.Encounters.Infrastructure;
+using Microsoft.Extensions.Configuration;
 
 namespace Explorer.API.Startup;
 

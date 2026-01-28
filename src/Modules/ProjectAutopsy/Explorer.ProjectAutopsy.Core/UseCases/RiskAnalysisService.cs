@@ -13,16 +13,19 @@ public class RiskAnalysisService : IRiskAnalysisService
 {
     private readonly IRiskSnapshotRepository _snapshotRepository;
     private readonly IAutopsyProjectRepository _projectRepository;
+    private readonly IGitHubDataService _gitHubDataService;
     private readonly RiskEngine _riskEngine;
     private readonly IMapper _mapper;
 
     public RiskAnalysisService(
         IRiskSnapshotRepository snapshotRepository,
         IAutopsyProjectRepository projectRepository,
+        IGitHubDataService gitHubDataService,
         IMapper mapper)
     {
         _snapshotRepository = snapshotRepository;
         _projectRepository = projectRepository;
+        _gitHubDataService = gitHubDataService;
         _riskEngine = new RiskEngine();
         _mapper = mapper;
     }
@@ -34,6 +37,9 @@ public class RiskAnalysisService : IRiskAnalysisService
             throw new KeyNotFoundException($"Project with id {projectId} not found");
 
         // Prepare analysis input
+        var windowEnd = DateTime.UtcNow;
+        var windowStart = windowEnd.AddDays(-project.AnalysisWindowDays);
+
         var input = new RiskEngineInput
         {
             AnalysisWindowDays = project.AnalysisWindowDays,
@@ -43,19 +49,45 @@ public class RiskAnalysisService : IRiskAnalysisService
             PreviousSnapshots = _snapshotRepository.GetByProject(projectId).Take(5).ToList()
         };
 
-        // NOTE: GitHub client integration would be injected via a separate service interface
-        // to maintain clean architecture (Core should not depend on Infrastructure)
-        // For now, generate sample data for demo purposes
-        input = GenerateSampleData(project.AnalysisWindowDays);
-        input.PreviousSnapshots = _snapshotRepository.GetByProject(projectId).Take(5).ToList();
+        // Fetch real GitHub data if repository is configured
+        if (!string.IsNullOrEmpty(project.GitHubRepo))
+        {
+            try
+            {
+                input.Commits = await _gitHubDataService.FetchCommitsAsync(
+                    project.GitHubRepo,
+                    windowStart,
+                    windowEnd);
+
+                input.PullRequests = await _gitHubDataService.FetchPullRequestsAsync(
+                    project.GitHubRepo,
+                    windowStart,
+                    windowEnd);
+            }
+            catch (Exception ex)
+            {
+                // If GitHub fetch fails, fall back to sample data
+                // In production, you might want to throw or log this differently
+                var sampleData = GenerateSampleData(project.AnalysisWindowDays);
+                input.Commits = sampleData.Commits;
+                input.PullRequests = sampleData.PullRequests;
+            }
+        }
+        else
+        {
+            // No GitHub repo configured, use sample data
+            var sampleData = GenerateSampleData(project.AnalysisWindowDays);
+            input.Commits = sampleData.Commits;
+            input.PullRequests = sampleData.PullRequests;
+        }
+
+        // TODO: Integrate Jira for ticket data when available
+        // For now, tickets remain empty or use sample data
 
         // Run the risk engine
         var result = _riskEngine.Calculate(input);
 
         // Create and save snapshot
-        var windowEnd = DateTime.UtcNow;
-        var windowStart = windowEnd.AddDays(-project.AnalysisWindowDays);
-
         var snapshot = new RiskSnapshot(
             projectId,
             result.OverallScore,
