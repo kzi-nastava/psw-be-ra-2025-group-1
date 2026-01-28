@@ -17,7 +17,9 @@ public class Facility : Entity
     public double Latitude { get; private set; }
     public double Longitude { get; private set; }
     public FacilityCategory Category { get; private set; }
-    public long? CreatorId { get; private set; }    public bool IsLocalPlace { get; private set; }    public DateTime CreatedAt { get; private set; }
+    public long? CreatorId { get; private set; }    
+    public bool IsLocalPlace { get; private set; }    
+    public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
 
