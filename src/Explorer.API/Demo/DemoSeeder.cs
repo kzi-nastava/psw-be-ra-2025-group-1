@@ -1,4 +1,6 @@
-﻿using Explorer.Stakeholders.API.Dtos;
+﻿using Explorer.Encounters.API.Dtos;
+using Explorer.Encounters.API.Public;
+using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
@@ -17,6 +19,7 @@ namespace Explorer.API.Demo
         private readonly ITourRatingService _tourRatingService;
         private readonly IRestaurantService _restaurantService;
         private readonly Explorer.Payments.API.Public.Author.ISaleService _saleService;
+        private readonly ITouristStatsService _touristStatsService;
 
         public DemoSeeder(
             IAuthenticationService authenticationService, 
@@ -27,7 +30,8 @@ namespace Explorer.API.Demo
             ITourExecutionService tourExecution, 
             ITourRatingService tourRatingService, 
             IRestaurantService restaurantService,
-            Explorer.Payments.API.Public.Author.ISaleService saleService)
+            Explorer.Payments.API.Public.Author.ISaleService saleService,
+            ITouristStatsService touristStatsService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -38,6 +42,7 @@ namespace Explorer.API.Demo
             _tourRatingService = tourRatingService;
             _restaurantService = restaurantService;
             _saleService = saleService;
+            _touristStatsService = touristStatsService;
         }
 
         public void Seed()
@@ -53,6 +58,7 @@ namespace Explorer.API.Demo
             SeedTourExecution();
             SeedRatings();
             SeedRestaurants();
+            SeedTouristStats();
         }
 
         private void SeedAdmin()
@@ -510,15 +516,61 @@ namespace Explorer.API.Demo
             var execution4 = _tourExecutionService.Create(tourExecution4);
             _tourExecutionService.CompleteTour(tourist4Id, execution4.Id);
         }
+        
+        private void SeedTouristStats()
+        {
+            long tourist2Id = 2;
+            long tourist3Id = 3;
+            long tourist4Id = 4;
+
+            var touristStats2 = _touristStatsService.Create(tourist2Id);
+            var touristStats3 = _touristStatsService.Create(tourist3Id);
+            var touristStats4 = _touristStatsService.Create(tourist4Id);
+
+            touristStats2 = new TouristStatsDto()
+            {
+                TouristId = tourist2Id,
+                TotalXp = 500,
+                Level = 4,
+                IsLocalGuide = false,
+                RatingsGiven = 5,
+                ThumbsUpsReceived = 499
+            };
+
+            touristStats3 = new TouristStatsDto()
+            {
+                TouristId = tourist3Id,
+                TotalXp = 350,
+                Level = 3,
+                IsLocalGuide = false,
+                RatingsGiven = 2,
+                ThumbsUpsReceived = 150
+            };
+            touristStats4 = new TouristStatsDto()
+            {
+                TouristId = tourist4Id,
+                TotalXp = 800,
+                Level = 5,
+                IsLocalGuide = true,
+                RatingsGiven = 5,
+                ThumbsUpsReceived = 600
+            };
+
+            _touristStatsService.Update(touristStats2);
+            _touristStatsService.Update(touristStats3);
+            _touristStatsService.Update(touristStats4);
+        }
 
         private void SeedRatings()
         {
             long tour5Id = 5;
+            long tourist2Id = 2;
             long tourist3Id = 3;
             long tourist4Id = 4;
 
             var execution1 = _tourExecutionService.GetTouristHistory(tourist3Id).FirstOrDefault(e => e.TourId == tour5Id);
             var execution2 = _tourExecutionService.GetTouristHistory(tourist4Id).FirstOrDefault(e => e.TourId == tour5Id);
+            var execution3 = _tourExecutionService.GetTouristHistory(tourist2Id).FirstOrDefault(e => e.TourId == tour5Id);
 
             TourRatingDto rating1 = new TourRatingDto()
             {
@@ -538,8 +590,18 @@ namespace Explorer.API.Demo
                 CompletedProcentage = 100.0
             };
 
+            TourRatingDto rating3 = new TourRatingDto()
+            {
+                UserId = tourist2Id,
+                TourExecutionId = execution3.Id,
+                Stars = 2,
+                Comment = "Moglo biti bolje...",
+                CompletedProcentage = 96.0
+            };
+
             _tourRatingService.Create(rating1);
             _tourRatingService.Create(rating2);
+            _tourRatingService.Create(rating3);
         }
 
         private void SeedRestaurants()

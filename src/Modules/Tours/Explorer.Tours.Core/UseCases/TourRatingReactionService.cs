@@ -2,6 +2,7 @@
 using Explorer.BuildingBlocks.Core.Domain;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
@@ -15,13 +16,19 @@ namespace Explorer.Tours.Core.UseCases
     {
         private readonly ITourRatingRepository _tourRatingRepository;
         private readonly ITourRatingReactionRepository _tourRatingReactionRepository;
+        private readonly ITouristStatsRepository _touristStatsRepository;
         private readonly IMapper _mapper;
 
-        public TourRatingReactionService(ITourRatingReactionRepository repository, IMapper mapper, ITourRatingRepository tourRatingRepository)
+        public TourRatingReactionService(
+            ITourRatingReactionRepository repository,
+            IMapper mapper,
+            ITourRatingRepository tourRatingRepository,
+            ITouristStatsRepository touristStatsRepository)
         {
             _tourRatingReactionRepository = repository;
             _mapper = mapper;
             _tourRatingRepository = tourRatingRepository;
+            _touristStatsRepository = touristStatsRepository;
         }
 
         public PagedResult<TourRatingReactionDto> GetPaged(int page, int pageSize)
@@ -80,7 +87,11 @@ namespace Explorer.Tours.Core.UseCases
             tourRating.IncrementThumbsUp();
             tourRating = _tourRatingRepository.Update(tourRating);
 
-            return _mapper.Map<TourRatingDto>(tourRating);
+            _touristStatsRepository.AddThumbsUp(tourRating.UserId);
+
+            var dto = _mapper.Map<TourRatingDto>(tourRating);
+            dto.IsThumbedUpByCurrentUser = true;
+            return dto;
         }
 
         public TourRatingDto RemoveReaction(long tourRatingId, long userId)
@@ -104,7 +115,11 @@ namespace Explorer.Tours.Core.UseCases
             tourRating.DecrementThumbsUp();
             tourRating = _tourRatingRepository.Update(tourRating);
 
-            return _mapper.Map<TourRatingDto>(tourRating);
+            _touristStatsRepository.RemoveThumbsUp(tourRating.UserId);
+
+            var dto = _mapper.Map<TourRatingDto>(tourRating);
+            dto.IsThumbedUpByCurrentUser = false;
+            return dto;
         }
 
         public bool HasUserReacted(long tourRatingId, long userId)
@@ -114,6 +129,9 @@ namespace Explorer.Tours.Core.UseCases
             return _tourRatingReactionRepository.Exists(tourRatingId, userId);
         }
 
-
+        public bool IsUserLocalGuide(long userId)
+        {
+            return _touristStatsRepository.GetByTourist(userId)?.IsLocalGuide ?? false;
+        }
     }
 }

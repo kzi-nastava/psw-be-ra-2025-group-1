@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
@@ -15,17 +17,23 @@ namespace Explorer.Tours.Core.UseCases
         private readonly ITourRatingRepository _tourRatingRepository;
         private readonly ITourExecutionRepository _tourExecutionRepository;
         private readonly ITourRatingReactionRepository _tourReactionRepository;
+        private readonly ITouristStatsRepository _touristStatsRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
         public TourRatingService(
             ITourRatingRepository tourRatingRepository,
             ITourExecutionRepository tourExecutionRepository,
             ITourRatingReactionRepository tourReactionRepository,
+            ITouristStatsRepository touristStatsRepository,
+            IUserRepository userRepository,
             IMapper mapper)
         {
             _tourRatingRepository = tourRatingRepository;
             _tourExecutionRepository = tourExecutionRepository;
             _tourReactionRepository = tourReactionRepository;
+            _touristStatsRepository = touristStatsRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
 
@@ -35,8 +43,7 @@ namespace Explorer.Tours.Core.UseCases
             var rating = _tourRatingRepository.Get(id);
             var dto = _mapper.Map<TourRatingDto>(rating);
 
-            dto.IsThumbedUpByCurrentUser =
-                _tourReactionRepository.Exists(dto.Id, userId);
+            ApplyExtraInfo((IEnumerable<TourRatingDto>)dto, userId);
 
             return dto;
         }
@@ -46,7 +53,7 @@ namespace Explorer.Tours.Core.UseCases
         {
             var result = _tourRatingRepository.GetPaged(page, pageSize);
             var items = result.Results.Select(_mapper.Map<TourRatingDto>).ToList();
-            ApplyReactionState(items, userId);
+            ApplyExtraInfo(items, userId);
             return new PagedResult<TourRatingDto>(items, result.TotalCount);
         }
 
@@ -54,7 +61,7 @@ namespace Explorer.Tours.Core.UseCases
         {
             var result = _tourRatingRepository.GetPagedByUser(userId, page, pageSize);
             var items = result.Results.Select(_mapper.Map<TourRatingDto>).ToList();
-            ApplyReactionState(items, userId);
+            ApplyExtraInfo(items, userId);
             return new PagedResult<TourRatingDto>(items, result.TotalCount);
         }
 
@@ -71,7 +78,7 @@ namespace Explorer.Tours.Core.UseCases
                 var ratings = _tourRatingRepository.GetPagedByTourExecution(execution.Id, 1, int.MaxValue);
                 result.AddRange(ratings.Results.Select(_mapper.Map<TourRatingDto>));
             }
-            ApplyReactionState(result, userId);
+            ApplyExtraInfo(result, userId);
 
             return new PagedResult<TourRatingDto>(result.Skip((page - 1) * pageSize).Take(pageSize).ToList(), result.Count);
         }
@@ -96,6 +103,10 @@ namespace Explorer.Tours.Core.UseCases
             rating.ThumbsUpCount = 0;
 
             var result = _tourRatingRepository.Create(_mapper.Map<TourRating>(rating));
+
+            // Update tourist stats
+            _touristStatsRepository.AddRating(rating.UserId);
+
             return _mapper.Map<TourRatingDto>(result);
         }
 
@@ -135,9 +146,11 @@ namespace Explorer.Tours.Core.UseCases
             if (existingRating.UserId != userId) throw new System.UnauthorizedAccessException("Invalid tour ID. This tour belongs to someone else.");
 
             _tourRatingRepository.Delete(id);
+
+            _touristStatsRepository.RemoveRating(userId);
         }
 
-        private void ApplyReactionState(
+        private void ApplyExtraInfo(
             IEnumerable<TourRatingDto> ratings,
             long currentUserId)
         {
@@ -145,6 +158,12 @@ namespace Explorer.Tours.Core.UseCases
             {
                 rating.IsThumbedUpByCurrentUser =
                     _tourReactionRepository.Exists(rating.Id, currentUserId);
+
+                rating.IsLocalGuide =
+                    _touristStatsRepository.GetByTourist(rating.UserId).IsLocalGuide;
+
+                rating.Username = 
+                    _userRepository.Get(rating.UserId).Username;
             }
         }
 

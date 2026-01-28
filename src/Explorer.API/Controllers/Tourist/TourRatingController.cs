@@ -26,7 +26,8 @@ namespace Explorer.API.Controllers.Tourist
         [HttpGet]
         public ActionResult<PagedResult<TourRatingDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            return Ok(_tourRatingService.GetPaged(page, pageSize));
+            var userId = User.UserId();
+            return Ok(_tourRatingService.GetPaged(userId, page, pageSize));
         }
 
         [HttpGet("my-ratings")]
@@ -61,7 +62,8 @@ namespace Explorer.API.Controllers.Tourist
         {
             try
             {
-                var result = _tourRatingService.GetPagedByTour(tourId, page, pageSize);
+                var userId = User.UserId();
+                var result = _tourRatingService.GetPagedByTour(tourId, userId, page, pageSize);
                 return Ok(result);
             }
             catch (NotFoundException ex)
