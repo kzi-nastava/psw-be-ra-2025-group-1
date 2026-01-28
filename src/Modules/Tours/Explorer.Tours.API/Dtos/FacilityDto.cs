@@ -5,7 +5,6 @@ public enum FacilityCategory
     WC,
     Store,
     Parking,
-    Store,
     Other
 }
 
