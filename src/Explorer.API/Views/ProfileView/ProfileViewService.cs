@@ -1,4 +1,5 @@
 ﻿using Explorer.API.Views.ProfileView.Dtos;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.API.Public;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
@@ -26,6 +27,8 @@ IPersonService personService, ITouristStatsService touristStatsService, ITourist
 
         public object GetProfileByRole(long userId, string? role)
         {
+            var person = _personService.Get(userId) ?? throw new NotFoundException($"Person {userId} not found");
+
             if (string.IsNullOrEmpty(role) || role == "Tourist")
                 return GetTouristProfile(userId);
 

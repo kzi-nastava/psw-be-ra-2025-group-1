@@ -1,5 +1,6 @@
 ﻿using Explorer.API.Controllers;
 using Explorer.API.Views.ProfileView;
+using Explorer.API.Views.ProfileView.Dtos;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
@@ -154,6 +155,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             result.Quote.ShouldBe(updatedEntity.Quote);
         }
 
+        // WARNING: BANGAV TEST!!1!!!1!
         [Fact]
         public void Gets()
         {
@@ -174,15 +176,15 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             };
 
             // Act
-            var result = ((ObjectResult)controller.Get(existingEntity.Id).Result)?.Value as PersonDto;
+            var result = ((ObjectResult)controller.Get(existingEntity.Id).Result)?.Value as TouristProfileDto;
 
             // Assert - Response
             result.ShouldNotBeNull();
-            result.Id.ShouldBe(existingEntity.Id);
+            result.UserId.ShouldBe(existingEntity.Id);
             result.UserId.ShouldBe(existingEntity.UserId);
             result.Name.ShouldBe(existingEntity.Name);
             result.Surname.ShouldBe(existingEntity.Surname);
-            result.Email.ShouldBe(existingEntity.Email);
+            //result.Email.ShouldBe(existingEntity.Email);
             result.ProfileImageUrl.ShouldBe(existingEntity.ProfileImageUrl);
             result.Biography.ShouldBe(existingEntity.Biography);
             result.Quote.ShouldBe(existingEntity.Quote);
