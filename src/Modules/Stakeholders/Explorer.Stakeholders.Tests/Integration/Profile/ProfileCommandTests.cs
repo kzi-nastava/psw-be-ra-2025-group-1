@@ -1,4 +1,5 @@
 ﻿using Explorer.API.Controllers;
+using Explorer.API.Views.ProfileView;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
@@ -201,7 +202,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
 
         private static ProfileController CreateController(IServiceScope scope)
         {
-            return new ProfileController(scope.ServiceProvider.GetRequiredService<IPersonService>())
+            return new ProfileController(scope.ServiceProvider.GetRequiredService<IPersonService>(), scope.ServiceProvider.GetRequiredService<ProfileViewService>())
             {
                 ControllerContext = BuildContext("-1")
             };
