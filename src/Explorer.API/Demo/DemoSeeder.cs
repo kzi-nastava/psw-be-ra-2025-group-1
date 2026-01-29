@@ -217,14 +217,14 @@ namespace Explorer.API.Demo
                 Name = "Restoran1",
                 Latitude = 45.238375228762436,
                 Longitude = 19.827834086207258,
-                Category = FacilityCategory.Restaurant
+                Category = FacilityCategory.Store
             };
             FacilityDto facility4 = new FacilityDto()
             {
                 Name = "Restoran2",
                 Latitude = 45.24450939872726,
                 Longitude = 19.84268331062374,
-                Category = FacilityCategory.Restaurant
+                Category = FacilityCategory.Store
             };
             FacilityDto facility5 = new FacilityDto()
             {

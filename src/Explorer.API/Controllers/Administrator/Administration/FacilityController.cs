@@ -51,6 +51,8 @@ public class FacilityController : ControllerBase
     [Authorize(Policy = "administratorPolicy")]
     public ActionResult<FacilityDto> Create([FromBody] FacilityDto facility)
     {
+        // Admins create facilities with IsLocalPlace = false
+        facility.IsLocalPlace = false;
         return Ok(_facilityService.Create(facility));
     }
 
@@ -58,6 +60,8 @@ public class FacilityController : ControllerBase
     [Authorize(Policy = "administratorPolicy")]
     public ActionResult<FacilityDto> Update([FromBody] FacilityDto facility)
     {
+        // Admins always set IsLocalPlace = false
+        facility.IsLocalPlace = false;
         return Ok(_facilityService.Update(facility));
     }
 

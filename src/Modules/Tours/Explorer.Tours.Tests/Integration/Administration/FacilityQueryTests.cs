@@ -42,7 +42,7 @@ public class FacilityQueryTests : BaseToursIntegrationTest
             Name = "Test Facility " + Guid.NewGuid().ToString().Substring(0, 8),
             Latitude = 40.779437,
             Longitude = -73.963244,
-            Category = API.Dtos.FacilityCategory.Restaurant
+            Category = API.Dtos.FacilityCategory.Store
         };
         var created = ((ObjectResult)controller.Create(newFacility).Result)?.Value as FacilityDto;
 

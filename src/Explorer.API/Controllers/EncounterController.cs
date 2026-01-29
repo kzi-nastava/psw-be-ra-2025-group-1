@@ -437,4 +437,36 @@ public class EncounterController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    [HttpGet("keypoint/{keypointId}")]
+    [Authorize(Policy = "touristOrAuthorPolicy")]
+    public ActionResult<EncounterDto> GetByKeypointId(long keypointId)
+    {
+        try
+        {
+            return Ok(_encounterService.GetByKeypointId(keypointId));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpGet("keypoint/{keypointId}/exists")]
+    [Authorize(Policy = "touristOrAuthorPolicy")]
+    public ActionResult<bool> HasKeypointEncounter(long keypointId)
+    {
+        try
+        {
+            return Ok(_encounterService.HasKeypointEncounter(keypointId));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }
