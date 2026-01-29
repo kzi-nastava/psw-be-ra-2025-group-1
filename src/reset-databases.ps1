@@ -5,16 +5,13 @@
 #   .\reset-databases.ps1                       # Full reset and seed both databases
 #   .\reset-database.ps1 -NoSeed                # Resets both databases, runs migrations, but keeps the main DB empty
 #   .\reset-database.ps1 -Tests                 # Keep main DB, reset test DB only
+#   .\reset-database.ps1 -KeepDb                # (Alias for -Tests) Keep main DB, reset test DB only
 #   .\reset-database.ps1 -Main                  # Delete main DB and recreates it [You need to manually run migrations]
 #   .\reset-database.ps1 -Migrate               # Run migrations for all modules 
 #   .\reset-database.ps1 -Migrate <ModuleName>  # Run migrations for specific module
-#   .\reset-database.ps1 -Seed                  # Seed the main database
-#   .\reset-database.ps1 -Clear                 # Clear all data from main DB (keep structure), then seed [Fast version of default]
-# ============================================
-# ALIASES
-# ============================================
-#   .\reset-database.ps1 -KeepDb                # (Alias for -Tests) Keep main DB, reset test DB only
 #   .\reset-database.ps1 -Module <ModuleName>   # (Alias for -Migrate <ModuleName>)
+#   .\reset-database.ps1 -Seed                  # Seed the main database
+#   .\reset-database.ps1 -Clear                 # Clear all data from main DB (keep structure), then seed [No need for migrations]
 # ============================================
 
 param(
@@ -22,8 +19,8 @@ param(
     [switch]$Tests,
     [switch]$KeepDb,  # Alias for -Tests (backwards compatibility)
     [switch]$Main,
-    [switch]$Migrate, 
-    [string]$Module = "", 
+    [switch]$Migrate,
+    [string]$Module = "",
     [switch]$Seed,
     [switch]$Clear
 )
@@ -35,7 +32,7 @@ if ($KeepDb) {
     $Tests = $true
 }
 
-# Alias for -Migrate <Module> cause I always forget the command
+# Alias: -Module <Name> is a shorthand for -Migrate <Name>
 if ($Module -ne "" -and -not $Migrate) {
     $Migrate = $true
 }
@@ -117,6 +114,7 @@ CREATE SCHEMA "$schema";
         } catch {
             Write-Host "!!!!! Error running migrations for $Module !!!!!" -ForegroundColor Red
             Write-Host "Error details: $_" -ForegroundColor Red
+            Write-Host "NOTE: Did you forget to run the -Main command first?" -ForegroundColor Yellow
             Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
             exit 1
         }
@@ -135,6 +133,7 @@ CREATE SCHEMA "$schema";
         } catch {
             Write-Host "!!!!! Error running migrations !!!!!" -ForegroundColor Red
             Write-Host "Error details: $_" -ForegroundColor Red
+            Write-Host "NOTE: Did you forget to run the -Main command first?" -ForegroundColor Yellow
             Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
             exit 1
         }
