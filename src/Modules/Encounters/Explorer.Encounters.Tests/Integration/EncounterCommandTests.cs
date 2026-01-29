@@ -182,7 +182,7 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
         };
 
         // Act
-        var result = ((ObjectResult)controller.Update(-1, updatedEntity).Result)?.Value as HiddenEncounterDto;
+        var result = ((ObjectResult)controller.Update(-1, updatedEntity).Result)?.Value as EncounterDto;
 
         // Assert - Response
         result.ShouldNotBeNull();

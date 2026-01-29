@@ -28,7 +28,7 @@ public class Encounter : AggregateRoot
         Requirements = new List<string>();
         Hints = new List<string>();
     }
-    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, long? keypointId = null) : this()
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, long? keypointId = null, double? hidloc = null, double? hidlang = null) : this()
     {
         Title = title;
         Description = description;
@@ -79,7 +79,7 @@ public class Encounter : AggregateRoot
         Status = EncounterStatus.Archived;
     }
 
-    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, double? hidloc = null, double? hidlang = null)
+    public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> requirements, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, double? hidloc = null, double? hidlang = null)
     {
         if (Status != EncounterStatus.Draft)
             throw new InvalidOperationException("Only draft encounters can be updated.");
@@ -96,6 +96,7 @@ public class Encounter : AggregateRoot
         Hints = hints;
         HiddenLongitude = hidloc;
         HiddenLatitude = hidlang;
+        Requirements = requirements;
 
         Validate();
     }

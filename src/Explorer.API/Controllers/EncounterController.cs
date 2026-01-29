@@ -96,10 +96,7 @@ public class EncounterController : ControllerBase
     {
         try
         {
-            if(dto.Type == "Location")
-                return Ok(_encounterService.UpdateHidden(id, dto));
-            else
-                return Ok(_encounterService.Update(id, dto));
+            return Ok(_encounterService.Update(id, dto));
         }
         catch (KeyNotFoundException ex)
         {

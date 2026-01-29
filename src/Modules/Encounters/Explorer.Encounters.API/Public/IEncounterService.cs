@@ -29,5 +29,4 @@ public interface IEncounterService
     EncounterDto GetByKeypointId(long keypointId);
     bool HasKeypointEncounter(long keypointId);
     void SetKeypointId(long encounterId, long keypointId);
-    public HiddenEncounterDto UpdateHidden(long id, EncounterCreateDto dto);
 }

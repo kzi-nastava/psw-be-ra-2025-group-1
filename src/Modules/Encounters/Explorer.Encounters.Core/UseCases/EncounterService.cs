@@ -68,7 +68,7 @@ public class EncounterService : IEncounterService
         var encounter = _repository.GetById(id);
         
         encounter.Update(dto.Title, dto.Description, dto.Longitude, dto.Latitude, dto.Xp, 
-            Enum.Parse<EncounterType>(dto.Type), dto.RequiredPeopleCount, dto.Range, dto.ImagePath, dto.Hints);
+            Enum.Parse<EncounterType>(dto.Type), dto.Requirements, dto.RequiredPeopleCount, dto.Range, dto.ImagePath, dto.Hints, dto.HiddenLatitude, dto.HiddenLongitude);
         var updated = _repository.Update(encounter);
         return _mapper.Map<EncounterDto>(updated);
     }
