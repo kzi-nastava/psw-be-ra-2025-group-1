@@ -84,6 +84,27 @@ public class JournalController : ControllerBase
         catch (KeyNotFoundException) { return NotFound(); }
     }
 
+
+    [HttpPut("{id:long}/publish")]
+    [ProducesResponseType(typeof(JournalDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<JournalDto> Publish(long id)
+    {
+        try
+        {
+            var published = _service.Publish(GetUserId(), id);
+            return Ok(published);
+        }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+
+
     private long GetUserId()
         => long.Parse(User.FindFirstValue("id") ?? User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 }

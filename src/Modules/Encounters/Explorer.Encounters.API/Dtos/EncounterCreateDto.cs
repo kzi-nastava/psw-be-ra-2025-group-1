@@ -15,4 +15,5 @@ public class EncounterCreateDto
     public List<string>? Hints { get; set; }
     public double? HiddenLongitude { get; set; }
     public double? HiddenLatitude { get; set; }
+    public long? KeypointId { get; set; }
 }

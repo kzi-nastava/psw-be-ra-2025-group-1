@@ -17,6 +17,8 @@ public class BlogContext : DbContext
 
         modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.Images).HasColumnType("text[]");
 
+        modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.Videos).HasColumnType("text[]");
+
         modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.Status).IsRequired();
 
         modelBuilder.Entity<Core.Domain.Blog>().Property(b => b.LastModifiedDate).IsRequired(false); // nullable bcs the blog doesn't have to be updated if it's not needed

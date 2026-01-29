@@ -24,5 +24,10 @@ public interface IEncounterService
     void CompleteRequirement(long activeEncounterId, long requirementId);
     void ResetRequirement(long activeEncounterId, long requirementId);
     List<string> GetNextHint(long activeId, long touristId);
+    
+    // Keypoint-specific encounters
+    EncounterDto GetByKeypointId(long keypointId);
+    bool HasKeypointEncounter(long keypointId);
+    void SetKeypointId(long encounterId, long keypointId);
     public HiddenEncounterDto UpdateHidden(long id, EncounterCreateDto dto);
 }

@@ -1,24 +1,28 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Encounters.API.Dtos;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Dtos.Enums;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.Core.Adapters;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using System.Net.Sockets;
+
 namespace Explorer.Tours.Core.UseCases.Administration;
 
 public class TourService : ITourService
 {
     private readonly ITourRepository _tourRepository;
     private readonly IEquipmentRepository _equipmentRepository;
+    private readonly IEncounterAdapter _encounterService;
     private readonly IMapper _mapper;
 
-    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IMapper mapper)
+    public TourService(ITourRepository tourRepository, IEquipmentRepository equipmentRepository, IEncounterAdapter encounterService, IMapper mapper)
     {
         _tourRepository = tourRepository;
         _equipmentRepository = equipmentRepository;
+        _encounterService = encounterService;
         _mapper = mapper;
     }
 
@@ -133,22 +137,68 @@ public class TourService : ITourService
     public void ArchiveTour(long tourId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         tour.Archive();
     }
     public KeypointDto AddKeypoint(long tourId, KeypointDto keypointDto, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add keypoint to someone else's tour");
-        var keypoint = tour.AddKeypoint(_mapper.Map<Keypoint>(keypointDto));
-        _tourRepository.Update(tour);
 
-        return _mapper.Map<KeypointDto>(keypoint);
+        // If encounter data is provided, create the encounter first
+        long? encounterId = null;
+        if (keypointDto.Encounter != null)
+        {
+            var encounterDto = new Explorer.Encounters.API.Dtos.EncounterCreateDto
+            {
+                Title = keypointDto.Encounter.Title,
+                Description = keypointDto.Encounter.Description,
+                Latitude = keypointDto.Latitude,
+                Longitude = keypointDto.Longitude,
+                Xp = keypointDto.Encounter.Xp,
+                Type = "KeypointChallenge",
+                KeypointId = null // will be bound after keypoint creation
+            };
+            
+            var createdEncounter = _encounterService.Create(encounterDto);
+            encounterId = createdEncounter.Id;
+            
+            // Publish the encounter immediately so tourists can use it
+            _encounterService.Publish(encounterId.Value);
+        }
+
+        var keypoint = tour.AddKeypoint(_mapper.Map<Keypoint>(keypointDto));
+        
+        // Set EncounterId on keypoint before saving
+        if (encounterId.HasValue)
+        {
+            keypoint.EncounterId = encounterId.Value;
+        }
+        
+        // Save the tour first - this assigns the keypoint.Id (mandatory))
+        var updatedTour = _tourRepository.Update(tour);
+        
+        // Get the fresh keypoint with the assigned ID from the db
+        var savedKeypoint = updatedTour.Keypoints.FirstOrDefault(k => k.EncounterId == encounterId);
+        
+        // and now FINALLY update the encounter with the keypoint ID (after keypoint.Id is assigned)
+        if (encounterId.HasValue && savedKeypoint != null)
+        {
+            _encounterService.SetKeypointId(encounterId.Value, savedKeypoint.Id);
+        }
+
+        return _mapper.Map<KeypointDto>(savedKeypoint ?? keypoint);
     }
 
     public KeypointDto UpdateKeypoint(long tourId, KeypointDto keypointDto, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update keypoint from someone else's tour");
         var keypoint = tour.UpdateKeypoint(_mapper.Map<Keypoint>(keypointDto));
@@ -160,6 +210,8 @@ public class TourService : ITourService
     public void DeleteKeypoint(long tourId, long keypointId, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't delete keypoint from someone else's tour");
         tour.DeleteKeypoint(keypointId);
@@ -169,7 +221,11 @@ public class TourService : ITourService
     public TourDto AddEquipment(long id, long equipmentId, long authorId)
     {
         var tour = _tourRepository.Get(id);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {id} not found.");
         var equip = _equipmentRepository.Get(equipmentId);
+        if (equip == null)
+            throw new KeyNotFoundException($"Equipment with id {equipmentId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add equipment to someone else's tour");
         tour.AddEquipment(equip);
@@ -179,7 +235,11 @@ public class TourService : ITourService
     public TourDto RemoveEquipment(long id, long equipmentId, long authorId)
     {
         var tour = _tourRepository.Get(id);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {id} not found.");
         var equip = _equipmentRepository.Get(equipmentId);
+        if (equip == null)
+            throw new KeyNotFoundException($"Equipment with id {equipmentId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't remove equipment from someone else's tour");
         tour.RemoveEquipment(equip);
@@ -193,6 +253,8 @@ public class TourService : ITourService
             throw new ArgumentException("Transport type cannot be unknown.");
             
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add transport time to someone else's tour");
         var transportTime = tour.AddTransportTime(_mapper.Map<TransportTime>(timeDto));
@@ -206,6 +268,8 @@ public class TourService : ITourService
             throw new ArgumentException("Transport type cannot be unknown.");
 
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update transport time from someone else's tour");
         var tt = tour.UpdateTransportTime(_mapper.Map<TransportTime>(timeDto));
@@ -217,6 +281,8 @@ public class TourService : ITourService
     public void DeleteTransportTime(long tourId, long timeId, long authorId)
     {
         var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new KeyNotFoundException($"Tour with id {tourId} not found.");
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't delete transport time from someone else's tour");
         tour.DeleteTransportTime(timeId);

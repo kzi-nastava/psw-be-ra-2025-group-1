@@ -32,4 +32,6 @@ public interface IEncounterRepository
     List<Requirement> GetRequirementsByActiveEncounter(long activeEncounterId);
     Requirement GetRequirementById(long id, long activeEncounterId);
 
+    // Keypoint-specific encounters
+    Encounter? GetByKeypointId(long keypointId);
 }
