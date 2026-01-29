@@ -9,7 +9,12 @@
 #   .\reset-database.ps1 -Migrate               # Run migrations for all modules 
 #   .\reset-database.ps1 -Migrate <ModuleName>  # Run migrations for specific module
 #   .\reset-database.ps1 -Seed                  # Seed the main database
-#   .\reset-database.ps1 -Clear                 # Clear all data from main DB (keep structure), then seed [No need for migrations]
+#   .\reset-database.ps1 -Clear                 # Clear all data from main DB (keep structure), then seed (Fast version of default)
+# ============================================
+# ALIASES
+# ============================================
+#   .\reset-database.ps1 -KeepDb                # (Alias for -Tests) Keep main DB, reset test DB only
+#   .\reset-database.ps1 -Module <ModuleName>   # (Alias for -Migrate <ModuleName>)
 # ============================================
 
 param(
@@ -17,7 +22,7 @@ param(
     [switch]$Tests,
     [switch]$KeepDb,  # Alias for -Tests (backwards compatibility)
     [switch]$Main,
-    [switch]$Migrate,
+    [switch]$Migrate, # Alias for -Migrate <Module> cause I always forget the command
     [string]$Module = "",
     [switch]$Seed,
     [switch]$Clear
@@ -28,6 +33,11 @@ Write-Host "=== RESETTING PostgreSQL DATABASES ===" -ForegroundColor Cyan
 # Backwards compatibility: -KeepDb is an alias for -Tests
 if ($KeepDb) {
     $Tests = $true
+}
+
+# Alias: -Module <Name> is a shorthand for -Migrate <Name>
+if ($Module -ne "" -and -not $Migrate) {
+    $Migrate = $true
 }
 
 # Set the flag so we can use the main DB
@@ -54,6 +64,48 @@ if ($Migrate) {
         # Run migrations for specific module
         Write-Host "Running migrations for module: $Module" -ForegroundColor Yellow
         
+        # Map module names to their schemas
+        $moduleSchemas = @{
+            "Stakeholders" = "stakeholders"
+            "Tours" = "tours"
+            "Blog" = "blog"
+            "Encounters" = "encounters"
+            "Payments" = "payments"
+        }
+        
+        if (-not $moduleSchemas.ContainsKey($Module)) {
+            Write-Host "!!!!! Unknown module: $Module !!!!!" -ForegroundColor Red
+            Write-Host "Available modules: $($moduleSchemas.Keys -join ', ')" -ForegroundColor Yellow
+            Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
+            exit 1
+        }
+        
+        $schema = $moduleSchemas[$Module]
+        
+        # Drop and recreate the schema for the specific module
+        Write-Host "Dropping and recreating schema: $schema" -ForegroundColor Yellow
+        
+        $dropSchemaSQL = @"
+DROP SCHEMA IF EXISTS "$schema" CASCADE;
+CREATE SCHEMA "$schema";
+"@
+        
+        try {
+            $dropSchemaSQL | & "$pgExe" -h $pgHost -p $pgPort -U $pgUser -d "explorer-v1"
+            
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to drop and recreate schema $schema"
+            }
+            
+            Write-Host "~~~~ Schema $schema dropped and recreated successfully ~~~~" -ForegroundColor Green
+        } catch {
+            Write-Host "!!!!! Error dropping and recreating schema $schema !!!!!" -ForegroundColor Red
+            Write-Host "Error details: $_" -ForegroundColor Red
+            Remove-Item Env:\PGPASSWORD -ErrorAction SilentlyContinue
+            exit 1
+        }
+        
+        # Run migrations for the specific module
         try {
             & "./reset-migrations.ps1" -Module $Module
             
