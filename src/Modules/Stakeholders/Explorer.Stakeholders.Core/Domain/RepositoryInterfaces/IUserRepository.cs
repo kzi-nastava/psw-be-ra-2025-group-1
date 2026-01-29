@@ -9,4 +9,7 @@ public interface IUserRepository
     List<User> GetAll();
     User Get(long id);
     User Update(User user);
+
+    User? FindByUsername(string username); //za kolaboratore
+    List<User> GetByIds(IEnumerable<long> ids);
 }

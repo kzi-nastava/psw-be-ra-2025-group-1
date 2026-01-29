@@ -27,7 +27,7 @@ public class InternalBlogService : IInternalBlogService
         var created = _blogService.CreateBlog(userId, dto);
 
         // 2) odmah publish
-        var published = _blogService.PublishBlog(created.Id);
+        var published = _blogService.PublishBlog(created.Id, userId);
 
         return published;
     }

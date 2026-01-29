@@ -33,8 +33,8 @@ public class StakeholderProfile : Profile
         CreateMap<Journal, JournalDto>();
         CreateMap<JournalCreateDto, Journal>();
         CreateMap<JournalUpdateDto, Journal>();
+        CreateMap<JournalCollaborator, CollaboratorDto>().ForMember(d => d.Username, o => o.MapFrom(s => s.User != null ? s.User.Username : ""));
 
-        
         CreateMap<UserLocationDto, UserLocation>().ReverseMap();
         
         CreateMap<ProblemDto, Problem>()

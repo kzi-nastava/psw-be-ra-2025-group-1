@@ -32,6 +32,7 @@ public static class StakeholdersStartup
         services.AddScoped<ITokenGenerator, JwtGenerator>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IJournalService, JournalService>();
+        services.AddScoped<IInternalUserService, InternalUserService>();
 
         services.AddScoped<IRatingsService, RatingsService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
