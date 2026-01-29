@@ -9,7 +9,7 @@
 #   .\reset-database.ps1 -Migrate               # Run migrations for all modules 
 #   .\reset-database.ps1 -Migrate <ModuleName>  # Run migrations for specific module
 #   .\reset-database.ps1 -Seed                  # Seed the main database
-#   .\reset-database.ps1 -Clear                 # Clear all data from main DB (keep structure), then seed (Fast version of default)
+#   .\reset-database.ps1 -Clear                 # Clear all data from main DB (keep structure), then seed [Fast version of default]
 # ============================================
 # ALIASES
 # ============================================
@@ -22,8 +22,8 @@ param(
     [switch]$Tests,
     [switch]$KeepDb,  # Alias for -Tests (backwards compatibility)
     [switch]$Main,
-    [switch]$Migrate, # Alias for -Migrate <Module> cause I always forget the command
-    [string]$Module = "",
+    [switch]$Migrate, 
+    [string]$Module = "", 
     [switch]$Seed,
     [switch]$Clear
 )
@@ -35,7 +35,7 @@ if ($KeepDb) {
     $Tests = $true
 }
 
-# Alias: -Module <Name> is a shorthand for -Migrate <Name>
+# Alias for -Migrate <Module> cause I always forget the command
 if ($Module -ne "" -and -not $Migrate) {
     $Migrate = $true
 }
