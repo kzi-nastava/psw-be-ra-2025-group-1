@@ -295,10 +295,10 @@ public class TourService : ITourService
         var tour = _tourRepository.Get(tourId);
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't add map marker to someone else's tour");
-        tour.AddMapMarker(_mapper.Map<MapMarker>(mapMarkerDto));
+        var addedMapMarker = tour.AddMapMarker(_mapper.Map<MapMarker>(mapMarkerDto));
         _tourRepository.Update(tour);
 
-        return _mapper.Map<MapMarkerDto>(mapMarkerDto);
+        return _mapper.Map<MapMarkerDto>(addedMapMarker);
     }
 
     public MapMarkerDto UpdateMapMarker(long tourId, MapMarkerDto mapMarkerDto, long authorId)

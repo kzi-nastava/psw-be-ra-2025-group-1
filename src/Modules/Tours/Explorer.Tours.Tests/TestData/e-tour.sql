@@ -410,3 +410,198 @@ INSERT INTO tours."KeypointProgress"(
     "Id", "TourExecutionId", "KeypointId", "ReachedAt", "CompletedAt")
 OVERRIDING SYSTEM VALUE
 VALUES (-10824, -10813, -10803, '2024-01-16T11:15:00Z', '2024-01-16T11:15:00Z');
+
+-- ============================================================================
+-- FOR MAP MARKERS
+-- ============================================================================
+
+-- Tour for Author -2
+INSERT INTO tours."Tour"(
+    "Id",
+    "CreatorId",
+    "Title",
+    "Description",
+    "Difficulty",
+    "Tags",
+    "Status",
+    "Price",
+    "CreatedAt",
+    "UpdatedAt",
+    "PublishedAt",
+    "ArchivedAt"
+)
+VALUES (
+    -81000,
+    -2,
+    'Explorer Test Tour 1',
+    'Test tour for author -2',
+    2,
+    ARRAY['test','author2'],
+    0,
+    0.0,
+    '2026-01-29T12:00:00Z',
+    '2026-01-29T12:00:00Z',
+    '2026-01-29T12:00:00Z', -- PublishedAt
+    '2026-01-29T12:00:00Z'  -- ArchivedAt
+);
+
+-- Tour for Author -3
+INSERT INTO tours."Tour"(
+    "Id",
+    "CreatorId",
+    "Title",
+    "Description",
+    "Difficulty",
+    "Tags",
+    "Status",
+    "Price",
+    "CreatedAt",
+    "UpdatedAt",
+    "PublishedAt",
+    "ArchivedAt"
+)
+VALUES (
+    -81001,
+    -3,
+    'Explorer Test Tour 2',
+    'Test tour for author -3',
+    1,
+    ARRAY['test','author3'],
+    0,
+    0.0,
+    '2026-01-29T12:15:00Z',
+    '2026-01-29T12:15:00Z',
+    '2026-01-29T12:15:00Z', -- PublishedAt
+    '2026-01-29T12:15:00Z'  -- ArchivedAt
+);
+
+-- Published tour for tourist map markers
+INSERT INTO tours."MapMarkers"(
+	"Id", "ImageUrl", "IsStandalone")
+	VALUES (-81000, 'hehe', False);
+
+INSERT INTO tours."Tour"(
+    "Id",
+    "CreatorId",
+    "Title",
+    "Description",
+    "Difficulty",
+    "Tags",
+    "Status",
+    "Price",
+    "CreatedAt",
+    "UpdatedAt",
+    "PublishedAt",
+    "ArchivedAt",
+    "MapMarkerId"
+)
+VALUES (
+    -81002,
+    -2,
+    'Explorer Test Tour 3',
+    'Test tour for author -2',
+    1,
+    ARRAY['test','author3'],
+    1,
+    0.0,
+    '2026-01-29T12:15:00Z',
+    '2026-01-29T12:15:00Z',
+    '2026-01-29T12:15:00Z', -- PublishedAt
+    '2026-01-29T12:15:00Z',  -- ArchivedAt
+    -81000
+);
+
+INSERT INTO tours."TransportTime"(
+    "Id", "Type", "Duration", "TourId")
+VALUES (-81000, 3, 5, -81002);
+
+INSERT INTO tours."Keypoints"(
+    "Id", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber", "TourId")
+VALUES (-81000, 'Kp1', 'ye', null, 'secret', 0, 0, 1, -81002);
+
+INSERT INTO tours."Keypoints"(
+    "Id", "Title", "Description", "ImageUrl", "Secret", "Latitude", "Longitude", "SequenceNumber", "TourId")
+VALUES (-81001, 'Kp2', 'ye', null, 'secret', 0, 0, 2, -81002);
+
+-- tourist -22 with map marker
+INSERT INTO tours."TouristMapMarkers"(
+	"Id", "TouristId", "MapMarkerId", "IsActive")
+	VALUES (-81000, -22, -81000, False);
+
+-- Map marker for the new tour
+INSERT INTO tours."MapMarkers"(
+    "Id", "ImageUrl", "IsStandalone"
+)
+VALUES
+    (-81002, 'marker_author3.png', False);
+
+-- Tour for Author -3 with the above marker
+INSERT INTO tours."Tour"(
+    "Id",
+    "CreatorId",
+    "Title",
+    "Description",
+    "Difficulty",
+    "Tags",
+    "Status",
+    "Price",
+    "CreatedAt",
+    "UpdatedAt",
+    "PublishedAt",
+    "ArchivedAt",
+    "MapMarkerId"
+)
+VALUES (
+    -81003,
+    -3,
+    'Explorer Test Tour 4',
+    'Another test tour for author -3',
+    1,
+    ARRAY['test','author3'],
+    0,           -- Status 0
+    0.0,
+    '2026-01-29T12:30:00Z',
+    '2026-01-29T12:30:00Z',
+    '2026-01-29T12:30:00Z', -- PublishedAt
+    '2026-01-29T12:30:00Z', -- ArchivedAt
+    -81002      -- MapMarkerId
+);
+
+-- Map marker for the new tour
+INSERT INTO tours."MapMarkers"(
+    "Id", "ImageUrl", "IsStandalone"
+)
+VALUES
+    (-81003, 'marker_author2.png', False);
+
+-- Tour for Author -2 with the above marker
+INSERT INTO tours."Tour"(
+    "Id",
+    "CreatorId",
+    "Title",
+    "Description",
+    "Difficulty",
+    "Tags",
+    "Status",
+    "Price",
+    "CreatedAt",
+    "UpdatedAt",
+    "PublishedAt",
+    "ArchivedAt",
+    "MapMarkerId"
+)
+VALUES (
+    -81004,
+    -2,
+    'Explorer Test Tour 5',
+    'Another test tour for author -2',
+    1,
+    ARRAY['test','author2'],
+    0,           -- Status 0
+    0.0,
+    '2026-01-29T12:45:00Z',
+    '2026-01-29T12:45:00Z',
+    '2026-01-29T12:45:00Z', -- PublishedAt
+    '2026-01-29T12:45:00Z', -- ArchivedAt
+    -81003      -- MapMarkerId
+);
