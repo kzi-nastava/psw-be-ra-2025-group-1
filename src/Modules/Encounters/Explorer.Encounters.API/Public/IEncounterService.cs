@@ -29,4 +29,5 @@ public interface IEncounterService
     bool HasKeypointEncounter(long keypointId);
     void SetKeypointId(long encounterId, long keypointId);
     void CompleteTreasure(long touristId, long id);
+    ActiveEncounterDto GetNextHint(long activeId, long touristId);
 }

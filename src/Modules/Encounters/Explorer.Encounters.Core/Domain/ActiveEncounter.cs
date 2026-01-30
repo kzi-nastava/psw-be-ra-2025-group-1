@@ -13,8 +13,9 @@ public class ActiveEncounter : Entity
     public bool IsWithinRange { get; private set; }
     public List<Requirement> Requirements { get; private set; } = new List<Requirement>();
     public List<string>? Hints { get; private set; } = new List<string>();
+    public List<string>? ShownHints { get; private set; } = new List<string>();
     public string? ImagePath { get; private set; }
-    public bool TreasureFound { get; private set; }
+    public bool TreasureFound { get; private set; } 
 
 
     public ActiveEncounter(long touristId, long encounterId, double latitude, double longitude, List<string>? hints = null, string? imagePath = null)
@@ -49,6 +50,21 @@ public class ActiveEncounter : Entity
     public void EnterRange()
     {
         IsWithinRange = true;
+    }
+
+    public void ShowNextHint()
+    {
+        if (Hints != null || ShownHints.Count() != Hints.Count())
+        {
+            foreach (var hint in Hints!)
+            {
+                if (!ShownHints!.Contains(hint))
+                {
+                    ShownHints.Add(hint);
+                    break;
+                }
+            }
+        }
     }
 
     public void LeaveRange()

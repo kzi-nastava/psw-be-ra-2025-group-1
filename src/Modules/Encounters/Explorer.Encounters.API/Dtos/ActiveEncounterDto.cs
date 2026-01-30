@@ -22,4 +22,5 @@ public class ActiveEncounterDto
     public string? ImagePath { get; set; }
     public bool TreasureFound { get; set; }
     public List<string>? Hints { get; set; } = new List<string>();
+    public List<string>? ShownHints { get; set; } = new List<string>();
 }

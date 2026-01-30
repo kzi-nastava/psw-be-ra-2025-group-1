@@ -372,7 +372,7 @@ public class EncounterController : ControllerBase
 
     [HttpGet("{activeId}/hint")]
     [Authorize(Policy = "touristPolicy")]
-    public ActionResult<List<string>> GetNextHint(long activeId)
+    public ActionResult<ActiveEncounterDto> GetNextHint(long activeId)
     {
         var tourist = User.UserId();
         try

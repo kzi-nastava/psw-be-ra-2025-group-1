@@ -376,17 +376,17 @@ public class EncounterService : IEncounterService
         return R * c;
     }
 
-    public List<string> GetNextHint(long activeId, long touristId)
+    public ActiveEncounterDto GetNextHint(long activeId, long touristId)
     {
         ActiveEncounter activeEncounter = _repository.GetActiveById(activeId);
 
         // Check if the tourist owns the active encounter
         if (activeEncounter.TouristId != touristId) throw new UnauthorizedAccessException("Tourist does not own this active encounter.");
 
-        var hints = activeEncounter.GetNextHint();
+        activeEncounter.ShowNextHint();
         _repository.UpdateActiveEncounter(activeEncounter);
 
-        return hints;
+        return MapToDto(activeEncounter, _repository.GetById(activeEncounter.EncounterId));
     }
 
     public EncounterDto GetByKeypointId(long keypointId)
@@ -438,7 +438,8 @@ public class EncounterService : IEncounterService
                 : new List<RequirementDto>(),
             ImagePath = encounter.ImagePath,
             TreasureFound = activeEncounter.TreasureFound,
-            Hints = activeEncounter.Hints
+            Hints = activeEncounter.Hints,
+            ShownHints = activeEncounter.ShownHints
         };
     }
 }
