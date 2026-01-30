@@ -44,7 +44,7 @@ namespace Explorer.Tours.Core.UseCases
 
         public MapMarkerDto Create(MapMarkerDto mapMarkerDto)
         {
-            var mapMarker = new MapMarker(mapMarkerDto.ImageUrl);
+            var mapMarker = new MapMarker(mapMarkerDto.ImageUrl, mapMarkerDto.IsStandalone);
             var result = _mapMarkerRepository.Create(mapMarker);
             return _mapper.Map<MapMarkerDto>(result);
         }

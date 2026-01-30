@@ -12,10 +12,10 @@ namespace Explorer.Tours.Core.Domain
         public string ImageUrl { get; set; }
         public bool IsStandalone { get; private set; } // false if marker is collected through a tour/encounter/etc, true if predefined
 
-        public MapMarker(string ImageUrl)
+        public MapMarker(string ImageUrl, bool isStandalone = false)
         {
             this.ImageUrl = ImageUrl;
-            IsStandalone = false;
+            IsStandalone = isStandalone;
         }
 
         public MapMarker Update(MapMarker updatedMarker)

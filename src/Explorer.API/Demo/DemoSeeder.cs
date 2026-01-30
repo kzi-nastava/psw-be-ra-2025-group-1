@@ -21,6 +21,7 @@ namespace Explorer.API.Demo
         private readonly IUserManagementService _userManagementService;
         private readonly IWalletService _walletService;
         private readonly ITouristMapMarkerService _touristMapMarkerService;
+        private readonly IMapMarkerService _mapMarkerService;
         private readonly IShoppingCartService _shoppingCartService;
 
         public DemoSeeder(
@@ -36,7 +37,8 @@ namespace Explorer.API.Demo
             IUserManagementService userManagementService,
             IWalletService walletService,
             ITouristMapMarkerService touristMapMarkerService,
-            IShoppingCartService shoppingCartService)
+            IShoppingCartService shoppingCartService,
+            IMapMarkerService mapMarkerService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -51,10 +53,12 @@ namespace Explorer.API.Demo
             _walletService = walletService;
             _touristMapMarkerService = touristMapMarkerService;
             _shoppingCartService = shoppingCartService;
+            _mapMarkerService = mapMarkerService;
         }
 
         public void Seed()
         {
+            SeedDefaultMarker();
             SeedAdmin();
             SeedTourists();
             SeedWallets();
@@ -67,6 +71,15 @@ namespace Explorer.API.Demo
             SeedTourExecution();
             SeedRatings();
             SeedRestaurants();
+        }
+
+        private void SeedDefaultMarker()
+        {
+            var defaultMarkerDto = _mapMarkerService.Create(new MapMarkerDto
+            {
+                ImageUrl = "https://localhost:44333/images/defaultMarker.png",
+                IsStandalone = true,
+            });
         }
 
         private void SeedAdmin()

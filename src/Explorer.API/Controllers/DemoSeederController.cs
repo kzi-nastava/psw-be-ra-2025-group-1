@@ -26,7 +26,8 @@ namespace Explorer.API.Controllers
             IUserManagementService userManagementService,
             IWalletService walletService,
             ITouristMapMarkerService touristMapMarkerService,
-            IShoppingCartService shoppingCartService)
+            IShoppingCartService shoppingCartService,
+            IMapMarkerService mapMarkerService)
         {
             _demoSeeder = new DemoSeeder(
                 authenticationService, 
@@ -41,7 +42,8 @@ namespace Explorer.API.Controllers
                 userManagementService,
                 walletService,
                 touristMapMarkerService,
-                shoppingCartService);
+                shoppingCartService,
+                mapMarkerService);
         }
 
         [HttpPost]

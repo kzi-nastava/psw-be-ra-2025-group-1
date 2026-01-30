@@ -22,6 +22,11 @@ namespace Explorer.Tours.Core.UseCases
         private readonly ITourService _tourService;
         private readonly IMapMarkerService _mapMarkerService;
 
+        // Would make much more sense to have a IsDefault
+        // property in Marker and just fetch the default marker,
+        // but 👍
+        private readonly long defaultMapMarkerId = 1;
+
         public TouristMapMarkerService(ITouristMapMarkerRepository repository, IMapper mapper, ITourService tourService, IMapMarkerService mapMarkerService)
         {
             _repository = repository;
@@ -30,8 +35,20 @@ namespace Explorer.Tours.Core.UseCases
             _mapMarkerService = mapMarkerService;
         }
 
+        // Not the cleanest solution but 👍
+        private void EnsureDefaultMarker(long touristId)
+        {
+            var markers = _repository.GetAllByTourist(touristId);
+            if (!markers.Any())
+            {
+                var defaultMarker = Collect(touristId, defaultMapMarkerId);
+                SetMapMarkerAsActive(touristId, defaultMapMarkerId);
+            }
+        }
+
         public PagedResult<TouristMapMarkerDto> GetPagedByTourist(int page, int pageSize, long touristId)
         {
+            EnsureDefaultMarker(touristId);
             var result = _repository.GetPagedByTourist(page, pageSize, touristId);
             var items = result.Results.Select(_mapper.Map<TouristMapMarkerDto>).ToList();
             return new PagedResult<TouristMapMarkerDto>(items, result.TotalCount);
@@ -39,12 +56,16 @@ namespace Explorer.Tours.Core.UseCases
 
         public List<TouristMapMarkerDto> GetAllByTourist(long touristId)
         {
+            EnsureDefaultMarker(touristId);
+
             var markers = _repository.GetAllByTourist(touristId);
             return markers.Select(_mapper.Map<TouristMapMarkerDto>).ToList();
         }
 
         public TouristMapMarkerDto GetActiveByTourist(long touristId)
         {
+            EnsureDefaultMarker(touristId);
+
             var activeMarker = _repository.GetActiveByTourist(touristId);
             return _mapper.Map<TouristMapMarkerDto>(activeMarker);
         }
@@ -57,6 +78,8 @@ namespace Explorer.Tours.Core.UseCases
 
         public TouristMapMarkerDto CollectFromTour(long touristId, long tourId)
         {
+            EnsureDefaultMarker(touristId);
+
             var tour = _tourService.GetById(tourId);
             if(tour == null)
             {
@@ -110,6 +133,8 @@ namespace Explorer.Tours.Core.UseCases
 
         public TouristMapMarkerDto SetMapMarkerAsActive(long touristId, long mapMarkerId)
         {
+            EnsureDefaultMarker(touristId);
+
             var markers = _repository.GetAllByTourist(touristId);
 
             var active = markers.FirstOrDefault(tm => tm.IsActive);
