@@ -63,6 +63,7 @@ IPersonService personService, ITouristStatsService touristStatsService, ITourist
                 Username = account.Username,
                 Name = person.Name,
                 Surname = person.Surname,
+                Email = person.Email,
                 ProfileImageUrl = person.ProfileImageUrl,
                 Biography = person.Biography,
                 Quote = person.Quote,
