@@ -16,4 +16,8 @@ public class BlogDto
     public List<VoteDto> Votes { get ; set; }
     public int VoteScore { get ; set; }
     public VoteTypeDto? CurrentUserVote { get ; set; }
+
+    public List<BlogCollaboratorDto> Collaborators { get; set; } = new();
+    public bool CanEdit { get; set; }
+    public bool CanManageCollaborators { get; set; }
 }

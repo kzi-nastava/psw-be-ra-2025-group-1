@@ -22,6 +22,7 @@ public class Journal : Entity
     public List<string> Images { get; private set; } = new();
     public List<string> Videos { get; private set; } = new();
     public long? PublishedBlogId { get; private set; }  //da veze za blog kad publishuje
+    public List<JournalCollaborator> Collaborators { get; private set; } = new();
 
     protected Journal(){}
     public Journal(string? content, long userId, string title, double lat, double longit, string locationName )
@@ -71,5 +72,28 @@ public class Journal : Entity
     {
         Images = images ?? new();
         Videos = videos ?? new();
+    }
+
+
+    public bool IsOwner(long userId) => UserId == userId;
+    public bool IsCollaborator(long userId) => Collaborators.Any(c => c.UserId == userId);
+
+    public void AddCollaborator(long ownerId, long collaboratorUserId)
+    {
+        if (!IsOwner(ownerId)) throw new UnauthorizedAccessException("Only owner can manage collaborators.");
+        if (collaboratorUserId == ownerId) throw new ArgumentException("Cannot add yourself as collaborator.");
+        if (Collaborators.Any(c => c.UserId == collaboratorUserId)) throw new ArgumentException("User is already a collaborator.");
+
+        Collaborators.Add(new JournalCollaborator(Id, collaboratorUserId));
+    }
+
+    public void RemoveCollaborator(long ownerId, long collaboratorUserId)
+    {
+        if (!IsOwner(ownerId)) throw new UnauthorizedAccessException("Only owner can manage collaborators.");
+
+        var existing = Collaborators.FirstOrDefault(c => c.UserId == collaboratorUserId);
+        if (existing == null) return;
+
+        Collaborators.Remove(existing);
     }
 }
