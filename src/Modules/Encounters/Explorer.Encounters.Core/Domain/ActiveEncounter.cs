@@ -14,7 +14,7 @@ public class ActiveEncounter : Entity
     public List<Requirement> Requirements { get; private set; } = new List<Requirement>();
     public List<string>? Hints { get; private set; } = new List<string>();
     public string? ImagePath { get; private set; }
-    public int HintCounter { get; private set; }
+    public bool TreasureFound { get; private set; }
 
 
     public ActiveEncounter(long touristId, long encounterId, double latitude, double longitude, List<string>? hints = null, string? imagePath = null)
@@ -28,31 +28,22 @@ public class ActiveEncounter : Entity
         IsWithinRange = true;
         Hints = hints;
         ImagePath = imagePath;
-        HintCounter = 0;
+
+        TreasureFound = false;
     }
 
     private ActiveEncounter() { }
+
+    public void MarkTreasureAsFound()
+    {
+        TreasureFound = true;
+    }
 
     public void UpdateLocation(double latitude, double longitude)
     {
         LastLatitude = latitude;
         LastLongitude = longitude;
         LastLocationUpdate = DateTime.UtcNow;
-    }
-
-    public List<string> GetNextHint()
-    {
-        if (Hints == null || Hints.Count == 0 || HintCounter >= Hints.Count) throw new InvalidOperationException("No more hints to be displayed");
-
-        List<string> result = [];
-
-        for (int i = 0; i <= HintCounter; i++)
-        {
-            result.Add(Hints[i]);
-        }
-        HintCounter++;
-
-        return result;
     }
 
     public void EnterRange()

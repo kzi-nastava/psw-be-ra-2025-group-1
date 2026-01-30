@@ -176,15 +176,9 @@ public class EncounterService : IEncounterService
             var distance = CalculateDistance(latitude, longitude, encounter.Latitude, encounter.Longitude);
             var isWithinRange = encounter.Range.HasValue && distance <= encounter.Range.Value;
 
-            if (encounter.Type == EncounterType.Location)
-            {
-                var check = HasFoundTreasure(latitude, longitude, encounter, activeEncounter);
-                if (check) continue;
-            }
-
             // Update location
             activeEncounter.UpdateLocation(latitude, longitude);
-            
+           
             // Update range flag
             if (isWithinRange != activeEncounter.IsWithinRange)
             {
@@ -193,7 +187,11 @@ public class EncounterService : IEncounterService
                 else
                     activeEncounter.LeaveRange();
             }
-            
+            if (encounter.Type == EncounterType.Location)
+            {
+                HasFoundTreasure(latitude, longitude, encounter, activeEncounter);
+            }
+             
             _repository.UpdateActiveEncounter(activeEncounter);
             
             // Check if social encounter is completed
@@ -226,6 +224,19 @@ public class EncounterService : IEncounterService
         return GetActiveTouristEncounters(touristId);
     }
 
+    public void CompleteTreasure(long touristId, long id)
+    {
+        var activeEncounter = _repository.GetActiveTouristEncounter(touristId, id);
+        var encounter = _repository.GetById(id);
+
+        var completed = new CompletedEncounter(activeEncounter.TouristId, encounter.Id, encounter.Xp);
+        _repository.CompleteEncounter(completed);
+        _repository.DeleteActiveEncounter(activeEncounter.Id);
+
+        // Update tourist stats
+        UpdateTouristStats(activeEncounter.TouristId, encounter.Xp);
+    }
+
     private bool HasFoundTreasure(double latitude, double longitude, Encounter encounter, ActiveEncounter activeEncounter)
     {
         var distance = CalculateDistance(latitude, longitude, encounter.HiddenLatitude.Value, encounter.HiddenLongitude.Value);
@@ -234,12 +245,7 @@ public class EncounterService : IEncounterService
 
         if (_repository.HasCompletedEncounter(activeEncounter.TouristId, encounter.Id)) throw new Exception("Encounter already completed.");
 
-        var completed = new CompletedEncounter(activeEncounter.TouristId, encounter.Id, encounter.Xp);
-        _repository.CompleteEncounter(completed);
-        _repository.DeleteActiveEncounter(activeEncounter.Id);
-
-        // Update tourist stats
-        UpdateTouristStats(activeEncounter.TouristId, encounter.Xp);
+        activeEncounter.MarkTreasureAsFound();
         return true;
     }
 
@@ -430,7 +436,9 @@ public class EncounterService : IEncounterService
             Requirements = activeEncounter.Requirements != null
                 ? _mapper.Map<List<RequirementDto>>(activeEncounter.Requirements)
                 : new List<RequirementDto>(),
-            ImagePath = encounter.ImagePath
+            ImagePath = encounter.ImagePath,
+            TreasureFound = activeEncounter.TreasureFound,
+            Hints = activeEncounter.Hints
         };
     }
 }

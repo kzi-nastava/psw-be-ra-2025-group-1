@@ -237,6 +237,30 @@ public class EncounterController : ControllerBase
         }
     }
 
+    [HttpPost("{id}/complete-treasure")]
+    [Authorize(Policy = "touristPolicy")]
+    public IActionResult CompleteTresure(long id)
+    {
+        var touristId = User.UserId();
+        try
+        {
+            _encounterService.CompleteTreasure(touristId, id);
+            return Ok();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
     [HttpGet("my-active")]
     [Authorize(Policy = "touristPolicy")]
     public ActionResult<List<ActiveEncounterDto>> GetMyActiveEncounters()
