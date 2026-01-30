@@ -612,7 +612,7 @@ namespace Explorer.API.Demo
             long tour1Id = 1;
             long tour5Id = 5;
             long tourist1Id = 2;
-            long tourist3Id = 3;
+            long tourist2Id = 3;
             //long tourist4Id = 4;
             //long author1Id = 5;
             //long author2Id = 6;
@@ -659,7 +659,7 @@ namespace Explorer.API.Demo
             //// Tourist 3 
             TourExecutionDto tourExecution3 = new TourExecutionDto()
             {
-                TouristId = tourist3Id,
+                TouristId = tourist2Id,
                 TourId = tour5Id,
                 Status = TourExecutionStatusDto.InProgress,
                 StartTime = DateTime.UtcNow.AddHours(-3),
@@ -668,7 +668,7 @@ namespace Explorer.API.Demo
                 PercentageCompleted = 66.67
             };
             var execution3 = _tourExecutionService.Create(tourExecution3);
-            _tourExecutionService.CompleteTour(tourist3Id, execution3.Id);
+            _tourExecutionService.CompleteTour(tourist2Id, execution3.Id);
 
             // Tourist 4 
             //TourExecutionDto tourExecution4 = new TourExecutionDto()
@@ -688,15 +688,15 @@ namespace Explorer.API.Demo
         private void SeedRatings()
         {
             long tour5Id = 5;
-            long tourist3Id = 3;
+            long tourist2Id = 3;
             //long tourist4Id = 4;
 
-            var execution1 = _tourExecutionService.GetTouristHistory(tourist3Id).FirstOrDefault(e => e.TourId == tour5Id);
+            var execution1 = _tourExecutionService.GetTouristHistory(tourist2Id).FirstOrDefault(e => e.TourId == tour5Id);
             //var execution2 = _tourExecutionService.GetTouristHistory(tourist4Id).FirstOrDefault(e => e.TourId == tour5Id);
 
             TourRatingDto rating1 = new TourRatingDto()
             {
-                UserId = tourist3Id,
+                UserId = tourist2Id,
                 TourExecutionId = execution1.Id, 
                 Stars = 5,
                 Comment = "Super! Sve preporuke.",
