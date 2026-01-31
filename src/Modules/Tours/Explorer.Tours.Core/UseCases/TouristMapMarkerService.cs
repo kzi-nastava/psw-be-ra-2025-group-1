@@ -39,7 +39,8 @@ namespace Explorer.Tours.Core.UseCases
         private void EnsureDefaultMarker(long touristId)
         {
             var markers = _repository.GetAllByTourist(touristId);
-            if (!markers.Any())
+            bool hasDefault = markers.Any(m => m.MapMarkerId == defaultMapMarkerId);
+            if (!hasDefault)
             {
                 var defaultMarker = Collect(touristId, defaultMapMarkerId);
                 SetMapMarkerAsActive(touristId, defaultMapMarkerId);
@@ -133,8 +134,6 @@ namespace Explorer.Tours.Core.UseCases
 
         public TouristMapMarkerDto SetMapMarkerAsActive(long touristId, long mapMarkerId)
         {
-            EnsureDefaultMarker(touristId);
-
             var markers = _repository.GetAllByTourist(touristId);
 
             var active = markers.FirstOrDefault(tm => tm.IsActive);

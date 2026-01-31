@@ -4,6 +4,7 @@ using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
+using static System.Net.WebRequestMethods;
 
 namespace Explorer.API.Demo
 {
@@ -23,6 +24,9 @@ namespace Explorer.API.Demo
         private readonly ITouristMapMarkerService _touristMapMarkerService;
         private readonly IMapMarkerService _mapMarkerService;
         private readonly IShoppingCartService _shoppingCartService;
+
+        private readonly int predefinedMarkersNumber = 10;
+        private readonly string imageRootUrl = "https://localhost:44333/images/";
 
         public DemoSeeder(
             IAuthenticationService authenticationService, 
@@ -61,6 +65,7 @@ namespace Explorer.API.Demo
             SeedDefaultMarker();
             SeedAdmin();
             SeedTourists();
+            SeedStandaloneMarkers();
             SeedWallets();
             SeedAuthors();
             SeedEquipment();
@@ -73,11 +78,32 @@ namespace Explorer.API.Demo
             SeedRestaurants();
         }
 
+        private void SeedStandaloneMarkers()
+        {
+            var markerIds = new List<long>();
+            long tourist1Id = 2;
+            for(int i = 1; i <= predefinedMarkersNumber; i++)
+            {
+                var marker = _mapMarkerService.Create(new MapMarkerDto
+                {
+                    ImageUrl = imageRootUrl + $"marker{i}.png",
+                    IsStandalone = true
+                });
+                markerIds.Add(marker.Id);
+            }
+
+            // Tourist 1 gets a bunch of markers
+            foreach(var markerId in markerIds)
+            {
+                _touristMapMarkerService.Collect(tourist1Id, markerId);
+            }
+        }
+
         private void SeedDefaultMarker()
         {
             var defaultMarkerDto = _mapMarkerService.Create(new MapMarkerDto
             {
-                ImageUrl = "https://localhost:44333/images/defaultMarker.png",
+                ImageUrl = imageRootUrl + "defaultMarker.png",
                 IsStandalone = true,
             });
         }
