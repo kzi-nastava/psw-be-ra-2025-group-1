@@ -1,3 +1,4 @@
+using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.Core.Domain;
 
 namespace Explorer.Encounters.Core.RepositoryInterfaces;

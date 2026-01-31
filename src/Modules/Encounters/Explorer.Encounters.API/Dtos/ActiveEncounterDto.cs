@@ -20,4 +20,7 @@ public class ActiveEncounterDto
     public int? CurrentPeopleInRange { get; set; }
     public List<RequirementDto>? Requirements { get; set; } = new List<RequirementDto>();
     public string? ImagePath { get; set; }
+    public bool TreasureFound { get; set; }
+    public List<string>? Hints { get; set; } = new List<string>();
+    public List<string>? ShownHints { get; set; } = new List<string>();
 }

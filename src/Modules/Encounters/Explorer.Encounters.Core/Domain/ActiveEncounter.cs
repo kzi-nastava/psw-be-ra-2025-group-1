@@ -13,8 +13,9 @@ public class ActiveEncounter : Entity
     public bool IsWithinRange { get; private set; }
     public List<Requirement> Requirements { get; private set; } = new List<Requirement>();
     public List<string>? Hints { get; private set; } = new List<string>();
+    public List<string>? ShownHints { get; private set; } = new List<string>();
     public string? ImagePath { get; private set; }
-    public int HintCounter { get; private set; }
+    public bool TreasureFound { get; private set; } 
 
 
     public ActiveEncounter(long touristId, long encounterId, double latitude, double longitude, List<string>? hints = null, string? imagePath = null)
@@ -28,10 +29,16 @@ public class ActiveEncounter : Entity
         IsWithinRange = true;
         Hints = hints;
         ImagePath = imagePath;
-        HintCounter = 0;
+
+        TreasureFound = false;
     }
 
     private ActiveEncounter() { }
+
+    public void MarkTreasureAsFound()
+    {
+        TreasureFound = true;
+    }
 
     public void UpdateLocation(double latitude, double longitude)
     {
@@ -40,24 +47,24 @@ public class ActiveEncounter : Entity
         LastLocationUpdate = DateTime.UtcNow;
     }
 
-    public List<string> GetNextHint()
-    {
-        if (Hints == null || Hints.Count == 0 || HintCounter >= Hints.Count) throw new InvalidOperationException("No more hints to be displayed");
-
-        List<string> result = [];
-
-        for (int i = 0; i <= HintCounter; i++)
-        {
-            result.Add(Hints[i]);
-        }
-        HintCounter++;
-
-        return result;
-    }
-
     public void EnterRange()
     {
         IsWithinRange = true;
+    }
+
+    public void ShowNextHint()
+    {
+        if (Hints != null || ShownHints.Count() != Hints.Count())
+        {
+            foreach (var hint in Hints!)
+            {
+                if (!ShownHints!.Contains(hint))
+                {
+                    ShownHints.Add(hint);
+                    break;
+                }
+            }
+        }
     }
 
     public void LeaveRange()

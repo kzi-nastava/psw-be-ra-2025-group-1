@@ -1,4 +1,5 @@
 using AutoMapper;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public;
 using Explorer.Encounters.Core.Domain;
@@ -53,7 +54,9 @@ public class EncounterService : IEncounterService
             dto.Range,
             dto.ImagePath,
             dto.Hints,
-            dto.KeypointId
+            dto.KeypointId,
+            dto.HiddenLongitude,
+            dto.HiddenLatitude
         );
 
         var created = _repository.Create(encounter);
@@ -65,7 +68,7 @@ public class EncounterService : IEncounterService
         var encounter = _repository.GetById(id);
         
         encounter.Update(dto.Title, dto.Description, dto.Longitude, dto.Latitude, dto.Xp, 
-            Enum.Parse<EncounterType>(dto.Type), dto.RequiredPeopleCount, dto.Range, dto.ImagePath, dto.Hints);
+            Enum.Parse<EncounterType>(dto.Type), dto.Requirements, dto.RequiredPeopleCount, dto.Range, dto.ImagePath, dto.Hints, dto.HiddenLongitude, dto.HiddenLatitude);
         var updated = _repository.Update(encounter);
         return _mapper.Map<EncounterDto>(updated);
     }
@@ -108,15 +111,15 @@ public class EncounterService : IEncounterService
             // Mark as completed immediately and award XP
             var completedEncounter = new CompletedEncounter(touristId, encounterId, encounter.Xp);
             _repository.CompleteEncounter(completedEncounter);
-            
+
             // Award XP to the tourist
             UpdateTouristStats(touristId, encounter.Xp);
-            
+
             // Return a temporary active encounter DTO just to show completion
             var tempActive = new ActiveEncounter(touristId, encounterId, latitude, longitude, encounter.Hints, encounter.ImagePath);
             return MapToDto(tempActive, encounter);
         }
-        
+
         // Check if already activated
         var existing = _repository.GetActiveTouristEncounter(touristId, encounterId);
         if (existing != null)
@@ -172,10 +175,10 @@ public class EncounterService : IEncounterService
             // Calculate if within range
             var distance = CalculateDistance(latitude, longitude, encounter.Latitude, encounter.Longitude);
             var isWithinRange = encounter.Range.HasValue && distance <= encounter.Range.Value;
-            
+
             // Update location
             activeEncounter.UpdateLocation(latitude, longitude);
-            
+           
             // Update range flag
             if (isWithinRange != activeEncounter.IsWithinRange)
             {
@@ -184,7 +187,11 @@ public class EncounterService : IEncounterService
                 else
                     activeEncounter.LeaveRange();
             }
-            
+            if (encounter.Type == EncounterType.Location)
+            {
+                HasFoundTreasure(latitude, longitude, encounter, activeEncounter);
+            }
+             
             _repository.UpdateActiveEncounter(activeEncounter);
             
             // Check if social encounter is completed
@@ -215,6 +222,31 @@ public class EncounterService : IEncounterService
         
         // Return updated active encounters
         return GetActiveTouristEncounters(touristId);
+    }
+
+    public void CompleteTreasure(long touristId, long id)
+    {
+        var activeEncounter = _repository.GetActiveTouristEncounter(touristId, id);
+        var encounter = _repository.GetById(id);
+
+        var completed = new CompletedEncounter(activeEncounter.TouristId, encounter.Id, encounter.Xp);
+        _repository.CompleteEncounter(completed);
+        _repository.DeleteActiveEncounter(activeEncounter.Id);
+
+        // Update tourist stats
+        UpdateTouristStats(activeEncounter.TouristId, encounter.Xp);
+    }
+
+    private bool HasFoundTreasure(double latitude, double longitude, Encounter encounter, ActiveEncounter activeEncounter)
+    {
+        var distance = CalculateDistance(latitude, longitude, encounter.HiddenLatitude.Value, encounter.HiddenLongitude.Value);
+
+        if (encounter.Range.HasValue && distance > encounter.Range.Value) return false;
+
+        if (_repository.HasCompletedEncounter(activeEncounter.TouristId, encounter.Id)) throw new Exception("Encounter already completed.");
+
+        activeEncounter.MarkTreasureAsFound();
+        return true;
     }
 
     private void UpdateTouristStats(long touristId, int xp)
@@ -344,17 +376,17 @@ public class EncounterService : IEncounterService
         return R * c;
     }
 
-    public List<string> GetNextHint(long activeId, long touristId)
+    public ActiveEncounterDto GetNextHint(long activeId, long touristId)
     {
         ActiveEncounter activeEncounter = _repository.GetActiveById(activeId);
 
         // Check if the tourist owns the active encounter
         if (activeEncounter.TouristId != touristId) throw new UnauthorizedAccessException("Tourist does not own this active encounter.");
 
-        var hints = activeEncounter.GetNextHint();
+        activeEncounter.ShowNextHint();
         _repository.UpdateActiveEncounter(activeEncounter);
 
-        return hints;
+        return MapToDto(activeEncounter, _repository.GetById(activeEncounter.EncounterId));
     }
 
     public EncounterDto GetByKeypointId(long keypointId)
@@ -404,7 +436,10 @@ public class EncounterService : IEncounterService
             Requirements = activeEncounter.Requirements != null
                 ? _mapper.Map<List<RequirementDto>>(activeEncounter.Requirements)
                 : new List<RequirementDto>(),
-            ImagePath = encounter.ImagePath
+            ImagePath = encounter.ImagePath,
+            TreasureFound = activeEncounter.TreasureFound,
+            Hints = activeEncounter.Hints,
+            ShownHints = activeEncounter.ShownHints
         };
     }
 }

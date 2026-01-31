@@ -3,6 +3,7 @@ using Explorer.API.Controllers.Tourist;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public;
+using Explorer.Encounters.Core.Domain;
 using Explorer.Encounters.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Microsoft.AspNetCore.Http;
@@ -174,7 +175,10 @@ public class EncounterCommandTests : BaseEncountersIntegrationTest
             Latitude = 45.0,
             Xp = 150,
             Type = "Location",
-            ImagePath = "some/path"
+            HiddenLongitude = 21.5,
+            HiddenLatitude = 45.5,
+            ImagePath = "some/path",
+            Hints = []
         };
 
         // Act
