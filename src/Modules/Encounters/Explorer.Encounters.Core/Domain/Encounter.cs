@@ -28,7 +28,7 @@ public class Encounter : AggregateRoot
         Requirements = new List<string>();
         Hints = new List<string>();
     }
-    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, long? keypointId = null, double? hidloc = null, double? hidlang = null) : this()
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, long? keypointId = null, double? hidlong = null, double? hidlang = null) : this()
     {
         Title = title;
         Description = description;
@@ -42,7 +42,7 @@ public class Encounter : AggregateRoot
         ImagePath = imgPath;
         Requirements = reqs;
         Hints = hints;
-        HiddenLongitude = hidloc;
+        HiddenLongitude = hidlong;
         HiddenLatitude = hidlang;
         KeypointId = keypointId;
 

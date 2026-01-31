@@ -55,8 +55,8 @@ public class EncounterService : IEncounterService
             dto.ImagePath,
             dto.Hints,
             dto.KeypointId,
-            dto.HiddenLatitude,
-            dto.HiddenLongitude
+            dto.HiddenLongitude,
+            dto.HiddenLatitude
         );
 
         var created = _repository.Create(encounter);
@@ -68,7 +68,7 @@ public class EncounterService : IEncounterService
         var encounter = _repository.GetById(id);
         
         encounter.Update(dto.Title, dto.Description, dto.Longitude, dto.Latitude, dto.Xp, 
-            Enum.Parse<EncounterType>(dto.Type), dto.Requirements, dto.RequiredPeopleCount, dto.Range, dto.ImagePath, dto.Hints, dto.HiddenLatitude, dto.HiddenLongitude);
+            Enum.Parse<EncounterType>(dto.Type), dto.Requirements, dto.RequiredPeopleCount, dto.Range, dto.ImagePath, dto.Hints, dto.HiddenLongitude, dto.HiddenLatitude);
         var updated = _repository.Update(encounter);
         return _mapper.Map<EncounterDto>(updated);
     }
