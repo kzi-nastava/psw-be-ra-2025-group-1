@@ -412,7 +412,7 @@ namespace Explorer.API.Demo
                 tour1.Id,
                 new MapMarkerDto
                 {
-                    ImageUrl = "something/something"
+                    ImageUrl = imageRootUrl + "markerTour1.png"
                 },
                 tour1.CreatorId);
 
@@ -456,7 +456,7 @@ namespace Explorer.API.Demo
                 tour2.Id,
                 new MapMarkerDto
                 {
-                    ImageUrl = "uhuh/uhuh"
+                    ImageUrl = imageRootUrl + "markerTour2.png"
                 },
                 tour2.CreatorId);
 
@@ -530,7 +530,7 @@ namespace Explorer.API.Demo
                 tour4.Id,
                 new MapMarkerDto
                 {
-                    ImageUrl = "mm/mm"
+                    ImageUrl = imageRootUrl + "markerTour4.png"
                 },
                 tour4.CreatorId);
 
@@ -571,7 +571,7 @@ namespace Explorer.API.Demo
                 tour5.Id,
                 new MapMarkerDto
                 {
-                    ImageUrl = "aaa/aaa"
+                    ImageUrl = imageRootUrl + "markerTour5.png"
                 },
                 tour5.CreatorId);
 
