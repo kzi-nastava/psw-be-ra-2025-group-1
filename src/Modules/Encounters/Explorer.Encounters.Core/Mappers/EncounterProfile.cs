@@ -15,6 +15,5 @@ public class EncounterProfile : Profile
         CreateMap<Requirement, RequirementDto>().ReverseMap();
 
         CreateMap<TouristStats, TouristStatsDto>().ReverseMap();
-        CreateMap<Encounter, HiddenEncounterDto>().ReverseMap();
     }
 }
