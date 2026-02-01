@@ -12,5 +12,5 @@ public interface ITourRepository
     PagedResult<Tour> GetByCreatorId(long creatorId, int page, int pageSize);
     PagedResult<Tour> GetPublished(int page, int pageSize);
     Tour? GetPublishedById(long id);
-
+    void DeleteMapMarker(MapMarker marker);
 }

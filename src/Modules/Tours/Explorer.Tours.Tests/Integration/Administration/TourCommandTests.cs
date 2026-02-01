@@ -398,4 +398,127 @@ public class TourCommandTests : BaseToursIntegrationTest
         }
     }
 
+    public static IEnumerable<object[]> AddMapMarkerData =>
+    new List<object[]>
+    {
+        new object[] { "-2", -81001, new MapMarkerDto { ImageUrl = "mm/mm" }, 403 }, // not author's tour
+        new object[] { "-2", -81000, new MapMarkerDto { ImageUrl = "mm/mm" }, 200 }, // good     
+    };
+
+    [Theory]
+    [MemberData(nameof(AddMapMarkerData))]
+    public void Adds_map_marker_to_tour(string authorId, long tourId, MapMarkerDto mapMarkerDto, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        // Act
+        var response = controller.AddMapMarker(tourId, mapMarkerDto);
+
+        // Assert
+        switch(expectedStatus)
+        {
+            case 200:
+                response.Result.ShouldBeOfType<OkObjectResult>();
+
+                var result = ((ObjectResult)response.Result)?.Value as MapMarkerDto;
+                var storedMarker = dbContext.MapMarkers.FirstOrDefault(i => i.Id == result.Id);
+                var storedTour = dbContext.Tour
+                    .Include(t => t.MapMarker)
+                    .FirstOrDefault(i => i.Id == tourId);
+
+                storedMarker.ShouldNotBeNull();
+                result.ImageUrl.ShouldBe(mapMarkerDto.ImageUrl);
+                storedMarker.ShouldNotBeNull();
+                storedTour.MapMarker.ShouldNotBeNull();
+                break;
+            case 403:
+                response.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+                break;
+        }
+    }
+
+    public static IEnumerable<object[]> UpdateMapMarkerData =>
+    new List<object[]>
+    {
+        new object[] { "-2", -81003, new MapMarkerDto { ImageUrl = "aa/aa" }, 403 }, // Unauthorized
+        new object[] { "-2", -81004, new MapMarkerDto { ImageUrl = "aa/aa" }, 200 }, // good     
+    };
+
+    [Theory]
+    [MemberData(nameof(UpdateMapMarkerData))]
+    public void Updates_map_marker_from_tour(string authorId, long tourId, MapMarkerDto mapMarkerDto, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        // Act
+        var response = controller.UpdateMapMarker(tourId, mapMarkerDto);
+
+        // Assert
+        switch (expectedStatus)
+        {
+            case 200:
+                response.Result.ShouldBeOfType<OkObjectResult>();
+
+                var result = ((ObjectResult)response.Result)?.Value as MapMarkerDto;
+                var storedMarker = dbContext.MapMarkers.FirstOrDefault(i => i.Id == result.Id);
+                var storedTour = dbContext.Tour
+                    .Include(t => t.MapMarker)
+                    .FirstOrDefault(i => i.Id == tourId);
+
+                storedMarker.ShouldNotBeNull();
+                result.ImageUrl.ShouldBe(mapMarkerDto.ImageUrl);
+                storedMarker.ShouldNotBeNull();
+                storedTour.MapMarker.ShouldNotBeNull();
+                break;
+            case 403:
+                response.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+                break;
+        }
+    }
+
+    public static IEnumerable<object[]> DeleteMapMarkerData =>
+    new List<object[]>
+    {
+        new object[] { "-2", -81003, 403 }, // Unauthorized
+        new object[] { "-2", -81004, 200 }, // good     
+    };
+
+    [Theory]
+    [MemberData(nameof(DeleteMapMarkerData))]
+    public void Delete_map_marker_from_tour(string authorId, long tourId, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        // Act
+        var response = controller.DeleteMapMarker(tourId);
+
+        // Assert
+        switch (expectedStatus)
+        {
+            case 200:
+                response.ShouldBeOfType<OkObjectResult>();
+
+                var storedTour = dbContext.Tour
+                    .Include(t => t.MapMarker)
+                    .FirstOrDefault(i => i.Id == tourId);
+
+                storedTour.MapMarker.ShouldBeNull();
+                break;
+            case 403:
+                response.ShouldBeOfType<UnauthorizedObjectResult>();
+                break;
+        }
+    }
+
+
+
 }

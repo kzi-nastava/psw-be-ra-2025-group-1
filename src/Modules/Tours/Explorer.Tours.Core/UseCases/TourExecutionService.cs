@@ -14,17 +14,20 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourExecutionRepository _tourExecutionRepository;
     private readonly ITourRepository _tourRepository;
     private readonly IUserLocationRepository _userLocationRepository;
+    private readonly ITouristMapMarkerService _touristMapMarkerService;
     private readonly IMapper _mapper;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
         IUserLocationRepository userLocationService,
+        ITouristMapMarkerService touristMapMarkerService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _userLocationRepository = userLocationService;
+        _touristMapMarkerService = touristMapMarkerService;
         _mapper = mapper;
     }
 
@@ -67,6 +70,14 @@ public class TourExecutionService : ITourExecutionService
 
         execution.Complete();
         var updated = _tourExecutionRepository.Update(execution);
+
+        var tour = _tourRepository.Get(execution.TourId);
+
+        // Automatically collect marker
+        if (tour.MapMarker != null)
+        {
+            _touristMapMarkerService.CollectFromTour(touristId, execution.TourId);
+        }
 
         return _mapper.Map<TourExecutionDto>(updated);
     }
@@ -132,6 +143,17 @@ public class TourExecutionService : ITourExecutionService
             // Mark keypoint as reached and create a new Keypoint Progress for it
             execution.ReachKeypoint(keypoint.Id, tour.Keypoints.Count);
             _tourExecutionRepository.Update(execution);
+
+            // Check if tour is completed to collect marker, since TourExecutionService.Complete()
+            // never gets actually called
+            if(execution.Status == TourExecutionStatus.Completed)
+            {
+                // Automatically collect marker
+                if (tour.MapMarker != null)
+                {
+                    _touristMapMarkerService.CollectFromTour(touristId, execution.TourId);
+                }
+            }
             return true;
         }
 
