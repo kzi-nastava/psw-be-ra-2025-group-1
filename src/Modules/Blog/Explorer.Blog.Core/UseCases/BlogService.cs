@@ -4,8 +4,6 @@ using Explorer.Blog.API.Public;
 using Explorer.Blog.Core.Domain;
 using Explorer.Blog.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.API.Internal;
-using Explorer.Stakeholders.Core.Domain;
-using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 
 namespace Explorer.Blog.Core.UseCases;
 
@@ -15,15 +13,15 @@ public class BlogService : IBlogService
     private readonly IMapper _mapper;
     private readonly IInternalPersonService _personService;
     private readonly IInternalUserService _users;
-    private readonly IJournalRepository _journalRepo;
+    private readonly IInternalJournalService _internalJournalService;
 
-    public BlogService(IBlogRepository blogRepository, IMapper mapper, IInternalPersonService personService, IInternalUserService users, IJournalRepository journalRepo)
+    public BlogService(IBlogRepository blogRepository, IMapper mapper, IInternalPersonService personService, IInternalUserService users, IInternalJournalService internalJournalService)
     {
         _blogRepository = blogRepository;
         _mapper = mapper;
         _personService = personService;
         _users = users;
-        _journalRepo = journalRepo;
+        _internalJournalService = internalJournalService;
     }
 
     public BlogDto CreateBlog(long userId, BlogCreateDto blogDto)
@@ -202,17 +200,13 @@ public class BlogService : IBlogService
         }).ToList();
 
         // JOURNAL collaborators (ako je blog iz journala)
-        var journal = _journalRepo.GetByPublishedBlogId(blog.Id);
+        var journalInfo = _internalJournalService.GetByPublishedBlogId(blog.Id);
 
-        var journalCollabs = new List<BlogCollaboratorDto>();
-        if (journal != null)
+        var journalCollabs = journalInfo?.Collaborators.Select(c => new BlogCollaboratorDto
         {
-            journalCollabs = journal.Collaborators.Select(c => new BlogCollaboratorDto
-            {
-                UserId = c.UserId,
-                Username = c.User?.Username ?? ""
-            }).ToList();
-        }
+            UserId = c.UserId,
+            Username = c.Username
+        }).ToList() ?? new List<BlogCollaboratorDto>();
 
         dto.Collaborators = blogCollabs
             .Concat(journalCollabs)
@@ -222,7 +216,7 @@ public class BlogService : IBlogService
 
         var isBlogOwner = blog.UserId == userId;
         var isBlogCollab = blog.Collaborators.Any(c => c.UserId == userId);
-        var isJournalCollab = journal != null && journal.Collaborators.Any(c => c.UserId == userId);
+        var isJournalCollab = journalInfo != null && journalInfo.Collaborators.Any(c => c.UserId == userId);
 
         dto.CanEdit = isBlogOwner || isBlogCollab || isJournalCollab;
 
