@@ -8,7 +8,7 @@ Write-Host "=== RUNNING MIGRATION RESET SCRIPT ===" -ForegroundColor Cyan
 $env:DATABASE_SCHEMA = "explorer-v1"
 
 # Define all modules and their configurations
-$modules = @{
+$modules = [ordered]@{
     "Stakeholders" = @{
         Folder = "Modules\Stakeholders\Explorer.Stakeholders.Infrastructure\Migrations"
         Context = "StakeholdersContext"

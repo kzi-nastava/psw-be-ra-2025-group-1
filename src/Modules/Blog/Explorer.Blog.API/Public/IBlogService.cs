@@ -6,10 +6,10 @@ public interface IBlogService
 {
     BlogDto CreateBlog(long userId, BlogCreateDto blogDto);
     List<BlogDto> GetUserBlogs(long userId);
-    BlogDto UpdateBlog(long blogId, BlogUpdateDto blogDto);
+    BlogDto UpdateBlog(long blogId, BlogUpdateDto blogDto, long currentUserId);
 
-    BlogDto PublishBlog(long blogId);
-    BlogDto ArchiveBlog(long blogId);
+    BlogDto PublishBlog(long blogId, long userId);
+    BlogDto ArchiveBlog(long blogId, long userId);
 
     void DeleteBlog(long blogId, long userId);
 
@@ -24,4 +24,9 @@ public interface IBlogService
     void RemoveVoteFromBlog(long blogId, long userId);
 
     BlogDto GetBlogById(long blogId, long userId);
+
+
+
+    public BlogDto AddCollaborator(long ownerId, long blogId, string collaboratorUsername);
+    public BlogDto RemoveCollaborator(long ownerId, long blogId, long collaboratorUserId);
 }

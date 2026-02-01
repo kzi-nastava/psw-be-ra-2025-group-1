@@ -24,4 +24,9 @@ public class JournalDto
     public List<string> Videos { get; set; } = new();
 
     public long? PublishedBlogId { get; set; }
+
+    public List<CollaboratorDto> Collaborators { get; set; } = new();
+    public bool CanManageCollaborators { get; set; }   // owner-only
+    public bool CanEdit { get; set; }                  // owner or collaborator
+    public bool CanDelete { get; set; }                // owner-only
 }

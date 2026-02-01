@@ -10,12 +10,16 @@ using Explorer.Stakeholders.API.Internal;
 using Moq;
 using Shouldly;
 using Xunit;
+using Explorer.Stakeholders.Core.Domain;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+using Explorer.Stakeholders.API.Dtos;
 
 namespace Explorer.Blog.Tests;
 
 public class BlogServiceTests
 {
     private readonly Mock<IBlogRepository> _mockRepository;
+    private readonly Mock<IInternalJournalService> _internalJournalMock;
     private readonly IMapper _mapper;
     private readonly BlogService _service;
     private readonly IInternalPersonService _personRepository;
@@ -31,9 +35,23 @@ public class BlogServiceTests
 
         _mockRepository = new Mock<IBlogRepository>();
 
+        _internalJournalMock = new Mock<IInternalJournalService>();
+
+        _internalJournalMock
+            .Setup(s => s.GetByPublishedBlogId(It.IsAny<long>()))
+            .Returns((JournalBlogLinkDto?)null);
+
         _personRepository = Mock.Of<IInternalPersonService>();
 
-        _service = new BlogService(_mockRepository.Object, _mapper, _personRepository);
+        var usersMock = new Mock<IInternalUserService>();
+        usersMock
+            .Setup(u => u.GetUsernamesByIds(It.IsAny<IEnumerable<long>>()))
+            .Returns(new Dictionary<long, string>());
+        usersMock
+            .Setup(u => u.GetUserIdByUsername(It.IsAny<string>()))
+            .Returns((string _) => 123);
+
+        _service = new BlogService(_mockRepository.Object, _mapper, _personRepository, usersMock.Object, _internalJournalMock.Object);
     }
 
     [Fact]
@@ -148,7 +166,7 @@ public class BlogServiceTests
             .Setup(repo => repo.Update(It.IsAny<Core.Domain.Blog>()))
             .Returns((Core.Domain.Blog b) => b);
 
-        var result = _service.UpdateBlog(blogId, updateDto);
+        var result = _service.UpdateBlog(blogId, updateDto, userId);
 
         result.ShouldNotBeNull();
         result.Title.ShouldBe("Updated Title");
@@ -163,6 +181,7 @@ public class BlogServiceTests
     public void UpdateBlog_BlogNotFound_ThrowsException()
     {
         var blogId = 999L;
+        var userId = 1L;
         var updateDto = new BlogUpdateDto
         {
             Title = "Updated Title",
@@ -175,7 +194,7 @@ public class BlogServiceTests
             .Throws(new KeyNotFoundException($"Blog with ID {blogId} not found"));
 
         Should.Throw<KeyNotFoundException>(() => 
-            _service.UpdateBlog(blogId, updateDto)
+            _service.UpdateBlog(blogId, updateDto, userId)
         );
     }
 
