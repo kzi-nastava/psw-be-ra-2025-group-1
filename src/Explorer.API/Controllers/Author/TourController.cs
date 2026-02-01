@@ -37,6 +37,7 @@ public class TourController : ControllerBase
             ? Ok(tour)
             : NotFound(new { message = $"Tour with ID {id} not found" });
     }
+    
 
     [Authorize(Policy = "authorPolicy")]
     [HttpGet("my")]
@@ -254,7 +255,7 @@ public class TourController : ControllerBase
             return Unauthorized(new { message = ex.Message });
         }
     }
-
+    
     [Authorize(Policy = "authorPolicy")]
     [HttpPut("{tourId}/keypoints/{keypointId}")]
     public ActionResult<KeypointDto> UpdateKeypoint(long tourId, long keypointId, [FromBody] KeypointDto keypoint)

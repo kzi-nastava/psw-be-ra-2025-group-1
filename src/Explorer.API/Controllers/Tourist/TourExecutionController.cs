@@ -63,6 +63,26 @@ public class TourExecutionController : ControllerBase
             return Forbid();
         }
     }
+    
+    [HttpGet("tours/{tourId:long}/keypoints")]
+    public ActionResult<List<KeypointDto>> GetTourKeypoints(long tourId)
+    {
+        var touristId = GetTouristId();
+        try
+        {
+            var result = _tourExecutionService.GetTourKeypoints(touristId, tourId);
+            return Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+
 
     [HttpGet("active")]
     public ActionResult<TourExecutionDto> GetActiveTour()

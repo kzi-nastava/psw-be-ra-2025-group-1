@@ -13,4 +13,5 @@ public interface ITourExecutionService
     KeypointDto UnlockKeypoint(long executionId, long keypointId);
     KeypointViewDto GetNextKeypointInfo(TourExecutionDto executionDto);
     TourExecutionDto Create(TourExecutionDto tourExecutionDto);
+    List<KeypointDto> GetTourKeypoints(long touristId, long tourId);
 }
