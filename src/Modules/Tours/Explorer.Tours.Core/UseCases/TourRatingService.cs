@@ -99,7 +99,7 @@ namespace Explorer.Tours.Core.UseCases
             if (_tourRatingRepository.GetPagedByUser(rating.UserId, 1, int.MaxValue).Results.Any(r => r.TourExecutionId == rating.TourExecutionId)) throw new System.InvalidOperationException("You have already rated this tour execution.");
 
             rating.Id = 0;
-            rating.CompletedProcentage = execution.PercentageCompleted;
+            rating.CompletedPercentage = execution.PercentageCompleted;
             rating.ThumbsUpCount = 0;
 
             var result = _tourRatingRepository.Create(_mapper.Map<TourRating>(rating));

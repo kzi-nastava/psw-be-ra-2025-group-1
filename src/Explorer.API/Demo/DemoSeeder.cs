@@ -569,7 +569,7 @@ namespace Explorer.API.Demo
                 TourExecutionId = execution1.Id, 
                 Stars = 5,
                 Comment = "Super! Sve preporuke.",
-                CompletedProcentage = 100.0
+                CompletedPercentage = 100.0
             };
 
             TourRatingDto rating2 = new TourRatingDto()
@@ -578,7 +578,7 @@ namespace Explorer.API.Demo
                 TourExecutionId = execution2.Id,
                 Stars = 4,
                 Comment = "Lepa tura, ali može bolje organizaciono.",
-                CompletedProcentage = 100.0
+                CompletedPercentage = 100.0
             };
 
             TourRatingDto rating3 = new TourRatingDto()
@@ -587,7 +587,7 @@ namespace Explorer.API.Demo
                 TourExecutionId = execution3.Id,
                 Stars = 2,
                 Comment = "Moglo biti bolje...",
-                CompletedProcentage = 96.0
+                CompletedPercentage = 96.0
             };
 
             _tourRatingService.Create(rating1);
