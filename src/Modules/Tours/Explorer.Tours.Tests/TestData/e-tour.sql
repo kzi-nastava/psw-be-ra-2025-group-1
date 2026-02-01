@@ -415,6 +415,11 @@ VALUES (-10824, -10813, -10803, '2024-01-16T11:15:00Z', '2024-01-16T11:15:00Z');
 -- FOR MAP MARKERS
 -- ============================================================================
 
+-- Default marker
+INSERT INTO tours."MapMarkers"(
+	"Id", "ImageUrl", "IsStandalone")
+	VALUES (-1, 'https://localhost:44333/images/defaultMarker.png', True);
+
 -- Tour for Author -2
 INSERT INTO tours."Tour"(
     "Id",

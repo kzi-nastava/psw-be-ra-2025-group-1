@@ -12,6 +12,7 @@ namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
         PagedResult<MapMarker> GetPaged(int page, int pageSize);
         List<MapMarker> GetAll();
         MapMarker Get(long mapMarkerId);
+        MapMarker GetByImageUrl(string imageUrl);
         MapMarker Create(MapMarker mapMarker);
         MapMarker Update(MapMarker mapMarker);
         void Delete(long mapMarkerId);

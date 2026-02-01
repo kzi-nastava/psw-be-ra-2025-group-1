@@ -13,6 +13,7 @@ namespace Explorer.Tours.API.Public
         PagedResult<MapMarkerDto> GetPaged(int page, int pageSize);
         List<MapMarkerDto> GetAll();
         MapMarkerDto Get(long mapMarkerId);
+        MapMarkerDto GetByImageUrl(string imageUrl);
         MapMarkerDto Create(MapMarkerDto mapMarkerDto);
         MapMarkerDto Update(MapMarkerDto mapMarkerDto);
         void Delete(long id);

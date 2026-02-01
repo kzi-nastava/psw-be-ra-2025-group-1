@@ -48,6 +48,16 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
             return marker;
         }
 
+        public MapMarker GetByImageUrl(string imageUrl)
+        {
+            var marker = _dbSet.FirstOrDefault(m => m.ImageUrl == imageUrl);
+
+            if (marker == null)
+                throw new NotFoundException("Map marker not found for image: " + imageUrl);
+
+            return marker;
+        }
+
         public MapMarker Create(MapMarker mapMarker)
         {
             _dbSet.Add(mapMarker);

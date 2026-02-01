@@ -26,6 +26,7 @@ namespace Explorer.Tours.Core.UseCases
         // property in Marker and just fetch the default marker,
         // but 👍
         private readonly long defaultMapMarkerId = 1;
+        private readonly string defaultMapMarkerUrl = "https://localhost:44333/images/defaultMarker.png";
 
         public TouristMapMarkerService(ITouristMapMarkerRepository repository, IMapper mapper, ITourService tourService, IMapMarkerService mapMarkerService)
         {
@@ -39,11 +40,12 @@ namespace Explorer.Tours.Core.UseCases
         private void EnsureDefaultMarker(long touristId)
         {
             var markers = _repository.GetAllByTourist(touristId);
-            bool hasDefault = markers.Any(m => m.MapMarkerId == defaultMapMarkerId);
+            var defaultMarker = _mapMarkerService.GetByImageUrl(defaultMapMarkerUrl);
+            bool hasDefault = markers.Any(m => _mapMarkerService.Get(m.MapMarkerId).ImageUrl == defaultMapMarkerUrl);
             if (!hasDefault)
             {
-                var defaultMarker = Collect(touristId, defaultMapMarkerId);
-                SetMapMarkerAsActive(touristId, defaultMapMarkerId);
+                var collectedMarker = Collect(touristId, defaultMarker.Id);
+                SetMapMarkerAsActive(touristId, defaultMarker.Id);
             }
         }
 
@@ -90,7 +92,6 @@ namespace Explorer.Tours.Core.UseCases
             {
                 throw new InvalidOperationException($"Can't collect marker from a tour in draft");
             }
-            // Check if there's an active tour execution and if tourist bought the tour?
 
             if(tour.MapMarker == null)
             {
