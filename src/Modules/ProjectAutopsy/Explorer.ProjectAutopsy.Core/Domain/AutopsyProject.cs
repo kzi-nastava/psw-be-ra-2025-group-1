@@ -12,7 +12,6 @@ public class AutopsyProject : Entity
     public string? Description { get; private set; }
     
     // External integrations
-    public string? JiraProjectKey { get; private set; }
     public string? GitHubRepo { get; private set; } // format: "owner/repo"
     
     // Analysis settings
@@ -33,12 +32,6 @@ public class AutopsyProject : Entity
         AnalysisWindowDays = 30;
         IsActive = true;
         CreatedAt = DateTime.UtcNow;
-        UpdatedAt = DateTime.UtcNow;
-    }
-
-    public void ConfigureJira(string projectKey)
-    {
-        JiraProjectKey = projectKey;
         UpdatedAt = DateTime.UtcNow;
     }
 

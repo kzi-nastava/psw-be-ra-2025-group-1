@@ -32,6 +32,8 @@ public class ExceptionHandlingMiddleware
     {
         context.Response.ContentType = "application/json";
 
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
         var (statusCode, message) = exception switch
         {
             ArgumentException ex => (HttpStatusCode.BadRequest, ex.Message),
@@ -39,7 +41,7 @@ public class ExceptionHandlingMiddleware
             ForbiddenException ex => (HttpStatusCode.Forbidden, ex.Message),
             NotFoundException ex => (HttpStatusCode.NotFound, ex.Message),
             EntityValidationException ex => (HttpStatusCode.UnprocessableEntity, ex.Message),
-            _ => (HttpStatusCode.InternalServerError, "An internal server error occurred.")
+            _ => (HttpStatusCode.InternalServerError, isDevelopment ? exception.ToString() : "An internal server error occurred.")
         };
 
         context.Response.StatusCode = (int)statusCode;

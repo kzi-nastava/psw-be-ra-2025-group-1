@@ -1,6 +1,7 @@
 using AutoMapper;
 using Explorer.ProjectAutopsy.API.Dtos;
 using Explorer.ProjectAutopsy.Core.Domain;
+using Explorer.ProjectAutopsy.Core.Services;
 
 namespace Explorer.ProjectAutopsy.Core.Mappers;
 
@@ -16,12 +17,14 @@ public class ProjectAutopsyProfile : Profile
         CreateMap<RiskSnapshot, RiskSnapshotDto>()
             .ForMember(dest => dest.Trend, opt => opt.MapFrom(src => src.Trend.ToString()));
 
-        CreateMap<RiskMetrics, RiskMetricsDto>();
-        CreateMap<PlanningMetrics, PlanningMetricsDto>();
-        CreateMap<ExecutionMetrics, ExecutionMetricsDto>();
-        CreateMap<BottleneckMetrics, BottleneckMetricsDto>();
-        CreateMap<CommunicationMetrics, CommunicationMetricsDto>();
-        CreateMap<StabilityMetrics, StabilityMetricsDto>();
+        // GitHubMetrics mappings
+        CreateMap<GitHubMetrics, GitHubMetricsDto>();
+        CreateMap<CommitAnalysis, CommitAnalysisDto>();
+        CreateMap<CommitExample, CommitExampleDto>();
+        CreateMap<PullRequestAnalysis, PullRequestAnalysisDto>();
+        CreateMap<PrExample, PrExampleDto>();
+        CreateMap<ReviewAnalysis, ReviewAnalysisDto>();
+        CreateMap<AuthorStats, AuthorStatsDto>();
 
         // AIReport mappings
         CreateMap<AIReport, AIReportDto>()

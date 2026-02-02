@@ -1,27 +1,20 @@
 using Explorer.ProjectAutopsy.Core.Domain;
 using Explorer.ProjectAutopsy.Core.Domain.RepositoryInterfaces;
+using Explorer.ProjectAutopsy.Core.Services;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
 
 namespace Explorer.ProjectAutopsy.Infrastructure.ExternalClients;
 
-/// <summary>
-/// Service for exporting risk analysis reports to PDF format.
-/// Generates professional reports with risk scores, AI insights, and recommendations.
-/// </summary>
 public class PdfExportService : IPdfExportService
 {
     public PdfExportService()
     {
-        // Configure QuestPDF license (Community for development)
         QuestPDF.Settings.License = LicenseType.Community;
     }
 
-    public byte[] GenerateRiskAnalysisPdf(
-        string projectName,
-        RiskSnapshot snapshot,
-        AIReport? aiReport = null)
+    public byte[] GenerateRiskAnalysisPdf(string projectName, RiskSnapshot snapshot, AIReport? aiReport = null)
     {
         var document = Document.Create(container =>
         {
@@ -30,10 +23,10 @@ public class PdfExportService : IPdfExportService
                 page.Size(PageSizes.A4);
                 page.Margin(40);
                 page.PageColor(Colors.White);
-                page.DefaultTextStyle(x => x.FontSize(10).FontFamily("Arial"));
+                page.DefaultTextStyle(x => x.FontSize(10));
 
                 page.Header().Element(c => ComposeHeader(c, projectName, snapshot));
-                page.Content().Element(c => ComposeContent(c, snapshot, aiReport));
+                page.Content().Element(c => ComposeContent(c, snapshot));
                 page.Footer().Element(ComposeFooter);
             });
         });
@@ -45,325 +38,377 @@ public class PdfExportService : IPdfExportService
     {
         container.Column(column =>
         {
-            // Title
             column.Item().PaddingBottom(10).Row(row =>
             {
                 row.RelativeItem().Column(col =>
                 {
-                    col.Item().Text("Project Autopsy").FontSize(24).Bold().FontColor(Colors.Blue.Darken2);
-                    col.Item().Text("Risk Analysis Report").FontSize(16).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text("Analiza GitHub Aktivnosti").FontSize(24).Bold().FontColor(Colors.Blue.Darken2);
+                    col.Item().Text("Izveštaj o kvalitetu koda i saradnje").FontSize(14).FontColor(Colors.Grey.Darken1);
                 });
 
-                row.ConstantItem(100).AlignRight().Column(col =>
+                row.ConstantItem(120).AlignRight().Column(col =>
                 {
-                    col.Item().Text(snapshot.CreatedAt.ToString("yyyy-MM-dd")).FontSize(10).FontColor(Colors.Grey.Medium);
+                    col.Item().Text(snapshot.CreatedAt.ToString("dd.MM.yyyy")).FontSize(10).FontColor(Colors.Grey.Medium);
                     col.Item().Text(snapshot.CreatedAt.ToString("HH:mm")).FontSize(9).FontColor(Colors.Grey.Medium);
                 });
             });
 
-            // Project name
             column.Item().PaddingTop(5).PaddingBottom(15).Text(projectName).FontSize(18).Bold();
-
-            // Divider
             column.Item().PaddingBottom(10).LineHorizontal(1).LineColor(Colors.Grey.Lighten2);
 
-            // Overall Score Banner
-            column.Item().Background(GetRiskColor(snapshot.OverallScore)).Padding(15).Row(row =>
+            // Pregled podataka
+            column.Item().Background(Colors.Blue.Lighten4).Padding(15).Row(row =>
             {
                 row.RelativeItem().Column(col =>
                 {
-                    col.Item().Text("Overall Risk Score").FontSize(14).FontColor(Colors.White);
-                    col.Item().Text($"{snapshot.OverallScore:F1} / 100").FontSize(32).Bold().FontColor(Colors.White);
+                    col.Item().Text("Period analize").FontSize(10).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text($"{snapshot.AnalysisWindowStart:dd.MM.yyyy} - {snapshot.AnalysisWindowEnd:dd.MM.yyyy}").FontSize(14).Bold();
                 });
 
-                row.ConstantItem(150).AlignRight().AlignMiddle().Column(col =>
+                row.ConstantItem(100).AlignCenter().Column(col =>
                 {
-                    col.Item().Text("Trend").FontSize(11).FontColor(Colors.White);
-                    col.Item().Text(snapshot.Trend).FontSize(16).Bold().FontColor(Colors.White);
+                    col.Item().Text("Commitova").FontSize(10).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text(snapshot.CommitsAnalyzed.ToString()).FontSize(20).Bold().FontColor(Colors.Blue.Darken2);
                 });
-            });
 
-            // Analysis window info
-            column.Item().PaddingTop(10).PaddingBottom(5).Row(row =>
-            {
-                row.RelativeItem().Text($"Analysis Period: {snapshot.AnalysisWindowStart:MMM dd} - {snapshot.AnalysisWindowEnd:MMM dd, yyyy}").FontSize(9).FontColor(Colors.Grey.Medium);
-                row.ConstantItem(150).AlignRight().Text($"{snapshot.AnalysisWindowEnd.Subtract(snapshot.AnalysisWindowStart).Days} days").FontSize(9).FontColor(Colors.Grey.Medium);
+                row.ConstantItem(100).AlignCenter().Column(col =>
+                {
+                    col.Item().Text("Pull Request-a").FontSize(10).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text(snapshot.PullRequestsAnalyzed.ToString()).FontSize(20).Bold().FontColor(Colors.Green.Darken2);
+                });
             });
         });
     }
 
-    private void ComposeContent(IContainer container, RiskSnapshot snapshot, AIReport? aiReport)
+    private void ComposeContent(IContainer container, RiskSnapshot snapshot)
     {
+        var metrics = snapshot.Metrics;
+
         container.PaddingTop(20).Column(column =>
         {
-            // Executive Summary (if AI report exists)
-            if (aiReport?.Content != null)
-            {
-                column.Item().Element(c => ComposeExecutiveSummary(c, aiReport.Content));
-                column.Item().PaddingVertical(15);
-            }
-
-            // Risk Dimensions Scores
-            column.Item().Element(c => ComposeRiskDimensions(c, snapshot));
+            // Analiza Commit Poruka
+            column.Item().Element(c => ComposeCommitAnalysis(c, metrics.CommitAnalysis));
             column.Item().PaddingVertical(15);
 
-            // Data Coverage
-            column.Item().Element(c => ComposeDataCoverage(c, snapshot));
+            // Analiza PR-ova
+            column.Item().Element(c => ComposePrAnalysis(c, metrics.PrAnalysis));
             column.Item().PaddingVertical(15);
 
-            // Detailed Metrics
-            column.Item().Element(c => ComposeDetailedMetrics(c, snapshot));
+            // Analiza Review-a
+            column.Item().Element(c => ComposeReviewAnalysis(c, metrics.ReviewAnalysis));
+            column.Item().PaddingVertical(15);
 
-            // AI Findings & Recommendations (if available)
-            if (aiReport?.Content != null)
+            // Aktivnost po autoru
+            if (metrics.AuthorActivity.Any())
             {
-                column.Item().PageBreak();
-                column.Item().Element(c => ComposeKeyFindings(c, aiReport.Content));
-                column.Item().PaddingVertical(15);
-                column.Item().Element(c => ComposeRecommendations(c, aiReport.Content));
+                column.Item().Element(c => ComposeAuthorActivity(c, metrics.AuthorActivity));
             }
         });
     }
 
-    private void ComposeExecutiveSummary(IContainer container, ReportContent content)
+    private void ComposeCommitAnalysis(IContainer container, CommitAnalysis analysis)
     {
         container.Column(column =>
         {
-            column.Item().Text("Executive Summary").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
-            column.Item().PaddingTop(10).Text(content.ExecutiveSummary).FontSize(10).LineHeight(1.5f);
-        });
-    }
-
-    private void ComposeRiskDimensions(IContainer container, RiskSnapshot snapshot)
-    {
-        container.Column(column =>
-        {
-            column.Item().Text("Risk Dimensions").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
+            column.Item().Text("Analiza Commit Poruka").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
             column.Item().PaddingTop(10);
 
-            var dimensions = new[]
-            {
-                ("Planning", snapshot.PlanningScore, "Sprint completion, scope changes, estimation"),
-                ("Execution", snapshot.ExecutionScore, "Velocity, cycle time, throughput"),
-                ("Bottleneck", snapshot.BottleneckScore, "WIP limits, blocked tasks, blocked duration"),
-                ("Communication", snapshot.CommunicationScore, "PR review time, merge rate, collaboration"),
-                ("Stability", snapshot.StabilityScore, "Bug ratio, hotfix frequency, defect escape")
-            };
-
-            foreach (var (name, score, description) in dimensions)
-            {
-                column.Item().PaddingBottom(12).Row(row =>
-                {
-                    // Dimension name and description
-                    row.RelativeItem().Column(col =>
-                    {
-                        col.Item().Text(name).FontSize(12).Bold();
-                        col.Item().Text(description).FontSize(8).FontColor(Colors.Grey.Medium);
-                    });
-
-                    // Score bar
-                    row.ConstantItem(200).AlignRight().AlignMiddle().Column(col =>
-                    {
-                        col.Item().Row(r =>
-                        {
-                            r.RelativeItem().Height(20).Border(1).BorderColor(Colors.Grey.Lighten1).Background(Colors.Grey.Lighten3).Stack(stack =>
-                            {
-                                var percentage = Math.Min(100, score);
-                                stack.Item().Width((float)(percentage * 2)).Height(20).Background(GetRiskColor(score));
-                            });
-
-                            r.ConstantItem(50).AlignRight().AlignMiddle().PaddingLeft(8).Text($"{score:F1}").FontSize(11).Bold();
-                        });
-                    });
-                });
-            }
-        });
-    }
-
-    private void ComposeDataCoverage(IContainer container, RiskSnapshot snapshot)
-    {
-        container.Column(column =>
-        {
-            column.Item().Text("Data Coverage").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
-            column.Item().PaddingTop(10);
-
+            // Statistika
             column.Item().Row(row =>
             {
-                row.RelativeItem().Background(Colors.Blue.Lighten4).Padding(15).Column(col =>
+                row.RelativeItem().Background(Colors.Green.Lighten4).Padding(12).Column(col =>
                 {
-                    col.Item().Text("Commits Analyzed").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    col.Item().Text(snapshot.CommitsAnalyzed.ToString()).FontSize(24).Bold().FontColor(Colors.Blue.Darken2);
+                    col.Item().Text("Dobre poruke").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text($"{analysis.GoodMessagePercentage:F1}%").FontSize(20).Bold().FontColor(Colors.Green.Darken2);
+                    col.Item().Text($"{analysis.GoodMessageCount} od {analysis.TotalCommits}").FontSize(9);
                 });
 
                 row.ConstantItem(10);
 
-                row.RelativeItem().Background(Colors.Green.Lighten4).Padding(15).Column(col =>
+                row.RelativeItem().Background(Colors.Red.Lighten4).Padding(12).Column(col =>
                 {
-                    col.Item().Text("Pull Requests").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    col.Item().Text(snapshot.PullRequestsAnalyzed.ToString()).FontSize(24).Bold().FontColor(Colors.Green.Darken2);
+                    col.Item().Text("Loše poruke").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text($"{100 - analysis.GoodMessagePercentage:F1}%").FontSize(20).Bold().FontColor(Colors.Red.Darken2);
+                    col.Item().Text($"{analysis.BadMessageCount} od {analysis.TotalCommits}").FontSize(9);
                 });
 
                 row.ConstantItem(10);
 
-                row.RelativeItem().Background(Colors.Orange.Lighten4).Padding(15).Column(col =>
+                row.RelativeItem().Background(Colors.Blue.Lighten4).Padding(12).Column(col =>
                 {
-                    col.Item().Text("Tickets").FontSize(9).FontColor(Colors.Grey.Darken1);
-                    col.Item().Text(snapshot.TicketsAnalyzed.ToString()).FontSize(24).Bold().FontColor(Colors.Orange.Darken2);
-                });
-            });
-        });
-    }
-
-    private void ComposeDetailedMetrics(IContainer container, RiskSnapshot snapshot)
-    {
-        container.Column(column =>
-        {
-            column.Item().Text("Detailed Metrics").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
-            column.Item().PaddingTop(10);
-
-            // Planning Metrics
-            column.Item().PaddingBottom(10).Column(col =>
-            {
-                col.Item().Text("Planning").FontSize(12).Bold().FontColor(Colors.Blue.Darken1);
-                col.Item().PaddingLeft(10).PaddingTop(5).Column(metrics =>
-                {
-                    metrics.Item().Text($"Sprint Completion Rate: {snapshot.Metrics.Planning.SprintCompletionRate:P1}").FontSize(9);
-                    metrics.Item().Text($"Scope Change Rate: {snapshot.Metrics.Planning.ScopeChangeRate:P1}").FontSize(9);
-                    metrics.Item().Text($"Estimation Accuracy: {snapshot.Metrics.Planning.EstimationAccuracy:P1}").FontSize(9);
+                    col.Item().Text("Prosek dnevno").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text($"{analysis.AverageCommitsPerDay:F1}").FontSize(20).Bold().FontColor(Colors.Blue.Darken2);
+                    col.Item().Text("commitova").FontSize(9);
                 });
             });
 
-            // Execution Metrics
-            column.Item().PaddingBottom(10).Column(col =>
+            // Ocena kvaliteta
+            var quality = analysis.GoodMessagePercentage switch
             {
-                col.Item().Text("Execution").FontSize(12).Bold().FontColor(Colors.Blue.Darken1);
-                col.Item().PaddingLeft(10).PaddingTop(5).Column(metrics =>
-                {
-                    metrics.Item().Text($"Velocity Consistency: {snapshot.Metrics.Execution.VelocityConsistency:F2}").FontSize(9);
-                    metrics.Item().Text($"Average Cycle Time: {snapshot.Metrics.Execution.AverageCycleTimeHours:F1} hours").FontSize(9);
-                    metrics.Item().Text($"Throughput: {snapshot.Metrics.Execution.ThroughputPerWeek:F1} items/week").FontSize(9);
-                });
-            });
+                >= 80 => ("Odličan kvalitet commit poruka!", Colors.Green.Darken1),
+                >= 60 => ("Dobar kvalitet, ali ima prostora za poboljšanje.", Colors.Orange.Darken1),
+                >= 40 => ("Prosečan kvalitet - preporučuje se usvajanje konvencija.", Colors.Orange.Darken2),
+                _ => ("Loš kvalitet - potrebno je uvesti standarde za commit poruke.", Colors.Red.Darken1)
+            };
 
-            // Bottleneck Metrics
-            column.Item().PaddingBottom(10).Column(col =>
+            column.Item().PaddingTop(10).Background(Colors.Grey.Lighten3).Padding(10)
+                .Text(quality.Item1).FontSize(11).FontColor(quality.Item2);
+
+            // Primeri loših commit poruka
+            if (analysis.BadCommitExamples.Any())
             {
-                col.Item().Text("Bottleneck").FontSize(12).Bold().FontColor(Colors.Blue.Darken1);
-                col.Item().PaddingLeft(10).PaddingTop(5).Column(metrics =>
+                column.Item().PaddingTop(15).Text("Primeri loših commit poruka:").FontSize(11).Bold();
+                column.Item().PaddingTop(5);
+
+                foreach (var example in analysis.BadCommitExamples)
                 {
-                    metrics.Item().Text($"WIP per Person: {snapshot.Metrics.Bottleneck.WipPerPerson:F1}").FontSize(9);
-                    metrics.Item().Text($"Blocked Ratio: {snapshot.Metrics.Bottleneck.BlockedRatio:P1}").FontSize(9);
-                    metrics.Item().Text($"Average Blocked Time: {snapshot.Metrics.Bottleneck.AvgBlockedHours:F1} hours").FontSize(9);
-                });
-            });
-
-            // Communication Metrics
-            column.Item().PaddingBottom(10).Column(col =>
-            {
-                col.Item().Text("Communication").FontSize(12).Bold().FontColor(Colors.Blue.Darken1);
-                col.Item().PaddingLeft(10).PaddingTop(5).Column(metrics =>
-                {
-                    metrics.Item().Text($"PR Review Time: {snapshot.Metrics.Communication.PrReviewTimeHours:F1} hours").FontSize(9);
-                    metrics.Item().Text($"PR Merge Rate: {snapshot.Metrics.Communication.PrMergeRate:P1}").FontSize(9);
-                    metrics.Item().Text($"Comment Density: {snapshot.Metrics.Communication.CommentDensity:F2} per PR").FontSize(9);
-                });
-            });
-
-            // Stability Metrics
-            column.Item().PaddingBottom(10).Column(col =>
-            {
-                col.Item().Text("Stability").FontSize(12).Bold().FontColor(Colors.Blue.Darken1);
-                col.Item().PaddingLeft(10).PaddingTop(5).Column(metrics =>
-                {
-                    metrics.Item().Text($"Bug Ratio: {snapshot.Metrics.Stability.BugRatio:P1}").FontSize(9);
-                    metrics.Item().Text($"Hotfix Frequency: {snapshot.Metrics.Stability.HotfixFrequency:P1}").FontSize(9);
-                    metrics.Item().Text($"Defect Escape Rate: {snapshot.Metrics.Stability.DefectEscapeRate:P1}").FontSize(9);
-                });
-            });
-        });
-    }
-
-    private void ComposeKeyFindings(IContainer container, ReportContent content)
-    {
-        if (!content.KeyFindings.Any()) return;
-
-        container.Column(column =>
-        {
-            column.Item().Text("Key Findings").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
-            column.Item().PaddingTop(10);
-
-            foreach (var finding in content.KeyFindings)
-            {
-                column.Item().PaddingBottom(15).Border(1).BorderColor(Colors.Grey.Lighten1).Padding(12).Column(col =>
-                {
-                    // Title with severity badge
-                    col.Item().Row(row =>
+                    column.Item().PaddingBottom(5).Row(row =>
                     {
-                        row.ConstantItem(70).Background(GetSeverityColor(finding.Severity)).Padding(4).AlignCenter()
-                            .Text(finding.Severity.ToString()).FontSize(9).Bold().FontColor(Colors.White);
-                        row.ConstantItem(10);
-                        row.RelativeItem().AlignMiddle().Text(finding.Title).FontSize(11).Bold();
+                        row.ConstantItem(60).Text(example.Sha).FontSize(8).FontColor(Colors.Grey.Medium);
+                        row.RelativeItem().Text(example.Message).FontSize(9);
+                        row.ConstantItem(80).AlignRight().Text(example.Author).FontSize(8).FontColor(Colors.Grey.Medium);
                     });
+                }
 
-                    // Category
-                    col.Item().PaddingTop(5).Text($"Category: {finding.Category}").FontSize(8).FontColor(Colors.Grey.Medium);
+                column.Item().PaddingTop(10).Text("Preporuka: Koristite format 'tip: opis' (npr. 'feat: dodaj login', 'fix: ispravi bug')")
+                    .FontSize(9).Italic().FontColor(Colors.Grey.Darken1);
+            }
 
-                    // Description
-                    col.Item().PaddingTop(8).Text(finding.Description).FontSize(9).LineHeight(1.4f);
+            // Commitovi po autoru
+            if (analysis.CommitsByAuthor.Any())
+            {
+                column.Item().PaddingTop(15).Text("Commitovi po autoru:").FontSize(11).Bold();
+                column.Item().PaddingTop(5);
 
-                    // Evidence
-                    if (finding.Evidence.Any())
+                foreach (var (author, count) in analysis.CommitsByAuthor.Take(5))
+                {
+                    var percentage = analysis.TotalCommits > 0 ? (double)count / analysis.TotalCommits * 100 : 0;
+                    column.Item().PaddingBottom(3).Row(row =>
                     {
-                        col.Item().PaddingTop(8).Column(evidence =>
+                        row.ConstantItem(150).Text(author).FontSize(9);
+                        row.RelativeItem().Height(15).Background(Colors.Grey.Lighten3).Layers(layers =>
                         {
-                            evidence.Item().Text("Evidence:").FontSize(8).Bold().FontColor(Colors.Grey.Darken1);
-                            foreach (var item in finding.Evidence)
-                            {
-                                evidence.Item().PaddingLeft(10).Text($"• {item}").FontSize(8).FontColor(Colors.Grey.Darken1);
-                            }
+                            layers.PrimaryLayer();
+                            layers.Layer().Width((float)(percentage * 2)).Background(Colors.Blue.Medium);
                         });
-                    }
-                });
+                        row.ConstantItem(60).AlignRight().Text($"{count} ({percentage:F0}%)").FontSize(9);
+                    });
+                }
             }
         });
     }
 
-    private void ComposeRecommendations(IContainer container, ReportContent content)
+    private void ComposePrAnalysis(IContainer container, PullRequestAnalysis analysis)
     {
-        if (!content.Recommendations.Any()) return;
-
         container.Column(column =>
         {
-            column.Item().Text("Recommendations").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
+            column.Item().Text("Analiza Pull Request-a").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
             column.Item().PaddingTop(10);
 
-            foreach (var rec in content.Recommendations.OrderBy(r => r.Priority))
+            // Statistika
+            column.Item().Row(row =>
             {
-                column.Item().PaddingBottom(15).Border(1).BorderColor(Colors.Grey.Lighten1).Padding(12).Column(col =>
+                row.RelativeItem().Background(Colors.Green.Lighten4).Padding(12).Column(col =>
                 {
-                    // Priority and title
-                    col.Item().Row(row =>
+                    col.Item().Text("Spojeni (merged)").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text(analysis.MergedPRs.ToString()).FontSize(20).Bold().FontColor(Colors.Green.Darken2);
+                    col.Item().Text($"{analysis.MergeRate:F0}% uspešnost").FontSize(9);
+                });
+
+                row.ConstantItem(10);
+
+                row.RelativeItem().Background(Colors.Orange.Lighten4).Padding(12).Column(col =>
+                {
+                    col.Item().Text("Otvoreni").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text(analysis.OpenPRs.ToString()).FontSize(20).Bold().FontColor(Colors.Orange.Darken2);
+                });
+
+                row.ConstantItem(10);
+
+                row.RelativeItem().Background(Colors.Blue.Lighten4).Padding(12).Column(col =>
+                {
+                    col.Item().Text("Prosek do spajanja").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text($"{analysis.AverageMergeTimeHours:F0}h").FontSize(20).Bold().FontColor(Colors.Blue.Darken2);
+                });
+            });
+
+            // Kvalitet naslova
+            column.Item().PaddingTop(15).Row(row =>
+            {
+                row.RelativeItem().Column(col =>
+                {
+                    col.Item().Text("Kvalitet PR naslova").FontSize(11).Bold();
+                    col.Item().PaddingTop(5).Row(r =>
                     {
-                        row.ConstantItem(70).Background(Colors.Blue.Medium).Padding(4).AlignCenter()
-                            .Text($"Priority {rec.Priority}").FontSize(9).Bold().FontColor(Colors.White);
-                        row.ConstantItem(10);
-                        row.ConstantItem(60).Background(GetEffortColor(rec.Effort)).Padding(4).AlignCenter()
-                            .Text(rec.Effort.ToString()).FontSize(9).Bold().FontColor(Colors.White);
-                        row.ConstantItem(10);
-                        row.RelativeItem().AlignMiddle().Text(rec.Title).FontSize(11).Bold();
+                        r.ConstantItem(100).Text("Dobri naslovi:").FontSize(9);
+                        r.RelativeItem().Text($"{analysis.GoodTitleCount} ({analysis.GoodTitlePercentage:F0}%)").FontSize(9).Bold();
                     });
-
-                    // Description
-                    col.Item().PaddingTop(8).Text(rec.Description).FontSize(9).LineHeight(1.4f);
-
-                    // Expected impact
-                    col.Item().PaddingTop(8).Row(row =>
+                    col.Item().Row(r =>
                     {
-                        row.ConstantItem(100).Text("Expected Impact:").FontSize(8).Bold().FontColor(Colors.Green.Darken1);
-                        row.RelativeItem().Text(rec.ExpectedImpact).FontSize(8).FontColor(Colors.Grey.Darken1);
+                        r.ConstantItem(100).Text("Loši naslovi:").FontSize(9);
+                        r.RelativeItem().Text($"{analysis.BadTitleCount} ({100 - analysis.GoodTitlePercentage:F0}%)").FontSize(9).Bold();
                     });
                 });
+            });
+
+            // Primeri loših PR naslova
+            if (analysis.BadTitleExamples.Any())
+            {
+                column.Item().PaddingTop(10).Text("Primeri loših PR naslova:").FontSize(10).Bold();
+                foreach (var example in analysis.BadTitleExamples)
+                {
+                    column.Item().PaddingTop(3).Row(row =>
+                    {
+                        row.ConstantItem(40).Text($"#{example.Number}").FontSize(8).FontColor(Colors.Grey.Medium);
+                        row.RelativeItem().Text(example.Title).FontSize(9);
+                    });
+                }
             }
+
+            // PR-ovi po autoru
+            if (analysis.PrsByAuthor.Any())
+            {
+                column.Item().PaddingTop(15).Text("PR-ovi po autoru:").FontSize(11).Bold();
+                column.Item().PaddingTop(5);
+
+                foreach (var (author, count) in analysis.PrsByAuthor.Take(5))
+                {
+                    column.Item().PaddingBottom(3).Row(row =>
+                    {
+                        row.ConstantItem(150).Text(author).FontSize(9);
+                        row.RelativeItem().Text($"{count} PR-ova").FontSize(9);
+                    });
+                }
+            }
+        });
+    }
+
+    private void ComposeReviewAnalysis(IContainer container, ReviewAnalysis analysis)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("Analiza Code Review-a").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
+            column.Item().PaddingTop(10);
+
+            // Statistika
+            column.Item().Row(row =>
+            {
+                row.RelativeItem().Background(Colors.Purple.Lighten4).Padding(12).Column(col =>
+                {
+                    col.Item().Text("Ukupno review-a").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text(analysis.TotalReviews.ToString()).FontSize(20).Bold().FontColor(Colors.Purple.Darken2);
+                });
+
+                row.ConstantItem(10);
+
+                row.RelativeItem().Background(Colors.Teal.Lighten4).Padding(12).Column(col =>
+                {
+                    col.Item().Text("Ukupno komentara").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text(analysis.TotalComments.ToString()).FontSize(20).Bold().FontColor(Colors.Teal.Darken2);
+                });
+
+                row.ConstantItem(10);
+
+                row.RelativeItem().Background(Colors.Indigo.Lighten4).Padding(12).Column(col =>
+                {
+                    col.Item().Text("Prosek po PR-u").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    col.Item().Text($"{analysis.AverageCommentsPerPR:F1}").FontSize(20).Bold().FontColor(Colors.Indigo.Darken2);
+                    col.Item().Text("komentara").FontSize(9);
+                });
+            });
+
+            // Ocena kvaliteta
+            column.Item().PaddingTop(10).Background(Colors.Grey.Lighten3).Padding(10)
+                .Text(analysis.ReviewQualityAssessment).FontSize(11).Bold();
+
+            // Prosečno vreme do prvog review-a
+            if (analysis.AverageTimeToFirstReviewHours > 0)
+            {
+                column.Item().PaddingTop(10).Row(row =>
+                {
+                    row.ConstantItem(180).Text("Prosečno vreme do prvog review-a:").FontSize(10);
+                    row.RelativeItem().Text($"{analysis.AverageTimeToFirstReviewHours:F1} sati").FontSize(10).Bold();
+                });
+            }
+
+            // PR-ovi bez review-a
+            if (analysis.PrsWithoutReview > 0)
+            {
+                column.Item().PaddingTop(5).Row(row =>
+                {
+                    row.ConstantItem(180).Text("PR-ovi bez review-a:").FontSize(10);
+                    row.RelativeItem().Text($"{analysis.PrsWithoutReview}").FontSize(10).Bold().FontColor(Colors.Red.Darken1);
+                });
+            }
+
+            // Top revieweri
+            if (analysis.TopReviewers.Any())
+            {
+                column.Item().PaddingTop(15).Text("Najaktivniji revieweri:").FontSize(11).Bold();
+                column.Item().PaddingTop(5);
+
+                var rank = 1;
+                foreach (var (reviewer, count) in analysis.TopReviewers)
+                {
+                    column.Item().PaddingBottom(3).Row(row =>
+                    {
+                        row.ConstantItem(25).Text($"{rank}.").FontSize(9).Bold();
+                        row.RelativeItem().Text(reviewer).FontSize(9);
+                        row.ConstantItem(80).AlignRight().Text($"{count} review-a").FontSize(9);
+                    });
+                    rank++;
+                }
+            }
+            else
+            {
+                column.Item().PaddingTop(10).Text("Nema podataka o reviewerima - GitHub API ne vraća ove podatke za sve repozitorijume.")
+                    .FontSize(9).Italic().FontColor(Colors.Grey.Medium);
+            }
+        });
+    }
+
+    private void ComposeAuthorActivity(IContainer container, Dictionary<string, AuthorStats> authors)
+    {
+        container.Column(column =>
+        {
+            column.Item().Text("Aktivnost po Autoru").FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
+            column.Item().PaddingTop(10);
+
+            // Tabela
+            column.Item().Table(table =>
+            {
+                table.ColumnsDefinition(columns =>
+                {
+                    columns.RelativeColumn(2); // Ime
+                    columns.RelativeColumn(1); // Commitovi
+                    columns.RelativeColumn(1); // PR-ovi
+                    columns.RelativeColumn(1); // Merged
+                    columns.RelativeColumn(1.5f); // Dodato linija
+                    columns.RelativeColumn(1.5f); // Obrisano linija
+                });
+
+                // Header
+                table.Header(header =>
+                {
+                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5).Text("Autor").FontSize(9).Bold();
+                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text("Commitovi").FontSize(9).Bold();
+                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text("PR-ovi").FontSize(9).Bold();
+                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text("Merged").FontSize(9).Bold();
+                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text("+ linija").FontSize(9).Bold();
+                    header.Cell().Background(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text("- linija").FontSize(9).Bold();
+                });
+
+                // Rows
+                foreach (var (name, stats) in authors.OrderByDescending(a => a.Value.CommitCount).Take(10))
+                {
+                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).Text(name).FontSize(9);
+                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text(stats.CommitCount.ToString()).FontSize(9);
+                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text(stats.PrCount.ToString()).FontSize(9);
+                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text(stats.MergedPrCount.ToString()).FontSize(9);
+                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text($"+{stats.TotalAdditions}").FontSize(9).FontColor(Colors.Green.Darken1);
+                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5).AlignCenter().Text($"-{stats.TotalDeletions}").FontSize(9).FontColor(Colors.Red.Darken1);
+                }
+            });
         });
     }
 
@@ -371,43 +416,9 @@ public class PdfExportService : IPdfExportService
     {
         container.AlignCenter().Text(text =>
         {
-            text.Span("Generated by ").FontSize(8).FontColor(Colors.Grey.Medium);
+            text.Span("Generisano pomoću ").FontSize(8).FontColor(Colors.Grey.Medium);
             text.Span("Project Autopsy").FontSize(8).Bold().FontColor(Colors.Blue.Darken2);
-            text.Span($" on {DateTime.UtcNow:yyyy-MM-dd HH:mm} UTC").FontSize(8).FontColor(Colors.Grey.Medium);
+            text.Span($" | {DateTime.Now:dd.MM.yyyy HH:mm}").FontSize(8).FontColor(Colors.Grey.Medium);
         });
-    }
-
-    private string GetRiskColor(double score)
-    {
-        return score switch
-        {
-            < 25 => Colors.Green.Medium,
-            < 50 => Colors.LightGreen.Medium,
-            < 70 => Colors.Orange.Medium,
-            _ => Colors.Red.Medium
-        };
-    }
-
-    private string GetSeverityColor(Severity severity)
-    {
-        return severity switch
-        {
-            Severity.Low => Colors.Green.Medium,
-            Severity.Medium => Colors.Orange.Medium,
-            Severity.High => Colors.Orange.Darken2,
-            Severity.Critical => Colors.Red.Medium,
-            _ => Colors.Grey.Medium
-        };
-    }
-
-    private string GetEffortColor(EffortLevel effort)
-    {
-        return effort switch
-        {
-            EffortLevel.Low => Colors.Green.Lighten1,
-            EffortLevel.Medium => Colors.Orange.Lighten1,
-            EffortLevel.High => Colors.Red.Lighten1,
-            _ => Colors.Grey.Medium
-        };
     }
 }

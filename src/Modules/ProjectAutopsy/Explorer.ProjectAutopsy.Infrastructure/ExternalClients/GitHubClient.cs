@@ -186,14 +186,38 @@ public class GitHubClient
     }
 
     /// <summary>
-    /// Parses owner/repo from a repository string
+    /// Parses owner/repo from a repository string.
+    /// Supports both "owner/repo" format and full URLs like "https://github.com/owner/repo"
     /// </summary>
     public static (string owner, string repo) ParseRepoString(string repoString)
     {
-        var parts = repoString.Trim().Split('/');
-        if (parts.Length != 2)
-            throw new ArgumentException($"Invalid repository format: {repoString}. Expected 'owner/repo'");
-        
+        var input = repoString.Trim();
+
+        // Handle full GitHub URLs
+        if (input.StartsWith("https://github.com/", StringComparison.OrdinalIgnoreCase))
+        {
+            input = input.Substring("https://github.com/".Length);
+        }
+        else if (input.StartsWith("http://github.com/", StringComparison.OrdinalIgnoreCase))
+        {
+            input = input.Substring("http://github.com/".Length);
+        }
+        else if (input.StartsWith("github.com/", StringComparison.OrdinalIgnoreCase))
+        {
+            input = input.Substring("github.com/".Length);
+        }
+
+        // Remove trailing slashes or .git suffix
+        input = input.TrimEnd('/');
+        if (input.EndsWith(".git", StringComparison.OrdinalIgnoreCase))
+        {
+            input = input.Substring(0, input.Length - 4);
+        }
+
+        var parts = input.Split('/');
+        if (parts.Length < 2)
+            throw new ArgumentException($"Invalid repository format: {repoString}. Expected 'owner/repo' or full GitHub URL");
+
         return (parts[0].Trim(), parts[1].Trim());
     }
 

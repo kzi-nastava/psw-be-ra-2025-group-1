@@ -29,10 +29,7 @@ public class ProjectAutopsyContext : DbContext
             
             entity.Property(e => e.Description)
                 .HasMaxLength(1000);
-            
-            entity.Property(e => e.JiraProjectKey)
-                .HasMaxLength(50);
-            
+
             entity.Property(e => e.GitHubRepo)
                 .HasMaxLength(200);
             

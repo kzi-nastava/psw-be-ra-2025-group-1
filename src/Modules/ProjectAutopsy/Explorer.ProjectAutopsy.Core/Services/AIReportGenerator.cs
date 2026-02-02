@@ -20,7 +20,7 @@ public class AIReportGenerator
     public async Task<GeneratedReport> GenerateAsync(string projectName, RiskEngineResult riskResult)
     {
         var prompt = BuildPrompt(projectName, riskResult);
-        
+
         var startTime = DateTime.UtcNow;
         var response = await _llmClient.GenerateAsync(prompt);
         var generationTimeMs = (int)(DateTime.UtcNow - startTime).TotalMilliseconds;
@@ -40,82 +40,56 @@ public class AIReportGenerator
     private string BuildPrompt(string projectName, RiskEngineResult result)
     {
         var sb = new StringBuilder();
+        var m = result.Metrics;
 
-        sb.AppendLine("You are a senior engineering consultant analyzing project health data.");
-        sb.AppendLine("Generate an executive-level risk report based ONLY on the provided metrics.");
+        sb.AppendLine("Ti si senior inženjerski konsultant koji analizira zdravlje projekta.");
+        sb.AppendLine("Generiši executive-level izveštaj na SRPSKOM jeziku baziran SAMO na datim metrikama.");
         sb.AppendLine();
-        sb.AppendLine("CRITICAL RULES:");
-        sb.AppendLine("1. NEVER invent data - only explain the computed signals provided");
-        sb.AppendLine("2. Use executive language - clear, actionable, professional");
-        sb.AppendLine("3. Focus on business impact, not technical jargon");
-        sb.AppendLine("4. Respond ONLY with valid JSON matching the schema below");
+        sb.AppendLine("KRITIČNA PRAVILA:");
+        sb.AppendLine("1. NIKADA ne izmišljaj podatke - objasni samo date metrike");
+        sb.AppendLine("2. Koristi executive jezik - jasan, akcioni, profesionalan");
+        sb.AppendLine("3. Fokusiraj se na poslovni uticaj");
+        sb.AppendLine("4. Odgovori SAMO validnim JSON-om");
         sb.AppendLine();
-        sb.AppendLine($"PROJECT: {projectName}");
+        sb.AppendLine($"PROJEKAT: {projectName}");
         sb.AppendLine();
-        sb.AppendLine("RISK SCORES (0-100, lower is better):");
-        sb.AppendLine($"- Overall: {result.OverallScore}");
-        sb.AppendLine($"- Planning: {result.PlanningScore}");
-        sb.AppendLine($"- Execution: {result.ExecutionScore}");
-        sb.AppendLine($"- Bottleneck: {result.BottleneckScore}");
-        sb.AppendLine($"- Communication: {result.CommunicationScore}");
-        sb.AppendLine($"- Stability: {result.StabilityScore}");
-        sb.AppendLine($"- Trend: {result.Trend}");
+        sb.AppendLine("ANALIZA COMMIT PORUKA:");
+        sb.AppendLine($"- Ukupno commitova: {m.CommitAnalysis.TotalCommits}");
+        sb.AppendLine($"- Dobre poruke: {m.CommitAnalysis.GoodMessagePercentage:F1}%");
+        sb.AppendLine($"- Loše poruke: {m.CommitAnalysis.BadMessageCount}");
         sb.AppendLine();
-        sb.AppendLine("DETAILED METRICS:");
-        sb.AppendLine($"Planning:");
-        sb.AppendLine($"  - Sprint Completion Rate: {result.Metrics.Planning.SprintCompletionRate:P1}");
-        sb.AppendLine($"  - Scope Change Rate: {result.Metrics.Planning.ScopeChangeRate:P1}");
-        sb.AppendLine($"  - Estimation Accuracy: {result.Metrics.Planning.EstimationAccuracy:P1}");
-        sb.AppendLine($"Execution:");
-        sb.AppendLine($"  - Velocity Consistency: {result.Metrics.Execution.VelocityConsistency:F2}");
-        sb.AppendLine($"  - Average Cycle Time: {result.Metrics.Execution.AverageCycleTimeHours:F1} hours");
-        sb.AppendLine($"  - Throughput: {result.Metrics.Execution.ThroughputPerWeek:F1} tickets/week");
-        sb.AppendLine($"Bottleneck:");
-        sb.AppendLine($"  - WIP per Person: {result.Metrics.Bottleneck.WipPerPerson:F1}");
-        sb.AppendLine($"  - Blocked Ratio: {result.Metrics.Bottleneck.BlockedRatio:P1}");
-        sb.AppendLine($"  - Avg Blocked Time: {result.Metrics.Bottleneck.AvgBlockedHours:F1} hours");
-        sb.AppendLine($"Communication:");
-        sb.AppendLine($"  - PR Review Time: {result.Metrics.Communication.PrReviewTimeHours:F1} hours");
-        sb.AppendLine($"  - PR Merge Rate: {result.Metrics.Communication.PrMergeRate:P1}");
-        sb.AppendLine($"  - Comment Density: {result.Metrics.Communication.CommentDensity:F2} per PR");
-        sb.AppendLine($"Stability:");
-        sb.AppendLine($"  - Bug Ratio: {result.Metrics.Stability.BugRatio:P1}");
-        sb.AppendLine($"  - Hotfix Frequency: {result.Metrics.Stability.HotfixFrequency:P1}");
-        sb.AppendLine($"  - Defect Escape Rate: {result.Metrics.Stability.DefectEscapeRate:P1}");
+        sb.AppendLine("ANALIZA PULL REQUEST-a:");
+        sb.AppendLine($"- Ukupno PR-ova: {m.PrAnalysis.TotalPRs}");
+        sb.AppendLine($"- Merge rate: {m.PrAnalysis.MergeRate:F1}%");
+        sb.AppendLine($"- Dobri naslovi: {m.PrAnalysis.GoodTitlePercentage:F1}%");
+        sb.AppendLine($"- Prosečno vreme do merge-a: {m.PrAnalysis.AverageMergeTimeHours:F1}h");
         sb.AppendLine();
-        sb.AppendLine($"DATA COVERAGE:");
-        sb.AppendLine($"  - Tickets Analyzed: {result.TicketsAnalyzed}");
-        sb.AppendLine($"  - Commits Analyzed: {result.CommitsAnalyzed}");
-        sb.AppendLine($"  - Pull Requests Analyzed: {result.PullRequestsAnalyzed}");
+        sb.AppendLine("ANALIZA REVIEW-a:");
+        sb.AppendLine($"- Ukupno review-a: {m.ReviewAnalysis.TotalReviews}");
+        sb.AppendLine($"- Prosek komentara po PR-u: {m.ReviewAnalysis.AverageCommentsPerPR:F1}");
+        sb.AppendLine($"- PR-ovi bez review-a: {m.ReviewAnalysis.PrsWithoutReview}");
+        sb.AppendLine($"- Ocena kvaliteta: {m.ReviewAnalysis.ReviewQualityAssessment}");
         sb.AppendLine();
-        sb.AppendLine("REQUIRED JSON OUTPUT FORMAT:");
+        sb.AppendLine("JSON FORMAT:");
         sb.AppendLine(@"{
-  ""title"": ""string - report title"",
-  ""executive_summary"": ""string - 2-3 paragraph executive summary"",
+  ""title"": ""string - naslov izveštaja"",
+  ""executive_summary"": ""string - 2-3 paragrafa rezimea"",
   ""key_findings"": [
     {
-      ""category"": ""Planning|Execution|Bottleneck|Communication|Stability"",
+      ""category"": ""Commits|PullRequests|Reviews"",
       ""severity"": ""Low|Medium|High|Critical"",
-      ""title"": ""string - finding title"",
-      ""description"": ""string - detailed explanation"",
-      ""evidence"": [""string - specific metric that supports this""]
+      ""title"": ""string"",
+      ""description"": ""string"",
+      ""evidence"": [""string""]
     }
   ],
   ""recommendations"": [
     {
       ""priority"": 1,
-      ""title"": ""string - recommendation title"",
-      ""description"": ""string - detailed action steps"",
-      ""expected_impact"": ""string - what improvement to expect"",
+      ""title"": ""string"",
+      ""description"": ""string"",
+      ""expected_impact"": ""string"",
       ""effort"": ""Low|Medium|High""
-    }
-  ],
-  ""risk_breakdown"": [
-    {
-      ""dimension"": ""Planning"",
-      ""score"": 45.2,
-      ""status"": ""At Risk|Healthy|Critical"",
-      ""key_factors"": [""string - main contributing factors""]
     }
   ]
 }");
@@ -125,20 +99,10 @@ public class AIReportGenerator
 
     private ReportContent ParseResponse(string response)
     {
-        // Strip markdown code blocks if present
         var json = response.Trim();
-        if (json.StartsWith("```json"))
-        {
-            json = json.Substring(7);
-        }
-        else if (json.StartsWith("```"))
-        {
-            json = json.Substring(3);
-        }
-        if (json.EndsWith("```"))
-        {
-            json = json.Substring(0, json.Length - 3);
-        }
+        if (json.StartsWith("```json")) json = json.Substring(7);
+        else if (json.StartsWith("```")) json = json.Substring(3);
+        if (json.EndsWith("```")) json = json.Substring(0, json.Length - 3);
         json = json.Trim();
 
         try
@@ -150,15 +114,13 @@ public class AIReportGenerator
             };
 
             var parsed = JsonSerializer.Deserialize<ReportContentJson>(json, options);
-            
-            if (parsed == null)
-                throw new Exception("Failed to parse LLM response as JSON");
+            if (parsed == null) throw new Exception("Failed to parse LLM response as JSON");
 
             return ConvertToReportContent(parsed);
         }
         catch (JsonException ex)
         {
-            throw new Exception($"Failed to parse LLM response: {ex.Message}. Response: {json.Substring(0, Math.Min(500, json.Length))}");
+            throw new Exception($"Failed to parse LLM response: {ex.Message}");
         }
     }
 
@@ -166,7 +128,7 @@ public class AIReportGenerator
     {
         return new ReportContent
         {
-            Title = parsed.Title ?? "Risk Analysis Report",
+            Title = parsed.Title ?? "Izveštaj o analizi projekta",
             ExecutiveSummary = parsed.ExecutiveSummary ?? "",
             KeyFindings = parsed.KeyFindings?.Select(f => new KeyFinding
             {
@@ -184,24 +146,16 @@ public class AIReportGenerator
                 ExpectedImpact = r.ExpectedImpact ?? "",
                 Effort = Enum.TryParse<EffortLevel>(r.Effort, true, out var eff) ? eff : EffortLevel.Medium
             }).ToList() ?? new List<Recommendation>(),
-            RiskBreakdown = parsed.RiskBreakdown?.Select(b => new RiskBreakdown
-            {
-                Dimension = b.Dimension ?? "",
-                Score = b.Score,
-                Status = b.Status ?? "Unknown",
-                KeyFactors = b.KeyFactors ?? new List<string>()
-            }).ToList() ?? new List<RiskBreakdown>()
+            RiskBreakdown = new List<RiskBreakdown>()
         };
     }
 
-    // JSON deserialization classes
     private class ReportContentJson
     {
         public string? Title { get; set; }
         public string? ExecutiveSummary { get; set; }
         public List<KeyFindingJson>? KeyFindings { get; set; }
         public List<RecommendationJson>? Recommendations { get; set; }
-        public List<RiskBreakdownJson>? RiskBreakdown { get; set; }
     }
 
     private class KeyFindingJson
@@ -221,14 +175,6 @@ public class AIReportGenerator
         public string? ExpectedImpact { get; set; }
         public string? Effort { get; set; }
     }
-
-    private class RiskBreakdownJson
-    {
-        public string? Dimension { get; set; }
-        public double Score { get; set; }
-        public string? Status { get; set; }
-        public List<string>? KeyFactors { get; set; }
-    }
 }
 
 public class GeneratedReport
@@ -240,9 +186,6 @@ public class GeneratedReport
     public int GenerationTimeMs { get; set; }
 }
 
-/// <summary>
-/// Abstraction for LLM API calls
-/// </summary>
 public interface ILLMClient
 {
     Task<LLMResponse> GenerateAsync(string prompt);
@@ -256,64 +199,29 @@ public class LLMResponse
     public int CompletionTokens { get; set; }
 }
 
-/// <summary>
-/// Mock LLM client for testing without API calls
-/// </summary>
 public class MockLLMClient : ILLMClient
 {
     public Task<LLMResponse> GenerateAsync(string prompt)
     {
         var mockResponse = @"{
-            ""title"": ""Project Health Analysis Report"",
-            ""executive_summary"": ""Based on the analyzed metrics, the project shows moderate risk levels with room for improvement in several key areas. The team is delivering features but faces challenges with code review turnaround times and estimation accuracy."",
+            ""title"": ""Izveštaj o analizi GitHub aktivnosti"",
+            ""executive_summary"": ""Na osnovu analiziranih metrika, projekat pokazuje prosečan kvalitet commit poruka i PR naslova. Tim redovno radi code review ali ima prostora za poboljšanje u kvalitetu komentara."",
             ""key_findings"": [
                 {
-                    ""category"": ""Communication"",
+                    ""category"": ""Commits"",
                     ""severity"": ""Medium"",
-                    ""title"": ""PR Review Delays"",
-                    ""description"": ""Code reviews are taking longer than optimal, which may slow down delivery velocity."",
-                    ""evidence"": [""PR review time exceeds 24-hour target""]
+                    ""title"": ""Kvalitet commit poruka"",
+                    ""description"": ""Određen procenat commit poruka ne prati konvencije imenovanja."",
+                    ""evidence"": [""Postotak dobrih poruka ispod 80%""]
                 }
             ],
             ""recommendations"": [
                 {
                     ""priority"": 1,
-                    ""title"": ""Implement PR Review SLAs"",
-                    ""description"": ""Establish a 24-hour review turnaround policy and consider adding review reminders."",
-                    ""expected_impact"": ""20-30% reduction in cycle time"",
+                    ""title"": ""Uvesti konvencije za commit poruke"",
+                    ""description"": ""Implementirati Conventional Commits standard (feat:, fix:, docs:, itd.)"",
+                    ""expected_impact"": ""Poboljšanje čitljivosti istorije projekta"",
                     ""effort"": ""Low""
-                }
-            ],
-            ""risk_breakdown"": [
-                {
-                    ""dimension"": ""Planning"",
-                    ""score"": 35.0,
-                    ""status"": ""Healthy"",
-                    ""key_factors"": [""Good sprint completion rate"", ""Estimation needs improvement""]
-                },
-                {
-                    ""dimension"": ""Execution"",
-                    ""score"": 40.0,
-                    ""status"": ""At Risk"",
-                    ""key_factors"": [""Cycle time above target""]
-                },
-                {
-                    ""dimension"": ""Bottleneck"",
-                    ""score"": 25.0,
-                    ""status"": ""Healthy"",
-                    ""key_factors"": [""WIP within limits""]
-                },
-                {
-                    ""dimension"": ""Communication"",
-                    ""score"": 55.0,
-                    ""status"": ""At Risk"",
-                    ""key_factors"": [""PR review delays""]
-                },
-                {
-                    ""dimension"": ""Stability"",
-                    ""score"": 30.0,
-                    ""status"": ""Healthy"",
-                    ""key_factors"": [""Low bug ratio""]
                 }
             ]
         }";

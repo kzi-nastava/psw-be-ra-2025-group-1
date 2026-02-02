@@ -9,7 +9,6 @@ public class AutopsyProjectDto
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string? JiraProjectKey { get; set; }
     public string? GitHubRepo { get; set; }
     public int AnalysisWindowDays { get; set; }
     public bool IsActive { get; set; }
@@ -21,8 +20,7 @@ public class CreateAutopsyProjectDto
 {
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string? JiraProjectKey { get; set; }
-    public string? GitHubRepo { get; set; }
+    public string? RepositoryUrl { get; set; }
     public int AnalysisWindowDays { get; set; } = 30;
 }
 
@@ -30,7 +28,6 @@ public class UpdateAutopsyProjectDto
 {
     public string? Name { get; set; }
     public string? Description { get; set; }
-    public string? JiraProjectKey { get; set; }
     public string? GitHubRepo { get; set; }
     public int? AnalysisWindowDays { get; set; }
     public bool? IsActive { get; set; }
@@ -44,64 +41,82 @@ public class RiskSnapshotDto
 {
     public long Id { get; set; }
     public long ProjectId { get; set; }
-    public double OverallScore { get; set; }
-    public double PlanningScore { get; set; }
-    public double ExecutionScore { get; set; }
-    public double BottleneckScore { get; set; }
-    public double CommunicationScore { get; set; }
-    public double StabilityScore { get; set; }
-    public RiskMetricsDto Metrics { get; set; } = new();
+    public GitHubMetricsDto Metrics { get; set; } = new();
     public string Trend { get; set; } = "Stable";
     public DateTime AnalysisWindowStart { get; set; }
     public DateTime AnalysisWindowEnd { get; set; }
-    public int TicketsAnalyzed { get; set; }
     public int CommitsAnalyzed { get; set; }
     public int PullRequestsAnalyzed { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
-public class RiskMetricsDto
+public class GitHubMetricsDto
 {
-    public PlanningMetricsDto Planning { get; set; } = new();
-    public ExecutionMetricsDto Execution { get; set; } = new();
-    public BottleneckMetricsDto Bottleneck { get; set; } = new();
-    public CommunicationMetricsDto Communication { get; set; } = new();
-    public StabilityMetricsDto Stability { get; set; } = new();
+    public CommitAnalysisDto CommitAnalysis { get; set; } = new();
+    public PullRequestAnalysisDto PrAnalysis { get; set; } = new();
+    public ReviewAnalysisDto ReviewAnalysis { get; set; } = new();
+    public Dictionary<string, AuthorStatsDto> AuthorActivity { get; set; } = new();
 }
 
-public class PlanningMetricsDto
+public class CommitAnalysisDto
 {
-    public double SprintCompletionRate { get; set; }
-    public double ScopeChangeRate { get; set; }
-    public double EstimationAccuracy { get; set; }
+    public int TotalCommits { get; set; }
+    public int GoodMessageCount { get; set; }
+    public int BadMessageCount { get; set; }
+    public double GoodMessagePercentage { get; set; }
+    public List<CommitExampleDto> BadCommitExamples { get; set; } = new();
+    public Dictionary<string, int> CommitsByAuthor { get; set; } = new();
+    public double AverageCommitsPerDay { get; set; }
 }
 
-public class ExecutionMetricsDto
+public class CommitExampleDto
 {
-    public double VelocityConsistency { get; set; }
-    public double AverageCycleTimeHours { get; set; }
-    public double ThroughputPerWeek { get; set; }
+    public string Sha { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string Author { get; set; } = string.Empty;
 }
 
-public class BottleneckMetricsDto
+public class PullRequestAnalysisDto
 {
-    public double WipPerPerson { get; set; }
-    public double BlockedRatio { get; set; }
-    public double AvgBlockedHours { get; set; }
+    public int TotalPRs { get; set; }
+    public int MergedPRs { get; set; }
+    public int OpenPRs { get; set; }
+    public int ClosedWithoutMergePRs { get; set; }
+    public int GoodTitleCount { get; set; }
+    public int BadTitleCount { get; set; }
+    public double GoodTitlePercentage { get; set; }
+    public List<PrExampleDto> BadTitleExamples { get; set; } = new();
+    public double AverageMergeTimeHours { get; set; }
+    public double MergeRate { get; set; }
+    public Dictionary<string, int> PrsByAuthor { get; set; } = new();
 }
 
-public class CommunicationMetricsDto
+public class PrExampleDto
 {
-    public double PrReviewTimeHours { get; set; }
-    public double PrMergeRate { get; set; }
-    public double CommentDensity { get; set; }
+    public int Number { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Author { get; set; } = string.Empty;
 }
 
-public class StabilityMetricsDto
+public class ReviewAnalysisDto
 {
-    public double BugRatio { get; set; }
-    public double HotfixFrequency { get; set; }
-    public double DefectEscapeRate { get; set; }
+    public int TotalReviews { get; set; }
+    public int TotalComments { get; set; }
+    public double AverageCommentsPerPR { get; set; }
+    public double AverageTimeToFirstReviewHours { get; set; }
+    public string ReviewQualityAssessment { get; set; } = string.Empty;
+    public Dictionary<string, int> TopReviewers { get; set; } = new();
+    public int PrsWithoutReview { get; set; }
+}
+
+public class AuthorStatsDto
+{
+    public string Name { get; set; } = string.Empty;
+    public int CommitCount { get; set; }
+    public int PrCount { get; set; }
+    public int MergedPrCount { get; set; }
+    public int TotalAdditions { get; set; }
+    public int TotalDeletions { get; set; }
 }
 
 public class RiskHistoryDto
@@ -110,12 +125,6 @@ public class RiskHistoryDto
     public int Total { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }
-}
-
-public class TriggerAnalysisResponseDto
-{
-    public string Message { get; set; } = string.Empty;
-    public long ProjectId { get; set; }
 }
 
 // ============================================================================
@@ -190,11 +199,6 @@ public class GenerateReportRequestDto
 // ============================================================================
 // INTEGRATION DTOs
 // ============================================================================
-
-public class GitHubIntegrationDto
-{
-    public string AccessToken { get; set; } = string.Empty;
-}
 
 public class IntegrationStatusDto
 {

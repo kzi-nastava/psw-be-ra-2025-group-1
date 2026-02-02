@@ -24,21 +24,61 @@ public class AutopsyProjectService : IAutopsyProjectService
         // Check for duplicate name
         var existing = _repository.GetByName(dto.Name);
         if (existing != null)
-            throw new ArgumentException($"Project with name '{dto.Name}' already exists");
+            throw new ArgumentException($"Projekat sa imenom '{dto.Name}' već postoji");
 
         var project = new AutopsyProject(dto.Name, dto.Description);
 
-        if (!string.IsNullOrEmpty(dto.JiraProjectKey))
-            project.ConfigureJira(dto.JiraProjectKey);
-
-        if (!string.IsNullOrEmpty(dto.GitHubRepo))
-            project.ConfigureGitHub(dto.GitHubRepo);
+        // Parse repository URL to owner/repo format
+        if (!string.IsNullOrEmpty(dto.RepositoryUrl))
+        {
+            var gitHubRepo = ParseGitHubUrl(dto.RepositoryUrl);
+            project.ConfigureGitHub(gitHubRepo);
+        }
 
         if (dto.AnalysisWindowDays > 0)
             project.SetAnalysisWindow(dto.AnalysisWindowDays);
 
         var created = _repository.Create(project);
         return _mapper.Map<AutopsyProjectDto>(created);
+    }
+
+    private string ParseGitHubUrl(string url)
+    {
+        // Handle various GitHub URL formats:
+        // https://github.com/owner/repo
+        // https://github.com/owner/repo.git
+        // git@github.com:owner/repo.git
+        // owner/repo
+
+        url = url.Trim();
+
+        // Already in owner/repo format
+        if (!url.Contains("github.com") && url.Contains("/") && url.Split('/').Length == 2)
+            return url;
+
+        // HTTPS URL
+        if (url.Contains("github.com/"))
+        {
+            var parts = url.Split("github.com/");
+            if (parts.Length > 1)
+            {
+                var repo = parts[1].TrimEnd('/').Replace(".git", "");
+                return repo;
+            }
+        }
+
+        // SSH URL
+        if (url.Contains("git@github.com:"))
+        {
+            var parts = url.Split("git@github.com:");
+            if (parts.Length > 1)
+            {
+                var repo = parts[1].TrimEnd('/').Replace(".git", "");
+                return repo;
+            }
+        }
+
+        throw new ArgumentException($"Neispravan GitHub URL format: {url}");
     }
 
     public AutopsyProjectDto Update(long id, UpdateAutopsyProjectDto dto)
@@ -60,9 +100,6 @@ public class AutopsyProjectService : IAutopsyProjectService
 
         if (dto.Description != null)
             project.Update(project.Name, dto.Description);
-
-        if (!string.IsNullOrEmpty(dto.JiraProjectKey))
-            project.ConfigureJira(dto.JiraProjectKey);
 
         if (!string.IsNullOrEmpty(dto.GitHubRepo))
             project.ConfigureGitHub(dto.GitHubRepo);
