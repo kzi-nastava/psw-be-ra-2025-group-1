@@ -54,4 +54,23 @@ public class UserDbRepository : IUserRepository
         _dbContext.SaveChanges();
         return user;
     }
+
+
+    public User? FindByUsername(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return null;
+
+        var normalized = username.Trim();
+
+        return _dbContext.Users.FirstOrDefault(u => u.Username.ToLower() == normalized.ToLower());
+    }
+    public List<User> GetByIds(IEnumerable<long> ids)
+    {
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0) return new List<User>();
+
+        return _dbContext.Users
+            .Where(u => idList.Contains(u.Id))
+            .ToList();
+    }
 }
