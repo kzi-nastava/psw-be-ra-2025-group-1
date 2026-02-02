@@ -39,12 +39,6 @@ $modules = [ordered]@{
         Project = "Modules/Payments/Explorer.Payments.Infrastructure"
         MigrationName = "Init_Payments"
     }
-    "ProjectAutopsy" = @{
-        Folder = "Modules\ProjectAutopsy\Explorer.ProjectAutopsy.Infrastructure\Migrations"
-        Context = "ProjectAutopsyContext"
-        Project = "Modules/ProjectAutopsy/Explorer.ProjectAutopsy.Infrastructure"
-        MigrationName = "Init_ProjectAutopsy"
-    }
 }
 
 function Remove-MigrationFolder {

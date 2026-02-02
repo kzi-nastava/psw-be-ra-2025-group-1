@@ -68,7 +68,6 @@ if ($Migrate) {
             "Blog" = "blog"
             "Encounters" = "encounters"
             "Payments" = "payments"
-            "ProjectAutopsy" = "autopsy"
         }
         
         if (-not $moduleSchemas.ContainsKey($Module)) {
@@ -190,7 +189,7 @@ DECLARE
     r RECORD;
 BEGIN
     -- Truncate all tables
-    FOR r IN (SELECT tablename, schemaname FROM pg_tables WHERE schemaname IN ('stakeholders', 'tours', 'blog', 'encounters', 'payments', 'autopsy')) LOOP
+    FOR r IN (SELECT tablename, schemaname FROM pg_tables WHERE schemaname IN ('stakeholders', 'tours', 'blog', 'encounters', 'payments')) LOOP
         EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.schemaname) || '.' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
     END LOOP;
 END `$`$;
