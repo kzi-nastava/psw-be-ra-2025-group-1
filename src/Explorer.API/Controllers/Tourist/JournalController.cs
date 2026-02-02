@@ -50,6 +50,17 @@ public class JournalController : ControllerBase
         catch (UnauthorizedAccessException) { return Forbid(); }
     }
 
+    [HttpGet("{id:long}")]
+    [ProducesResponseType(typeof(JournalDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<JournalDto> GetById(long id)
+    {
+        try { return Ok(_service.GetById(GetUserId(), id)); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
     [HttpPut("{id:long}")]
     [ProducesResponseType(typeof(JournalDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -83,6 +94,45 @@ public class JournalController : ControllerBase
         catch (UnauthorizedAccessException) { return Forbid(); }
         catch (KeyNotFoundException) { return NotFound(); }
     }
+
+
+    [HttpPut("{id:long}/publish")]
+    [ProducesResponseType(typeof(JournalDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public ActionResult<JournalDto> Publish(long id)
+    {
+        try
+        {
+            var published = _service.Publish(GetUserId(), id);
+            return Ok(published);
+        }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        catch (InvalidOperationException ex) { return BadRequest(ex.Message); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+
+    [HttpPost("{id:long}/collaborators")]
+    public ActionResult<JournalDto> AddCollaborator(long id, [FromBody] AddCollaboratorRequestDto request)
+    {
+        try { return Ok(_service.AddCollaborator(GetUserId(), id, request.CollaboratorUsername)); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (ArgumentException ex) { return BadRequest(ex.Message); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpDelete("{id:long}/collaborators/{collaboratorUserId:long}")]
+    public ActionResult<JournalDto> RemoveCollaborator(long id, long collaboratorUserId)
+    {
+        try { return Ok(_service.RemoveCollaborator(GetUserId(), id, collaboratorUserId)); }
+        catch (UnauthorizedAccessException) { return Forbid(); }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+
 
     private long GetUserId()
         => long.Parse(User.FindFirstValue("id") ?? User.FindFirstValue(ClaimTypes.NameIdentifier)!);

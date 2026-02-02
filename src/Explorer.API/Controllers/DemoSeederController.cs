@@ -1,4 +1,5 @@
 ﻿using Explorer.API.Demo;
+using Explorer.Payments.API.Public.Tourist;
 using Explorer.Encounters.API.Public;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Public;
@@ -23,6 +24,8 @@ namespace Explorer.API.Controllers
             ITourRatingService tourRatingService,
             IRestaurantService restaurantService,
             Explorer.Payments.API.Public.Author.ISaleService saleService,
+            IUserManagementService userManagementService,
+            IWalletService walletService,
             ITouristStatsService touristStatsService)
         {
             _demoSeeder = new DemoSeeder(
@@ -35,6 +38,8 @@ namespace Explorer.API.Controllers
                 tourRatingService, 
                 restaurantService,
                 saleService,
+                userManagementService,
+                walletService,
                 touristStatsService);
         }
 

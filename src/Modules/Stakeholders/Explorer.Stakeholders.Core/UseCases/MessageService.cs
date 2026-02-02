@@ -59,6 +59,7 @@ namespace Explorer.Stakeholders.Core.UseCases
             foreach (var c in conversations)
             {
                 var lastMsg = c.Messages
+                    .Where(m => !m.IsDeleted)
                     .OrderByDescending(m => m.Timestamp)
                     .FirstOrDefault();
 
@@ -76,6 +77,7 @@ namespace Explorer.Stakeholders.Core.UseCases
                     LastMessageAt = lastMsg?.Timestamp
                 });
             }
+
 
             return dtoList
      .OrderByDescending(c => c.LastMessageAt ?? DateTime.MinValue)

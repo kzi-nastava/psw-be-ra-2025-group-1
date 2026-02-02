@@ -18,6 +18,8 @@ namespace Explorer.Encounters.Infrastructure
             var stats = new TouristStats(touristId);
             _context.TouristStats.Add(stats);
             _context.SaveChanges();
+            // Refresh to ensure the ID is properly set from the database
+            _context.Entry(stats).Reload();
             return stats;
         }
 
