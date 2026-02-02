@@ -21,9 +21,11 @@ namespace Explorer.API.Controllers.Tourist
         [HttpGet]
         public ActionResult<PagedResult<TourDto>> GetPublished(
             [FromQuery] int page = 0,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? search = null,
+            [FromQuery] string? sortBy = null)
         {
-            return Ok(_tourService.GetPublished(page, pageSize));
+            return Ok(_tourService.GetPublished(page, pageSize, search, sortBy));
         }
 
         [HttpGet("{id:long}")]

@@ -10,19 +10,24 @@ public class Blog : AggregateRoot
     public string Description {get; private set;}
     public DateTime CreationDate {get; private set;}
     public List<string> Images {get; private set;}
+    public List<string> Videos { get; private set; }
     public BlogStatus Status {get; private set;}
     public DateTime? LastModifiedDate {get; private set;}
     public List<Comment> Comments {get; private set;}
 
     public List<Vote> Votes { get; private set;} = new();
+    public List<BlogCollaborator> Collaborators { get; private set; } = new();
 
-    public Blog(long userId, string title, string description, List<string>? images = null)
+
+    public Blog(long userId, string title, string description, List<string>? images = null, List<string>? videos = null)
     {
         UserId = userId;
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Description = description ?? throw new ArgumentNullException(nameof(description));
         CreationDate = DateTime.UtcNow;
         Images = images ?? new List<string>();
+        Videos = videos ?? new List<string>();
+
         Status = BlogStatus.Draft; // Kada korisnik kreira blog, on se nalazi u stanju pripreme.
         Comments = new List<Comment>();
         Validate();
@@ -34,7 +39,7 @@ public class Blog : AggregateRoot
         if (string.IsNullOrWhiteSpace(Description)) throw new ArgumentException("Description can't be empty");
     }
 
-    public void Update(string title, string description, List<string>? images) // Updated Update logic
+    public void Update(string title, string description, List<string>? images, List<string>? videos) // Updated Update logic
     {
         if (Status == BlogStatus.Archived || Status == BlogStatus.Closed)
         {
@@ -225,6 +230,34 @@ public class Blog : AggregateRoot
         return Status == BlogStatus.Published
             || Status == BlogStatus.Active
             || Status == BlogStatus.Famous;
+    }
+
+    public bool IsOwner(long userId) => UserId == userId;
+    public bool IsCollaborator(long userId) => Collaborators.Any(c => c.UserId == userId);
+
+    public void AddCollaborator(long ownerId, long collaboratorUserId)
+    {
+        if (!IsOwner(ownerId))
+            throw new UnauthorizedAccessException("Only owner can add collaborators.");
+
+        if (collaboratorUserId == UserId)
+            throw new InvalidOperationException("Owner is already the owner.");
+
+        if (Collaborators.Any(c => c.UserId == collaboratorUserId))
+            throw new InvalidOperationException("User is already a collaborator.");
+
+        Collaborators.Add(new BlogCollaborator(this.Id, collaboratorUserId));
+    }
+
+    public void RemoveCollaborator(long ownerId, long collaboratorUserId)
+    {
+        if (!IsOwner(ownerId))
+            throw new UnauthorizedAccessException("Only owner can remove collaborators.");
+
+        var c = Collaborators.FirstOrDefault(x => x.UserId == collaboratorUserId);
+        if (c == null) return;
+
+        Collaborators.Remove(c);
     }
 
 }

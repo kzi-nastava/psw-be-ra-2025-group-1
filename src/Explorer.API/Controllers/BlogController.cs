@@ -51,7 +51,8 @@ public class BlogController : ControllerBase
     {
         try
         {
-            var result = _blogService.UpdateBlog(id, blogDto);
+            var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+            var result = _blogService.UpdateBlog(id, blogDto, userId);
             return Ok(result);
         }
         catch (InvalidOperationException e)
@@ -69,7 +70,8 @@ public class BlogController : ControllerBase
     {
         try
         {
-            var result = _blogService.PublishBlog(id);
+            var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+            var result = _blogService.PublishBlog(id, userId);
             return Ok(result);
         }
      catch (InvalidOperationException e)
@@ -83,7 +85,8 @@ public class BlogController : ControllerBase
     {
         try
         {
-            var result = _blogService.ArchiveBlog(id);
+            var userId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+            var result = _blogService.ArchiveBlog(id, userId);
             return Ok(result);
         }
         catch (InvalidOperationException e)
@@ -196,4 +199,21 @@ public class BlogController : ControllerBase
             return NotFound(e.Message);
         }
     }
+
+    [HttpPost("{blogId}/collaborators")]
+    public ActionResult<BlogDto> AddCollaborator(long blogId, [FromBody] AddBlogCollaboratorRequestDto req)
+    {
+        var ownerId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var result = _blogService.AddCollaborator(ownerId, blogId, req.CollaboratorUsername);
+        return Ok(result);
+    }
+
+    [HttpDelete("{blogId}/collaborators/{collaboratorUserId:long}")]
+    public ActionResult<BlogDto> RemoveCollaborator(long blogId, long collaboratorUserId)
+    {
+        var ownerId = long.Parse(User.Claims.First(c => c.Type == "id").Value);
+        var result = _blogService.RemoveCollaborator(ownerId, blogId, collaboratorUserId);
+        return Ok(result);
+    }
+
 }

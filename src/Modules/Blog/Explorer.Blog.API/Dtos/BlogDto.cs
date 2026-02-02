@@ -8,6 +8,7 @@ public class BlogDto
     public string Description {get; set;}
     public DateTime CreationDate {get; set;}
     public List<string> Images {get; set;}
+    public List<string> Videos {get; set;}
     public string Status {get; set;}
     public DateTime? LastModifiedDate {get; set;}
     public List<CommentDto> Comments {get; set;} = new List<CommentDto>();
@@ -15,4 +16,8 @@ public class BlogDto
     public List<VoteDto> Votes { get ; set; }
     public int VoteScore { get ; set; }
     public VoteTypeDto? CurrentUserVote { get ; set; }
+
+    public List<BlogCollaboratorDto> Collaborators { get; set; } = new();
+    public bool CanEdit { get; set; }
+    public bool CanManageCollaborators { get; set; }
 }
