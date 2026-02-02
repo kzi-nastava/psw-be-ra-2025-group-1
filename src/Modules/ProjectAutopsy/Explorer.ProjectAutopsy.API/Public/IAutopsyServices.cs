@@ -19,4 +19,5 @@ public interface IRiskAnalysisService
     RiskSnapshotDto GetLatestSnapshot(long projectId);
     RiskHistoryDto GetHistory(long projectId, int page = 1, int pageSize = 10);
     RiskSnapshotDto GetSnapshot(long snapshotId);
+    byte[] ExportSnapshotToPdf(long snapshotId);
 }

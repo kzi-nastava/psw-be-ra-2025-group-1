@@ -56,4 +56,11 @@ public class ProjectAutopsyController : ControllerBase
         var result = _riskService.GetLatestSnapshot(id);
         return Ok(result);
     }
+
+    [HttpGet("snapshots/{snapshotId:long}/export/pdf")]
+    public ActionResult ExportSnapshotToPdf(long snapshotId)
+    {
+        var pdfBytes = _riskService.ExportSnapshotToPdf(snapshotId);
+        return File(pdfBytes, "application/pdf", $"risk-analysis-{snapshotId}.pdf");
+    }
 }

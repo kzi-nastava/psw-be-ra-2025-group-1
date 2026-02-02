@@ -54,6 +54,9 @@ public static class ProjectAutopsyStartup
         // GitHub Data Service - wraps GitHubClient with interface for Core layer
         services.AddScoped<IGitHubDataService, GitHubDataService>();
 
+        // PDF Export Service
+        services.AddScoped<IPdfExportService, PdfExportService>();
+
         // Database context with proper connection string
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("autopsy"));
         dataSourceBuilder.EnableDynamicJson();

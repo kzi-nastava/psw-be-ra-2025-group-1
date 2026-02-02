@@ -13,19 +13,25 @@ public class RiskAnalysisService : IRiskAnalysisService
 {
     private readonly IRiskSnapshotRepository _snapshotRepository;
     private readonly IAutopsyProjectRepository _projectRepository;
+    private readonly IAIReportRepository _aiReportRepository;
     private readonly IGitHubDataService _gitHubDataService;
+    private readonly IPdfExportService _pdfExportService;
     private readonly RiskEngine _riskEngine;
     private readonly IMapper _mapper;
 
     public RiskAnalysisService(
         IRiskSnapshotRepository snapshotRepository,
         IAutopsyProjectRepository projectRepository,
+        IAIReportRepository aiReportRepository,
         IGitHubDataService gitHubDataService,
+        IPdfExportService pdfExportService,
         IMapper mapper)
     {
         _snapshotRepository = snapshotRepository;
         _projectRepository = projectRepository;
+        _aiReportRepository = aiReportRepository;
         _gitHubDataService = gitHubDataService;
+        _pdfExportService = pdfExportService;
         _riskEngine = new RiskEngine();
         _mapper = mapper;
     }
@@ -151,6 +157,22 @@ public class RiskAnalysisService : IRiskAnalysisService
             throw new KeyNotFoundException($"Snapshot with id {snapshotId} not found");
 
         return _mapper.Map<RiskSnapshotDto>(snapshot);
+    }
+
+    public byte[] ExportSnapshotToPdf(long snapshotId)
+    {
+        var snapshot = _snapshotRepository.Get(snapshotId);
+        if (snapshot == null)
+            throw new KeyNotFoundException($"Snapshot with id {snapshotId} not found");
+
+        var project = _projectRepository.Get(snapshot.ProjectId);
+        if (project == null)
+            throw new KeyNotFoundException($"Project with id {snapshot.ProjectId} not found");
+
+        // Try to get the latest AI report for this snapshot
+        var aiReport = _aiReportRepository.GetBySnapshot(snapshotId).FirstOrDefault();
+
+        return _pdfExportService.GenerateRiskAnalysisPdf(project.Name, snapshot, aiReport);
     }
 
     /// <summary>

@@ -8,4 +8,7 @@
 		<ProjectReference Include="..\..\..\BuildingBlocks\Explorer.BuildingBlocks.Infrastructure\Explorer.BuildingBlocks.Infrastructure.csproj" />
 		<ProjectReference Include="..\Explorer.ProjectAutopsy.Core\Explorer.ProjectAutopsy.Core.csproj" />
 	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="QuestPDF" Version="2025.12.3" />
+	</ItemGroup>
 </Project>
