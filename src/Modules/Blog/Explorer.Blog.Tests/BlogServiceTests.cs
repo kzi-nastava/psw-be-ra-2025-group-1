@@ -12,13 +12,14 @@ using Shouldly;
 using Xunit;
 using Explorer.Stakeholders.Core.Domain;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+using Explorer.Stakeholders.API.Dtos;
 
 namespace Explorer.Blog.Tests;
 
 public class BlogServiceTests
 {
     private readonly Mock<IBlogRepository> _mockRepository;
-    private readonly Mock<IJournalRepository> _journalRepoMock;
+    private readonly Mock<IInternalJournalService> _internalJournalMock;
     private readonly IMapper _mapper;
     private readonly BlogService _service;
     private readonly IInternalPersonService _personRepository;
@@ -33,12 +34,12 @@ public class BlogServiceTests
         _mapper = mapperConfig.CreateMapper();
 
         _mockRepository = new Mock<IBlogRepository>();
-        _journalRepoMock = new Mock<IJournalRepository>();
 
-        // default: nema journala za blog 
-        _journalRepoMock
-            .Setup(r => r.GetByPublishedBlogId(It.IsAny<long>()))
-            .Returns((Journal?)null);
+        _internalJournalMock = new Mock<IInternalJournalService>();
+
+        _internalJournalMock
+            .Setup(s => s.GetByPublishedBlogId(It.IsAny<long>()))
+            .Returns((JournalBlogLinkDto?)null);
 
         _personRepository = Mock.Of<IInternalPersonService>();
 
@@ -50,7 +51,7 @@ public class BlogServiceTests
             .Setup(u => u.GetUserIdByUsername(It.IsAny<string>()))
             .Returns((string _) => 123);
 
-        _service = new BlogService(_mockRepository.Object, _mapper, _personRepository, usersMock.Object, _journalRepoMock.Object);
+        _service = new BlogService(_mockRepository.Object, _mapper, _personRepository, usersMock.Object, _internalJournalMock.Object);
     }
 
     [Fact]

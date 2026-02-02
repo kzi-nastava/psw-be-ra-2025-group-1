@@ -8,7 +8,6 @@ namespace Explorer.Blog.Core.Domain
         public long BlogId { get; private set; }
         public long UserId { get; private set; }
 
-        public User? User { get; private set; }
 
         protected BlogCollaborator() { }
 
