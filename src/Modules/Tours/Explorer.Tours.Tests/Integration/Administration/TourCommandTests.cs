@@ -69,12 +69,19 @@ public class TourCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // Added logic to check if the object exists
-        // This is useful so that the test passes even when ran with other test or by it's own
         var stored = dbContext.Tour.FirstOrDefault(i => i.Title == "New Tour");
         if (stored == null)
         {
-            var newEntity = new CreateTourDto { CreatorId = 1, Title = "To Update", Description = "Will be updated", Difficulty = 2, Tags = new[] { "t1" }, Status = TourStatusDto.Draft, Price = 50.0 };
+            var newEntity = new CreateTourDto
+            {
+                CreatorId = 1,
+                Title = "To Update",
+                Description = "Will be updated",
+                Difficulty = 2,
+                Tags = new[] { "t1" },
+                Status = TourStatusDto.Draft,
+                Price = 50.0
+            };
 
             var created = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TourDto;
             created.ShouldNotBeNull();
@@ -83,15 +90,25 @@ public class TourCommandTests : BaseToursIntegrationTest
         }
         var id = stored.Id;
 
-        var updatedDto = new TourDto { CreatorId = stored.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDto.Published, Price = 150.0 };
+        var updatedDto = new TourDto
+        {
+            CreatorId = stored.CreatorId,
+            Title = "Updated Title",
+            Description = "Updated description",
+            Difficulty = 5,
+            Tags = new[] { "updated" },
+            Status = TourStatusDto.Published,
+            Price = 150.0,
+            PlaylistId = "PLtest123" // Dodaj ovo
+        };
 
         // Logging in fake user
         var identity = new ClaimsIdentity(new[]
-{
-                new Claim("id", "1"),
-                new Claim("personId", "1"),
-                new Claim(ClaimTypes.Role, "author")
-            }, "TestAuthentication");
+        {
+        new Claim("id", "1"),
+        new Claim("personId", "1"),
+        new Claim(ClaimTypes.Role, "author")
+    }, "TestAuthentication");
         controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
 
         // Act
@@ -103,12 +120,14 @@ public class TourCommandTests : BaseToursIntegrationTest
         updateResult.Description.ShouldBe("Updated description");
         updateResult.Difficulty.ShouldBe(5);
         updateResult.Price.ShouldBe(150.0);
+        updateResult.PlaylistId.ShouldBe("PLtest123"); // Dodaj ovo
 
         // Assert - Database
         dbContext.Entry(stored).State = EntityState.Detached;
         var storedUpdated = dbContext.Tour.FirstOrDefault(i => i.Id == id);
         storedUpdated.ShouldNotBeNull();
         storedUpdated.Title.ShouldBe("Updated Title");
+        storedUpdated.PlaylistId.ShouldBe("PLtest123"); // Dodaj ovo
     }
 
     [Fact]
