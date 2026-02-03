@@ -60,6 +60,19 @@ public class TourDbRepository : ITourRepository
         return task.Result;
     }
 
+    public List<Tour> GetAllByCreatorId(long creatorId)
+    {
+        return _dbSet
+            .Include(t => t.Keypoints)
+            .Include(t => t.Equipment)
+            .Include(t => t.TransportTimes)
+            .Include(t => t.MapMarker)
+            .Where(t => t.CreatorId == creatorId)
+            .ToList()
+            ?? throw new NotFoundException($"Tours by author {creatorId} not found");
+    }
+
+
     public PagedResult<Tour> GetPaged(int page, int pageSize)
     {
         var task = _dbSet

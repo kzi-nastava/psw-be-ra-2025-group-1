@@ -12,11 +12,13 @@ namespace Explorer.API.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly IPersonService _personService;
+        private readonly IUserManagementService _userManagementService;
         private readonly ProfileViewService _profileViewService;
 
-        public ProfileController(IPersonService personService, ProfileViewService profileViewService)
+        public ProfileController(IPersonService personService, IUserManagementService userManagementService, ProfileViewService profileViewService)
         {
             _personService = personService;
+            _userManagementService = userManagementService;
             _profileViewService = profileViewService;
         }
 
@@ -24,7 +26,7 @@ namespace Explorer.API.Controllers
         [AllowAnonymous]
         public ActionResult<object> Get(long id)
         {
-            var role = User.FindFirst("role")?.Value;
+            var role = _userManagementService.GetById(id).Role;
 
             var dto = _profileViewService.GetProfileByRole(id, role);
 
