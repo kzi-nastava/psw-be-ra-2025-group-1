@@ -128,13 +128,14 @@ public class TourService : ITourService
 
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update someone else's tour");
+
+        // Dodaj playlistId parametar
         tour.Update(tourDto.CreatorId, tourDto.Title, tourDto.Description, tourDto.Difficulty,
-            tourDto.Tags, (TourStatus)tourDto.Status, tourDto.Price);
+            tourDto.Tags, (TourStatus)tourDto.Status, tourDto.Price, tourDto.PlaylistId);
 
         var result = _tourRepository.Update(tour);
         return _mapper.Map<TourDto>(result);
     }
-
     public void ArchiveTour(long tourId)
     {
         var tour = _tourRepository.Get(tourId);

@@ -72,7 +72,8 @@ public class Tour : AggregateRoot
         TransportTimes = [];
     }
 
-    public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
+    public void Update(long creatorId, string title, string description, int difficulty,
+                       string[] tags, TourStatus status, double price, string? playlistId = null)
     {
         CreatorId = creatorId;
         Title = title;
@@ -81,9 +82,9 @@ public class Tour : AggregateRoot
         Tags = tags;
         Status = status;
         Price = price;
+        PlaylistId = playlistId; 
         UpdatedAt = DateTime.UtcNow;
     }
-
     public bool Publish()
     {
         if (!ValidateToPublish()) return false;  
