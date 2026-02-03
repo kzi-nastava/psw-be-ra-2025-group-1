@@ -72,5 +72,25 @@ namespace Explorer.Stakeholders.Core.UseCases
 
             return account;
         }
+
+        public AccountDto GetById(long id)
+        {
+            var user = _userRepository.Get(id);
+            var person = _personRepository.GetByUserId(user.Id);
+
+            AccountDto account = new AccountDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = person?.Email ?? "",
+                Name = person?.Name ?? "",
+                Surname = person?.Surname ?? "",
+                Role = (AccountRole)user.Role,
+                IsActive = user.IsActive
+            };
+
+            return account;
+        }
+
     }
 }
