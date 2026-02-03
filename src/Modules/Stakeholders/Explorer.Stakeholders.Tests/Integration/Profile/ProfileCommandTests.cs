@@ -204,7 +204,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
 
         private static ProfileController CreateController(IServiceScope scope)
         {
-            return new ProfileController(scope.ServiceProvider.GetRequiredService<IPersonService>(), scope.ServiceProvider.GetRequiredService<ProfileViewService>())
+            return new ProfileController(scope.ServiceProvider.GetRequiredService<IPersonService>(), scope.ServiceProvider.GetRequiredService<IUserManagementService>(), scope.ServiceProvider.GetRequiredService<ProfileViewService>())
             {
                 ControllerContext = BuildContext("-1")
             };

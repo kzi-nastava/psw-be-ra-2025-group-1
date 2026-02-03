@@ -1,4 +1,6 @@
-﻿using Explorer.Payments.API.Public.Tourist;
+﻿using Explorer.Blog.API.Dtos;
+using Explorer.Blog.API.Public;
+using Explorer.Payments.API.Public.Tourist;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
@@ -24,6 +26,7 @@ namespace Explorer.API.Demo
         private readonly ITouristMapMarkerService _touristMapMarkerService;
         private readonly IMapMarkerService _mapMarkerService;
         private readonly IShoppingCartService _shoppingCartService;
+        private readonly IBlogService _blogService;
 
         private readonly int predefinedMarkersNumber = 10;
         private readonly string imageRootUrl = "https://localhost:44333/images/";
@@ -42,7 +45,8 @@ namespace Explorer.API.Demo
             IWalletService walletService,
             ITouristMapMarkerService touristMapMarkerService,
             IShoppingCartService shoppingCartService,
-            IMapMarkerService mapMarkerService)
+            IMapMarkerService mapMarkerService,
+            IBlogService blogService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -58,6 +62,7 @@ namespace Explorer.API.Demo
             _touristMapMarkerService = touristMapMarkerService;
             _shoppingCartService = shoppingCartService;
             _mapMarkerService = mapMarkerService;
+            _blogService = blogService;
         }
 
         public void Seed()
@@ -68,6 +73,7 @@ namespace Explorer.API.Demo
             SeedStandaloneMarkers();
             SeedWallets();
             SeedAuthors();
+            SeedBlogs();
             SeedEquipment();
             SeedFacilities();
             SeedTours();
@@ -77,6 +83,254 @@ namespace Explorer.API.Demo
             SeedRatings();
             SeedRestaurants();
         }
+
+        private void SeedBlogs()
+        {
+            long tourist1Id = 2;
+            long tourist2Id = 3;
+            long author1Id = 5;
+            long author3Id = 7;
+
+            // ====== TURISTA 1 (3 bloga)
+            var t1b1 = _blogService.CreateBlog(tourist1Id, new BlogCreateDto
+            {
+                Title = "Skriveni delovi grada",
+                Description =
+                    "# Skriveni delovi grada\n\n" +
+                    "## Spontano istraživanje\n\n" +
+                    "Spontane šetnje često otkriju najzanimljivije delove grada. " +
+                    "Bez jasnog plana, naišao sam na mirne ulice i male trgove koje većina ljudi preskoči.\n\n" +
+
+                    "## Mir i svakodnevni život\n\n" +
+                    "Ovi prostori deluju prijatno čak i u periodima veće gužve. " +
+                    "Idealni su za laganu šetnju, kratki predah ili fotografisanje detalja.\n\n" +
+
+                    "## Utisak\n\n" +
+                    "Ako volite da istražujete bez pritiska i rasporeda, ovakvi delovi grada pružaju poseban doživljaj.",
+                Images = new List<string>
+        {
+            "https://localhost:44333/images/marker1.png"
+        }
+            });
+
+            var t1b2 = _blogService.CreateBlog(tourist1Id, new BlogCreateDto
+            {
+                Title = "Jutarnja šetnja",
+                Description =
+                    "# Jutarnja šetnja\n\n" +
+                    "## Grad pre gužve\n\n" +
+                    "Jutarnji sati nude poseban mir koji se kasnije gubi. " +
+                    "Šetnja pre nego što se grad probudi ima svoju posebnu čar.\n\n" +
+
+                    "## Atmosfera\n\n" +
+                    "Vazduh je svež, ulice su tihe, a kafići se tek otvaraju. " +
+                    "Grad u tom trenutku deluje sporije i opuštenije.\n\n" +
+
+                    "## Preporuka\n\n" +
+                    "Ovakva šetnja je idealna za one koji žele tišinu i lagan početak dana.",
+                Images = new List<string>()
+            });
+
+            var t1b3 = _blogService.CreateBlog(tourist1Id, new BlogCreateDto
+            {
+                Title = "Neočekivani pogledi",
+                Description =
+                    "# Neočekivani pogledi\n\n" +
+                    "## Bliski vidikovci\n\n" +
+                    "Lepi pogledi ne zahtevaju uvek dugu šetnju ili napor. " +
+                    "Neka mesta su iznenađujuće blizu, a nude sjajan pogled.\n\n" +
+
+                    "## Kratka pauza\n\n" +
+                    "Lokacija je lako dostupna i pogodna za kratko zadržavanje. " +
+                    "Idealna je tokom obilaska grada.\n\n" +
+
+                    "## Zaključak\n\n" +
+                    "Savršeno mesto za predah bez većeg odstupanja od rute.",
+                Images = new List<string>
+        {
+            "https://localhost:44333/images/marker2.png",
+            "https://localhost:44333/images/marker3.png"
+        }
+            });
+
+            _blogService.PublishBlog(t1b1.Id, t1b1.UserId);
+            _blogService.PublishBlog(t1b2.Id, t1b2.UserId);
+            _blogService.PublishBlog(t1b3.Id, t1b3.UserId);
+
+
+            // ====== TURISTA 2 (2 bloga)
+            var t2b1 = _blogService.CreateBlog(tourist2Id, new BlogCreateDto
+            {
+                Title = "Brzi beg iz grada",
+                Description =
+                    "# Brzi beg iz grada\n\n" +
+                    "## Kratak predah\n\n" +
+                    "Ponekad je dovoljan kratak izlet da se napravi pauza od rutine. " +
+                    "Ovaj beg iz grada bio je jednostavan i lako isplaniran.\n\n" +
+
+                    "## Lokacije\n\n" +
+                    "Posetio sam mesta koja su blizu i ne zahtevaju celodnevnu organizaciju. " +
+                    "Takav pristup omogućava opuštenije uživanje.\n\n" +
+
+                    "## Utisak\n\n" +
+                    "Idealan izbor kada imate malo vremena, ali vam je potrebna promena.",
+                Images = new List<string>
+        {
+            "https://localhost:44333/images/marker1.png",
+            "https://localhost:44333/images/marker2.png"
+        }
+            });
+
+            var t2b2 = _blogService.CreateBlog(tourist2Id, new BlogCreateDto
+            {
+                Title = "Ulična hrana",
+                Description =
+                    "# Ulična hrana\n\n" +
+                    "## Lokalni ukusi\n\n" +
+                    "Ulična hrana često nudi najautentičniji ukus grada. " +
+                    "Naišao sam na mali štand popularan među lokalnim stanovništvom.\n\n" +
+
+                    "## Iskustvo\n\n" +
+                    "Hrana je bila jednostavna, ali veoma ukusna i brzo pripremljena. " +
+                    "Usluga je bila efikasna.\n\n" +
+
+                    "## Preporuka\n\n" +
+                    "Odličan izbor za brz i povoljan obrok tokom šetnje.",
+                Images = new List<string>
+        {
+            "https://localhost:44333/images/marker3.png"
+        }
+            });
+
+            _blogService.PublishBlog(t2b1.Id, t2b1.UserId);
+            _blogService.PublishBlog(t2b2.Id, t2b2.UserId);
+
+
+            // ====== AUTOR TURA 1 (5 blogova)
+            var a1b1 = _blogService.CreateBlog(author1Id, new BlogCreateDto
+            {
+                Title = "Kada je najbolje posetiti grad",
+                Description =
+                    "# Kada je najbolje posetiti grad\n\n" +
+                    "## Sezone\n\n" +
+                    "Grad se može posetiti tokom cele godine, ali određeni periodi nude prijatnije uslove.\n\n" +
+
+                    "## Najbolji periodi\n\n" +
+                    "Proleće i rana jesen nude umerene temperature i manje gužve. " +
+                    "Leti je grad živahniji, ali i topliji.\n\n" +
+
+                    "## Savet\n\n" +
+                    "Izbor termina zavisi od vaših navika i tolerancije na gužvu.",
+                Images = new List<string>()
+            });
+
+            var a1b2 = _blogService.CreateBlog(author1Id, new BlogCreateDto
+            {
+                Title = "Najlepši vidikovci u okolini",
+                Description =
+                    "# Najlepši vidikovci u okolini\n\n" +
+                    "## Pogledi\n\n" +
+                    "U okolini grada postoji više vidikovaca sa pogledom na urbani i prirodni pejzaž.\n\n" +
+
+                    "## Pristupačnost\n\n" +
+                    "Većina lokacija je lako dostupna i ne zahteva posebnu opremu.\n\n" +
+
+                    "## Kada posetiti\n\n" +
+                    "Jutarnji i večernji sati pružaju najbolje svetlo.",
+                Images = new List<string>
+        {
+            "https://localhost:44333/images/marker2.png"
+        }
+            });
+
+            var a1b3 = _blogService.CreateBlog(author1Id, new BlogCreateDto
+            {
+                Title = "Saveti za kretanje po gradu",
+                Description =
+                    "# Saveti za kretanje po gradu\n\n" +
+                    "## Prevoz\n\n" +
+                    "Grad je dobro povezan javnim prevozom i lako se obilazi.\n\n" +
+
+                    "## Pešačenje\n\n" +
+                    "Centralni delovi su idealni za šetnju. " +
+                    "Za udaljenije tačke praktični su autobusi i tramvaji.\n\n" +
+
+                    "## Planiranje\n\n" +
+                    "U špicu je preporučljivo planirati rutu unapred.",
+                Images = new List<string>
+        {
+            "https://localhost:44333/images/marker1.png",
+            "https://localhost:44333/images/marker3.png"
+        }
+            });
+
+            var a1b4 = _blogService.CreateBlog(author1Id, new BlogCreateDto
+            {
+                Title = "Šta poneti na gradsko razgledanje",
+                Description =
+                    "# Šta poneti na gradsko razgledanje\n\n" +
+                    "## Osnovne stvari\n\n" +
+                    "Dobra priprema značajno utiče na ukupno iskustvo.\n\n" +
+
+                    "## Oprema\n\n" +
+                    "Udobna obuća, voda i zaštita od sunca su najvažniji elementi.\n\n" +
+
+                    "## Vremenski uslovi\n\n" +
+                    "Zimi je preporučljiva slojevita garderoba.",
+                Images = new List<string>()
+            });
+
+            var a1b5 = _blogService.CreateBlog(author1Id, new BlogCreateDto
+            {
+                Title = "Večernja atmosfera grada",
+                Description =
+                    "# Večernja atmosfera grada\n\n" +
+                    "## Drugačiji ritam\n\n" +
+                    "Grad u večernjim satima menja tempo i karakter.\n\n" +
+
+                    "## Ambijent\n\n" +
+                    "Osvetljene ulice i mirnija atmosfera čine šetnju prijatnom.\n\n" +
+
+                    "## Preporuka\n\n" +
+                    "Veče je idealno za lagano istraživanje ili večeru.",
+                Images = new List<string>
+        {
+            "https://localhost:44333/images/marker3.png"
+        }
+            });
+
+            _blogService.PublishBlog(a1b1.Id, a1b1.UserId);
+            _blogService.PublishBlog(a1b2.Id, a1b2.UserId);
+            _blogService.PublishBlog(a1b3.Id, a1b3.UserId);
+            _blogService.PublishBlog(a1b4.Id, a1b4.UserId);
+            _blogService.PublishBlog(a1b5.Id, a1b5.UserId);
+
+
+            // ====== AUTOR TURA 3 (1 blog)
+            var a3b1 = _blogService.CreateBlog(author3Id, new BlogCreateDto
+            {
+                Title = "Prvi utisci o gradu",
+                Description =
+                    "# Prvi utisci o gradu\n\n" +
+                    "## Dolazak\n\n" +
+                    "Prvi susret sa gradom često ostavlja snažan utisak.\n\n" +
+
+                    "## Snalaženje\n\n" +
+                    "Preporučuje se obilazak šireg centra prvog dana.\n\n" +
+
+                    "## Savet\n\n" +
+                    "Tako se lakše stekne osećaj za raspored i atmosferu.",
+                Images = new List<string>
+        {
+            "https://localhost:44333/images/marker1.png",
+            "https://localhost:44333/images/marker2.png",
+            "https://localhost:44333/images/marker3.png"
+        }
+            });
+
+            _blogService.PublishBlog(a3b1.Id, a3b1.UserId);
+        }
+
 
         private void SeedStandaloneMarkers()
         {

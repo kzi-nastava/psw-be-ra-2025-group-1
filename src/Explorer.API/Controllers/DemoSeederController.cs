@@ -1,4 +1,5 @@
 ﻿using Explorer.API.Demo;
+using Explorer.Blog.API.Public;
 using Explorer.Payments.API.Public.Tourist;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Public;
@@ -27,7 +28,8 @@ namespace Explorer.API.Controllers
             IWalletService walletService,
             ITouristMapMarkerService touristMapMarkerService,
             IShoppingCartService shoppingCartService,
-            IMapMarkerService mapMarkerService)
+            IMapMarkerService mapMarkerService,
+            IBlogService blogService)
         {
             _demoSeeder = new DemoSeeder(
                 authenticationService, 
@@ -43,7 +45,8 @@ namespace Explorer.API.Controllers
                 walletService,
                 touristMapMarkerService,
                 shoppingCartService,
-                mapMarkerService);
+                mapMarkerService,
+                blogService);
         }
 
         [HttpPost]
