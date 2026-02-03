@@ -35,6 +35,9 @@ public class Tour : AggregateRoot
     public List<TransportTime> TransportTimes { get; private set; }
     public MapMarker? MapMarker { get; set; }
 
+    public string? PlaylistId { get; private set; }
+
+
     public Tour()
     {
         Title = "";
@@ -238,4 +241,10 @@ public class Tour : AggregateRoot
         if (TransportTimes.Count < 1) return false;
         return true;
     }
+    public void SetPlaylist(string? playlistId)
+    {
+        PlaylistId = playlistId;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
 }

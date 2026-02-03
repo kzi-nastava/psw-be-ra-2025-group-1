@@ -416,4 +416,25 @@ public class TourController : ControllerBase
             return Unauthorized(new { message = ex.Message });
         }
     }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPut("{tourId:long}/playlist")]
+    public ActionResult<TourDto> UpdatePlaylist(long tourId, [FromBody] UpdatePlaylistDto dto)
+    {
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.UpdatePlaylist(tourId, dto.PlaylistId, authorId);
+            return Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
 }

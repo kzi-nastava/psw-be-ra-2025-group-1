@@ -327,4 +327,20 @@ public class TourService : ITourService
         _tourRepository.DeleteMapMarker(marker);
         var result = _tourRepository.Update(tour);
     }
+    public TourDto UpdatePlaylist(long tourId, string? playlistId, long authorId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new NotFoundException($"Tour with ID {tourId} not found.");
+
+        if (tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't update someone else's tour");
+
+        tour.SetPlaylist(playlistId);
+        _tourRepository.Update(tour);
+
+        return _mapper.Map<TourDto>(tour);
+        
+    }
+
 }

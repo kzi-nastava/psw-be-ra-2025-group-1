@@ -160,6 +160,8 @@ public class TourExecutionService : ITourExecutionService
         return false;   // Not close enough
     }
 
+
+
     public KeypointDto UnlockKeypoint(long executionId, long keypointId)
     {
         if (executionId == null)
