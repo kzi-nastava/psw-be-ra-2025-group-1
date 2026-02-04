@@ -13,5 +13,11 @@ public interface IJournalRepository
     (IReadOnlyList<Journal> Items, int TotalCount) GetPaged(int page, int size); // Za admin listu
 
     Journal? GetSingleByUserId(long userId); // Ako ikada treba "jedan" dnevnik
+
+    IEnumerable<Journal> GetAccessibleByUserId(long userId);
+
+    Journal? GetByPublishedBlogId(long blogId);
+
+
 }
 

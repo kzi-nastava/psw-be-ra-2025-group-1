@@ -9,6 +9,7 @@ public class BlogContext : DbContext
     public DbSet<BlogEntity> Blogs {get; set;} // Blogs table in DB
     public DbSet<Comment> Comments {get; set; } // Comments table in DB
     public DbSet<Vote> Votes { get; set; }
+    public DbSet<BlogCollaborator> BlogCollaborators { get; set; }
     public BlogContext(DbContextOptions<BlogContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +27,24 @@ public class BlogContext : DbContext
         modelBuilder.Entity<Core.Domain.Blog>().HasMany(b => b.Comments).WithOne().HasForeignKey("BlogId").IsRequired().OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Core.Domain.Blog>().HasMany(b => b.Votes).WithOne().HasForeignKey("BlogId").IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+        // BlogCollaborator tabela u blog semi
+        modelBuilder.Entity<BlogCollaborator>(cfg =>
+        {
+            cfg.ToTable("BlogCollaborators"); 
+            cfg.HasKey(x => new { x.BlogId, x.UserId });
+            cfg.HasIndex(x => new { x.BlogId, x.UserId }).IsUnique();
+
+            cfg.Property(x => x.BlogId).IsRequired();
+            cfg.Property(x => x.UserId).IsRequired();
+        });
+
+        // Blog -> Collaborators
+        modelBuilder.Entity<Explorer.Blog.Core.Domain.Blog>()
+            .HasMany(b => b.Collaborators)
+            .WithOne()
+            .HasForeignKey(c => c.BlogId)
+            .OnDelete(DeleteBehavior.Cascade);
 
     }
 }

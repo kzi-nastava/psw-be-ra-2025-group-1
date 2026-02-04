@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Explorer.Blog.API.Dtos;
+using Explorer.Blog.Core.Domain;
 
 namespace Explorer.Blog.Core.Mappers;
 
@@ -14,7 +15,10 @@ public class BlogProfile : Profile
             .ForMember(d => d.Votes, opt => opt.MapFrom(s => s.Votes))
             .ForMember(d => d.Comments, opt => opt.MapFrom(s => s.Comments));
 
-        CreateMap<Domain.Comment, CommentDto>().ReverseMap();
-        CreateMap<Domain.Vote, VoteDto>().ReverseMap();
+        CreateMap<Comment, CommentDto>().ReverseMap();
+        CreateMap<Vote, VoteDto>().ReverseMap();
+
+        CreateMap<BlogCollaborator, BlogCollaboratorDto>()
+            .ForMember(d => d.Username, o => o.Ignore());
     }
 }

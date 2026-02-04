@@ -47,6 +47,9 @@ public static class ToursStartup
         services.AddScoped<IRestaurantService, RestaurantService>();
         services.AddScoped<IEncounterAdapter, EncounterAdapter>();
 
+        services.AddScoped<IMapMarkerService, MapMarkerService>();
+        services.AddScoped<ITouristMapMarkerService, TouristMapMarkerService>();
+        
         // Adapter for cross-module tour browsing
         services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourBrowsingInfo, 
             Explorer.Tours.Core.Services.TourBrowsingAdapter>();
@@ -65,7 +68,8 @@ public static class ToursStartup
         services.AddScoped<ITourRatingReactionRepository, TourRatingReactionDbRepository>();
         services.AddScoped<IRestaurantRepository, RestaurantDbRepository>();
         services.AddScoped<IKeypointRepository, KeypointDbRepository>();
-
+        services.AddScoped<IMapMarkerRepository, MapMarkerDbRepository>();
+        services.AddScoped<ITouristMapMarkerRepository,  TouristMapMarkerDbRepository>();
 
         services.AddMemoryCache();
         services.AddHttpClient<IWeatherForecastService, OpenMeteoWeatherForecastService>(client =>

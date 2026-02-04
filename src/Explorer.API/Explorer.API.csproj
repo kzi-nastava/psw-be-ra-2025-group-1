@@ -31,4 +31,9 @@
     <ProjectReference Include="..\Modules\Encounters\Explorer.Encounters.Infrastructure\Explorer.Encounters.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\images\" />
+    <Folder Include="wwwroot\videos\" />
+  </ItemGroup>
+
 </Project>

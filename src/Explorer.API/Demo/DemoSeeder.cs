@@ -4,6 +4,7 @@ using Explorer.Stakeholders.API.Public;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
+using static System.Net.WebRequestMethods;
 
 namespace Explorer.API.Demo
 {
@@ -20,6 +21,12 @@ namespace Explorer.API.Demo
         private readonly Explorer.Payments.API.Public.Author.ISaleService _saleService;
         private readonly IUserManagementService _userManagementService;
         private readonly IWalletService _walletService;
+        private readonly ITouristMapMarkerService _touristMapMarkerService;
+        private readonly IMapMarkerService _mapMarkerService;
+        private readonly IShoppingCartService _shoppingCartService;
+
+        private readonly int predefinedMarkersNumber = 10;
+        private readonly string imageRootUrl = "https://localhost:44333/images/";
 
         public DemoSeeder(
             IAuthenticationService authenticationService, 
@@ -32,7 +39,10 @@ namespace Explorer.API.Demo
             IRestaurantService restaurantService,
             Explorer.Payments.API.Public.Author.ISaleService saleService,
             IUserManagementService userManagementService,
-            IWalletService walletService)
+            IWalletService walletService,
+            ITouristMapMarkerService touristMapMarkerService,
+            IShoppingCartService shoppingCartService,
+            IMapMarkerService mapMarkerService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -45,22 +55,57 @@ namespace Explorer.API.Demo
             _saleService = saleService;
             _userManagementService = userManagementService;
             _walletService = walletService;
+            _touristMapMarkerService = touristMapMarkerService;
+            _shoppingCartService = shoppingCartService;
+            _mapMarkerService = mapMarkerService;
         }
 
         public void Seed()
         {
+            SeedDefaultMarker();
             SeedAdmin();
             SeedTourists();
+            SeedStandaloneMarkers();
             SeedWallets();
             SeedAuthors();
             SeedEquipment();
             SeedFacilities();
             SeedTours();
             SeedUserLocation();
-            SeedKeypoints();
+            SeedShop();
             SeedTourExecution();
             SeedRatings();
             SeedRestaurants();
+        }
+
+        private void SeedStandaloneMarkers()
+        {
+            var markerIds = new List<long>();
+            long tourist1Id = 2;
+            for(int i = 1; i <= predefinedMarkersNumber; i++)
+            {
+                var marker = _mapMarkerService.Create(new MapMarkerDto
+                {
+                    ImageUrl = imageRootUrl + $"marker{i}.png",
+                    IsStandalone = true
+                });
+                markerIds.Add(marker.Id);
+            }
+
+            // Tourist 1 gets a bunch of markers
+            foreach(var markerId in markerIds)
+            {
+                _touristMapMarkerService.Collect(tourist1Id, markerId);
+            }
+        }
+
+        private void SeedDefaultMarker()
+        {
+            var defaultMarkerDto = _mapMarkerService.Create(new MapMarkerDto
+            {
+                ImageUrl = imageRootUrl + "defaultMarker.png",
+                IsStandalone = true,
+            });
         }
 
         private void SeedAdmin()
@@ -243,202 +288,338 @@ namespace Explorer.API.Demo
             _facilityService.Create(facility6);
         }
 
+        // Author 1 (ID = 5):
+        //  - Tour 1: "Šetnja Dorćolom i Gardošom"        → PUBLISHED
+        //  - Tour 2: "Avantura u Ovčarsko-kablarskoj klisuri" → PUBLISHED
+        //  - Tour 3: "Pravoslavne svetinje Šumadije"     → NOT published
+        //
+        // Author 2 (ID = 6):
+        //  - Tour 4: "Kajak avantura na jezeru Perućac"  → PUBLISHED
+        //  - Tour 5: "Zlatibor – Gostilje i Stopića pećina" → PUBLISHED
+        //
+        // Author 3 (ID = 7):
+        //  - Tour 6: "Urbana gastro tura Novog Sada"      → NOT published
         private void SeedTours()
         {
-            // Currently hardcoded - would be less error-prone to fetch authors from PersonService/UserService and then get someone's ID
             long author1Id = 5;
             long author2Id = 6;
             long author3Id = 7;
 
-            // Author1 tours
+            // ================= CREATE TOURS =================
 
-            CreateTourDto t1 = new CreateTourDto()
+            var tour1 = _tourService.Create(new CreateTourDto
             {
                 CreatorId = author1Id,
                 Title = "Šetnja Dorćolom i Gardošom",
-                Description = "Lagano istraživanje starog jezgra Beograda, uključujući Kalemegdan, Donji Dorćol i uspon do Gardoš kule.",
+                Description = "Lagano istraživanje starog jezgra Beograda.",
                 Difficulty = 1,
-                Tags = ["grad", "istorija", "šetnja"],
+                Tags = ["grad", "istorija"],
                 Price = 15
-            };
+            });
 
-            CreateTourDto t2 = new CreateTourDto()
+            var tour2 = _tourService.Create(new CreateTourDto
             {
                 CreatorId = author1Id,
                 Title = "Avantura u Ovčarsko-kablarskoj klisuri",
-                Description = "Umerena planinarska tura kroz jednu od najlepših klisura Srbije, sa pogledom sa Kablara.",
+                Description = "Planinarska tura sa pogledom sa Kablara.",
                 Difficulty = 3,
                 Tags = ["planinarenje", "priroda"],
                 Price = 40
-            };
+            });
 
-            CreateTourDto t3 = new CreateTourDto()
+            var tour3 = _tourService.Create(new CreateTourDto
             {
                 CreatorId = author1Id,
                 Title = "Pravoslavne svetinje Šumadije",
-                Description = "Obilazak znamenitih manastira: Blagoveštenje, Kalenić, Ljubostinja. Idealno za ljubitelje istorije i duhovnosti.",
+                Description = "Obilazak znamenitih manastira.",
                 Difficulty = 2,
-                Tags = ["kultura", "istorija", "verski_turizam"],
+                Tags = ["kultura", "istorija"],
                 Price = 30
-            };
+            });
 
-
-            // Author2 tours
-
-            CreateTourDto t4 = new CreateTourDto()
+            var tour4 = _tourService.Create(new CreateTourDto
             {
                 CreatorId = author2Id,
                 Title = "Kajak avantura na jezeru Perućac",
-                Description = "Opusti se na vodi i istraži skrivena mesta jezera Perućac uz kratku obuku i sigurnosnu opremu.",
+                Description = "Opuštanje i avantura na vodi.",
                 Difficulty = 2,
-                Tags = ["voda", "avantura", "kajak"],
+                Tags = ["voda", "kajak"],
                 Price = 45
-            };
+            });
 
-            CreateTourDto t5 = new CreateTourDto()
+            var tour5 = _tourService.Create(new CreateTourDto
             {
                 CreatorId = author2Id,
                 Title = "Zlatibor – Gostilje i Stopića pećina",
-                Description = "Jednodnevna tura na Zlatiboru koja uključuje prelepe Gostiljske vodopade i obilazak Stopića pećine.",
+                Description = "Jednodnevna prirodna tura.",
                 Difficulty = 1,
-                Tags = ["priroda", "vodopadi", "porodično"],
+                Tags = ["priroda", "vodopadi"],
                 Price = 25
-            };
+            });
 
-            // Author3 tours
-
-            CreateTourDto t6 = new CreateTourDto()
+            var tour6 = _tourService.Create(new CreateTourDto
             {
                 CreatorId = author3Id,
                 Title = "Urbana gastro tura Novog Sada",
-                Description = "Degustacija autentičnih vojvođanskih jela u centru Novog Sada, uz kratku šetnju kroz Zmaj Jovinu.",
+                Description = "Gastro šetnja kroz centar grada.",
                 Difficulty = 1,
-                Tags = ["hrana", "grad", "gastronomija"],
+                Tags = ["hrana", "grad"],
                 Price = 20
-            };
+            });
 
-            _tourService.Create(t1);
-            _tourService.Create(t2);
-            _tourService.Create(t3);
-            _tourService.Create(t4);
-            _tourService.Create(t5);
-            _tourService.Create(t6);
-        }
+            // ================= TOUR 1 =================
 
-        private void SeedKeypoints()
-        {
-            long tour1Id = 1;
-            long tour2Id = 2;
-            long tour5Id = 5;
-            long tour6Id = 6;
+            // ----- Transport times -----
+            _tourService.AddTransportTime(
+                tour1.Id,
+                new TransportTimeDto { Type = TransportTypeDto.Car, Duration = 5 },
+                tour1.CreatorId);
 
-            long author1Id = 5;
-            long author2Id = 6;
-            long author3Id = 7;
+            // ----- Equipment -----
+            _tourService.AddEquipment(tour1.Id, 1, tour1.CreatorId);
+            _tourService.AddEquipment(tour1.Id, 4, tour1.CreatorId);
 
-            // Tour1
-
-            KeypointDto t1_kp1 = new KeypointDto()
+            // ----- Keypoints -----
+            _tourService.AddKeypoint(tour1.Id, new KeypointDto
             {
-                Title = "Kalemegdan – Veliki Gradski Park",
-                Description = "Start ture kroz istorijski deo Beograda.",
-                Secret = "Ovde se nalazio rimski kastrum pre skoro 2.000 godina.",
+                Title = "Kalemegdan",
+                Description = "Start ture.",
+                Secret = "Rimski kastrum.",
                 Latitude = 44.8231,
                 Longitude = 20.4519
-            };
+            }, tour1.CreatorId);
 
-            KeypointDto t1_kp2 = new KeypointDto()
-            {
+            _tourService.AddKeypoint(tour1.Id, new KeypointDto
+            { 
                 Title = "Donji Dorćol – Ulica Cara Dušana",
                 Description = "Obilazak starog jevrejskog i trgovačkog centra Beograda.",
                 Secret = "Nekada je ovde bilo najveće trgovačko jezgro osmanskog Beograda.",
                 Latitude = 44.8179,
                 Longitude = 20.4564
-            };
+            }, tour1.CreatorId);
 
-            KeypointDto t1_kp3 = new KeypointDto()
+            _tourService.AddKeypoint(tour1.Id, new KeypointDto
             {
-                Title = "Gardoš Kula",
-                Description = "Najlepši vidikovac u Zemunu i završetak ture.",
-                Secret = "Kula je izgrađena 1896. godine u čast 1000 godina mađarske države.",
+                Title = "Gardoš kula",
+                Description = "Vidikovac.",
+                Secret = "Izgrađena 1896.",
                 Latitude = 44.8483,
                 Longitude = 20.4056
-            };
+            }, tour1.CreatorId);
 
-            _tourService.AddKeypoint(tour1Id, t1_kp1, author1Id);
-            _tourService.AddKeypoint(tour1Id, t1_kp2, author1Id);
-            _tourService.AddKeypoint(tour1Id, t1_kp3, author1Id);
+            // ----- Map marker -----
+            _tourService.AddMapMarker(
+                tour1.Id,
+                new MapMarkerDto
+                {
+                    ImageUrl = imageRootUrl + "markerTour1.png"
+                },
+                tour1.CreatorId);
 
-            // Tour2
+            // Publish
+            _tourService.Publish(tour1.Id);
 
-            KeypointDto t2_kp1 = new KeypointDto()
+            // ================= TOUR 2 =================
+
+            // ----- Transport times -----
+            _tourService.AddTransportTime(
+                tour2.Id,
+                new TransportTimeDto { Type = TransportTypeDto.Foot, Duration = 180 },
+                tour2.CreatorId);
+
+            // ----- Equipment -----
+            _tourService.AddEquipment(tour2.Id, 1, tour2.CreatorId);
+            _tourService.AddEquipment(tour2.Id, 5, tour2.CreatorId);
+            _tourService.AddEquipment(tour2.Id, 4, tour2.CreatorId);
+
+            // ----- Keypoints -----
+            _tourService.AddKeypoint(tour2.Id, new KeypointDto
             {
-                Title = "Pogled sa vrha Kablara",
-                Description = "Spektakularan pogled na meandre Zapadne Morave.",
-                Secret = "Ovaj pogled je među najfotografisanijim prirodnim pejzažima u Srbiji.",
+                Title = "Kablar – vidikovac",
+                Description = "Pogled na meandre.",
+                Secret = "Fotografisano mesto.",
                 Latitude = 43.8992,
                 Longitude = 20.2150
-            };
+            }, tour2.CreatorId);
 
-            KeypointDto t2_kp2 = new KeypointDto()
+            _tourService.AddKeypoint(tour2.Id, new KeypointDto
             {
                 Title = "Manastir Nikolje",
-                Description = "Jedan od duhovnih centara poznate Svete Gore srpske.",
-                Secret = "Manastir je podignut u 15. veku, ali je nekoliko puta rušen i obnavljan.",
+                Description = "Duhovni centar.",
+                Secret = "15. vek.",
                 Latitude = 43.8940,
                 Longitude = 20.2040
-            };
+            }, tour2.CreatorId);
 
-            _tourService.AddKeypoint(tour2Id, t2_kp1, author1Id);
-            _tourService.AddKeypoint(tour2Id, t2_kp2, author1Id);
+            // ----- Map marker -----
+            _tourService.AddMapMarker(
+                tour2.Id,
+                new MapMarkerDto
+                {
+                    ImageUrl = imageRootUrl + "markerTour2.png"
+                },
+                tour2.CreatorId);
 
-            // Tour5
+            _tourService.Publish(tour2.Id);
 
-            KeypointDto t5_kp1 = new KeypointDto()
+            // ================= TOUR 3 =================
+
+            // ----- Transport times -----
+            _tourService.AddTransportTime(
+                tour3.Id,
+                new TransportTimeDto { Type = TransportTypeDto.Car, Duration = 30 },
+                tour3.CreatorId);
+
+            // ----- Equipment -----
+            _tourService.AddEquipment(tour3.Id, 2, tour3.CreatorId);
+
+            // ----- Keypoints -----
+            _tourService.AddKeypoint(tour3.Id, new KeypointDto
+            {
+                Title = "Manastir Blagoveštenje",
+                Description = "Istorijska svetinja.",
+                Secret = "Više puta obnavljan.",
+                Latitude = 43.897,
+                Longitude = 20.209
+            }, tour3.CreatorId);
+
+            _tourService.AddKeypoint(tour3.Id, new KeypointDto
+            {
+                Title = "Manastir Ljubostinja",
+                Description = "Zadužbina kneginje Milice.",
+                Secret = "14. vek.",
+                Latitude = 43.637,
+                Longitude = 21.003
+            }, tour3.CreatorId);
+
+            // not published
+
+            // ================= TOUR 4 =================
+
+            // ----- Transport times -----
+            _tourService.AddTransportTime(
+                tour4.Id,
+                new TransportTimeDto { Type = TransportTypeDto.Bike, Duration = 45 },
+                tour4.CreatorId);
+
+            // ----- Equipment -----
+            _tourService.AddEquipment(tour4.Id, 3, tour4.CreatorId);
+            _tourService.AddEquipment(tour4.Id, 4, tour4.CreatorId);
+
+            // ----- Keypoints -----
+            _tourService.AddKeypoint(tour4.Id, new KeypointDto
+            {
+                Title = "Jezero Perućac",
+                Description = "Početna tačka.",
+                Secret = "Veštačko jezero.",
+                Latitude = 43.952,
+                Longitude = 19.522
+            }, tour4.CreatorId);
+
+            _tourService.AddKeypoint(tour4.Id, new KeypointDto
+            {
+                Title = "Uvala",
+                Description = "Mirno mesto.",
+                Secret = "Idealno za kajak.",
+                Latitude = 43.948,
+                Longitude = 19.515
+            }, tour4.CreatorId);
+
+            // ----- Map marker -----
+            _tourService.AddMapMarker(
+                tour4.Id,
+                new MapMarkerDto
+                {
+                    ImageUrl = imageRootUrl + "markerTour4.png"
+                },
+                tour4.CreatorId);
+
+            _tourService.Publish(tour4.Id);
+
+            // ================= TOUR 5 =================
+
+            // ----- Transport times -----
+            _tourService.AddTransportTime(
+                tour5.Id,
+                new TransportTimeDto { Type = TransportTypeDto.Car, Duration = 25 },
+                tour5.CreatorId);
+
+            // ----- Equipment -----
+            _tourService.AddEquipment(tour5.Id, 5, tour5.CreatorId);
+
+            // ----- Keypoints -----
+            _tourService.AddKeypoint(tour5.Id, new KeypointDto
             {
                 Title = "Gostiljski vodopadi",
-                Description = "Prelepi vodopadi visine 22m.",
-                Secret = "Malo ljudi zna da se vodopadi nalaze na privatnom zemljištu, ali su otvoreni za javnost.",
+                Description = "Vodopadi.",
+                Secret = "22m visine.",
                 Latitude = 43.6582,
                 Longitude = 19.9391
-            };
+            }, tour5.CreatorId);
 
-            KeypointDto t5_kp2 = new KeypointDto()
+            _tourService.AddKeypoint(tour5.Id, new KeypointDto
             {
-                Title = "Stopića pećina – Ulaz",
-                Description = "Poznata po bigrenim kadama i visokom svodu.",
-                Secret = "Pećina je dugačka oko 1.600 m, ali je turistima dostupno svega 330 m.",
+                Title = "Stopića pećina",
+                Description = "Bigrene kade.",
+                Secret = "330m otvoreno.",
                 Latitude = 43.6387,
                 Longitude = 19.9415
-            };
+            }, tour5.CreatorId);
 
-            KeypointDto t5_kp3 = new KeypointDto()
+            // ----- Map marker -----
+            _tourService.AddMapMarker(
+                tour5.Id,
+                new MapMarkerDto
+                {
+                    ImageUrl = imageRootUrl + "markerTour5.png"
+                },
+                tour5.CreatorId);
+
+            _tourService.Publish(tour5.Id);
+
+            // ================= TOUR 6 =================
+
+            // ----- Transport times -----
+            _tourService.AddTransportTime(
+                tour6.Id,
+                new TransportTimeDto { Type = TransportTypeDto.Foot, Duration = 60 },
+                tour6.CreatorId);
+
+            // ----- Equipment -----
+            _tourService.AddEquipment(tour6.Id, 2, tour6.CreatorId);
+
+            // ----- Keypoints -----
+            _tourService.AddKeypoint(tour6.Id, new KeypointDto
             {
-                Title = "Selo Sirogojno",
-                Description = "Etno–selo i muzej na otvorenom.",
-                Secret = "Sirogojno džemperi se ručno pletu još od 19. veka.",
-                Latitude = 43.6309,
-                Longitude = 19.8860
-            };
-
-            _tourService.AddKeypoint(tour5Id, t5_kp1, author2Id);
-            _tourService.AddKeypoint(tour5Id, t5_kp2, author2Id);
-            _tourService.AddKeypoint(tour5Id, t5_kp3, author2Id);
-
-            // Tour6
-
-            KeypointDto t6_kp1 = new KeypointDto()
-            {
-                Title = "Zmaj Jovina Ulica",
-                Description = "Glavna pešačka zona sa restoranima i starim lokalima.",
-                Secret = "Pod ulicom se nalaze ostaci rimskog naselja Cusum.",
+                Title = "Zmaj Jovina",
+                Description = "Pešačka zona.",
+                Secret = "Rimski ostaci.",
                 Latitude = 45.2540,
                 Longitude = 19.8451
-            };
+            }, tour6.CreatorId);
 
-            _tourService.AddKeypoint(tour6Id, t6_kp1, author3Id);
+            _tourService.AddKeypoint(tour6.Id, new KeypointDto
+            {
+                Title = "Dunavski park",
+                Description = "Zeleni deo grada.",
+                Secret = "Nekada močvara.",
+                Latitude = 45.2555,
+                Longitude = 19.8480
+            }, tour6.CreatorId);
+
+            // not published
         }
 
+        // Tourist 1 bought tour 1
+        private void SeedShop()
+        {
+            long tourist1Id = 2;
+            long tour1Id = 1;
+
+            _shoppingCartService.AddToCart(tourist1Id, tour1Id);
+            _shoppingCartService.Checkout(tourist1Id);
+        }
+  
         private void SeedUserLocation()
         {
             for (int i = 2; i <= 4; i++)
@@ -456,56 +637,55 @@ namespace Explorer.API.Demo
         {
             long tour1Id = 1;
             long tour5Id = 5;
-            long tourist2Id = 2;
-            long tourist3Id = 3;
-            long tourist4Id = 4;
-            long author1Id = 5;
-            long author2Id = 6;
+            long tourist1Id = 2;
+            long tourist2Id = 3;
+            //long tourist4Id = 4;
+            //long author1Id = 5;
+            //long author2Id = 6;
 
-            // Add transport time 
-            TransportTimeDto tt = new TransportTimeDto()
-            {
-                Type = TransportTypeDto.Car,
-                Duration = 5
-            };
+            //// Add transport time 
+            //TransportTimeDto tt = new TransportTimeDto()
+            //{
+            //    Type = TransportTypeDto.Car,
+            //    Duration = 5
+            //};
 
-            _tourService.AddTransportTime(tour1Id, tt, author1Id);
-            _tourService.Publish(tour1Id);
+            //_tourService.AddTransportTime(tour1Id, tt, author1Id);
+            //_tourService.Publish(tour1Id);
 
             // Tourist 2 - Execution 1 (In Progress)
-            TourExecutionDto tourExecution1 = new TourExecutionDto()
+            var startTourDto = new StartTourDto()
             {
-                TouristId = tourist2Id,
                 TourId = tour1Id,
-                Status = TourExecutionStatusDto.InProgress,
-                StartTime = DateTime.UtcNow.AddHours(-2),
-                EndTime = null,
-                LastActivity = DateTime.UtcNow.AddMinutes(-15),
-                PercentageCompleted = 33.33
+                InitialLatitude = 0,
+                InitialLongitude = 0,
             };
-            _tourExecutionService.Create(tourExecution1);
 
-            _tourService.AddTransportTime(tour5Id, tt, author2Id);
-            _tourService.Publish(tour5Id);
+            
+            var execution = _tourExecutionService.StartTour(tourist1Id, startTourDto);
+            
+
+            //_tourService.AddTransportTime(tour5Id, tt, author2Id);
+            //_tourService.Publish(tour5Id);
 
             // Tourist 2 
-            TourExecutionDto tourExecution2 = new TourExecutionDto()
-            {
-                TouristId = tourist2Id,
-                TourId = tour5Id,
-                Status = TourExecutionStatusDto.InProgress,
-                StartTime = DateTime.UtcNow.AddHours(-5),
-                EndTime = DateTime.UtcNow.AddHours(-2),
-                LastActivity = DateTime.UtcNow.AddHours(-2),
-                PercentageCompleted = 100.0
-            };
-            var execution2 = _tourExecutionService.Create(tourExecution2);
-            _tourExecutionService.CompleteTour(tourist2Id, execution2.Id);
+            //TourExecutionDto tourExecution2 = new TourExecutionDto()
+            //{
+            //    TouristId = tourist2Id,
+            //    TourId = tour5Id,
+            //    Status = TourExecutionStatusDto.InProgress,
+            //    StartTime = DateTime.UtcNow.AddHours(-5),
+            //    EndTime = DateTime.UtcNow.AddHours(-2),
+            //    LastActivity = DateTime.UtcNow.AddHours(-2),
+            //    PercentageCompleted = 100.0
+            //};
+            //var execution2 = _tourExecutionService.Create(tourExecution2);
+            //_tourExecutionService.CompleteTour(tourist2Id, execution2.Id);
 
-            // Tourist 3 
+            //// Tourist 3 
             TourExecutionDto tourExecution3 = new TourExecutionDto()
             {
-                TouristId = tourist3Id,
+                TouristId = tourist2Id,
                 TourId = tour5Id,
                 Status = TourExecutionStatusDto.InProgress,
                 StartTime = DateTime.UtcNow.AddHours(-3),
@@ -514,52 +694,52 @@ namespace Explorer.API.Demo
                 PercentageCompleted = 66.67
             };
             var execution3 = _tourExecutionService.Create(tourExecution3);
-            _tourExecutionService.CompleteTour(tourist3Id, execution3.Id);
+            _tourExecutionService.CompleteTour(tourist2Id, execution3.Id);
 
             // Tourist 4 
-            TourExecutionDto tourExecution4 = new TourExecutionDto()
-            {
-                TouristId = tourist4Id,
-                TourId = tour5Id,
-                Status = TourExecutionStatusDto.InProgress,
-                StartTime = DateTime.UtcNow.AddDays(-1),
-                EndTime = DateTime.UtcNow.AddHours(-6),
-                LastActivity = DateTime.UtcNow.AddHours(-6),
-                PercentageCompleted = 100.0
-            };
-            var execution4 = _tourExecutionService.Create(tourExecution4);
-            _tourExecutionService.CompleteTour(tourist4Id, execution4.Id);
+            //TourExecutionDto tourExecution4 = new TourExecutionDto()
+            //{
+            //    TouristId = tourist4Id,
+            //    TourId = tour5Id,
+            //    Status = TourExecutionStatusDto.InProgress,
+            //    StartTime = DateTime.UtcNow.AddDays(-1),
+            //    EndTime = DateTime.UtcNow.AddHours(-6),
+            //    LastActivity = DateTime.UtcNow.AddHours(-6),
+            //    PercentageCompleted = 100.0
+            //};
+            //var execution4 = _tourExecutionService.Create(tourExecution4);
+            //_tourExecutionService.CompleteTour(tourist4Id, execution4.Id);
         }
 
         private void SeedRatings()
         {
             long tour5Id = 5;
-            long tourist3Id = 3;
-            long tourist4Id = 4;
+            long tourist2Id = 3;
+            //long tourist4Id = 4;
 
-            var execution1 = _tourExecutionService.GetTouristHistory(tourist3Id).FirstOrDefault(e => e.TourId == tour5Id);
-            var execution2 = _tourExecutionService.GetTouristHistory(tourist4Id).FirstOrDefault(e => e.TourId == tour5Id);
+            var execution1 = _tourExecutionService.GetTouristHistory(tourist2Id).FirstOrDefault(e => e.TourId == tour5Id);
+            //var execution2 = _tourExecutionService.GetTouristHistory(tourist4Id).FirstOrDefault(e => e.TourId == tour5Id);
 
             TourRatingDto rating1 = new TourRatingDto()
             {
-                UserId = tourist3Id,
+                UserId = tourist2Id,
                 TourExecutionId = execution1.Id, 
                 Stars = 5,
                 Comment = "Super! Sve preporuke.",
                 CompletedProcentage = 100.0
             };
 
-            TourRatingDto rating2 = new TourRatingDto()
-            {
-                UserId = tourist4Id,
-                TourExecutionId = execution2.Id,
-                Stars = 4,
-                Comment = "Lepa tura, ali može bolje organizaciono.",
-                CompletedProcentage = 100.0
-            };
+            //TourRatingDto rating2 = new TourRatingDto()
+            //{
+            //    UserId = tourist4Id,
+            //    TourExecutionId = execution2.Id,
+            //    Stars = 4,
+            //    Comment = "Lepa tura, ali može bolje organizaciono.",
+            //    CompletedProcentage = 100.0
+            //};
 
             _tourRatingService.Create(rating1);
-            _tourRatingService.Create(rating2);
+            //_tourRatingService.Create(rating2);
         }
 
         private void SeedRestaurants()
