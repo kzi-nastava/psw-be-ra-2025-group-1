@@ -41,7 +41,12 @@ public static class ToursStartup
         services.AddScoped<ITourRatingService, TourRatingService>();
         services.AddScoped<ITourRatingReactionService, TourRatingReactionService>();
         services.AddScoped<IRestaurantService, RestaurantService>();
+
+
+        // adapters
         services.AddScoped<IEncounterAdapter, EncounterAdapter>();
+        services.AddScoped<ITouristStatsAdapter, TouristStatsAdapter>();
+        services.AddScoped<IUserAdapter, UserAdapter>();
 
         // Adapter for cross-module tour browsing
         services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourBrowsingInfo, 

@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
-using Explorer.Encounters.Core.Domain.RepositoryInterfaces;
-using Explorer.Stakeholders.Core.Domain;
-using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
+using Explorer.Tours.Core.Adapters;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using System.Linq;
@@ -17,23 +15,25 @@ namespace Explorer.Tours.Core.UseCases
         private readonly ITourRatingRepository _tourRatingRepository;
         private readonly ITourExecutionRepository _tourExecutionRepository;
         private readonly ITourRatingReactionRepository _tourReactionRepository;
-        private readonly ITouristStatsRepository _touristStatsRepository;
-        private readonly IUserRepository _userRepository;
+
+        private readonly ITouristStatsAdapter _touristStatsAdapter;
+        private readonly IUserAdapter _userAdapter;
+
         private readonly IMapper _mapper;
 
         public TourRatingService(
             ITourRatingRepository tourRatingRepository,
             ITourExecutionRepository tourExecutionRepository,
             ITourRatingReactionRepository tourReactionRepository,
-            ITouristStatsRepository touristStatsRepository,
-            IUserRepository userRepository,
+            ITouristStatsAdapter touristStatsAdapter,
+            IUserAdapter userAdapter,
             IMapper mapper)
         {
             _tourRatingRepository = tourRatingRepository;
             _tourExecutionRepository = tourExecutionRepository;
             _tourReactionRepository = tourReactionRepository;
-            _touristStatsRepository = touristStatsRepository;
-            _userRepository = userRepository;
+            _touristStatsAdapter = touristStatsAdapter;
+            _userAdapter = userAdapter;
             _mapper = mapper;
         }
 
@@ -105,7 +105,7 @@ namespace Explorer.Tours.Core.UseCases
             var result = _tourRatingRepository.Create(_mapper.Map<TourRating>(rating));
 
             // Update tourist stats
-            _touristStatsRepository.AddRating(rating.UserId);
+            _touristStatsAdapter.AddRating(rating.UserId);
 
             return _mapper.Map<TourRatingDto>(result);
         }
@@ -147,7 +147,7 @@ namespace Explorer.Tours.Core.UseCases
 
             _tourRatingRepository.Delete(id);
 
-            _touristStatsRepository.RemoveRating(userId);
+            _touristStatsAdapter.RemoveRating(userId);
         }
 
         private void ApplyExtraInfo(
@@ -160,10 +160,10 @@ namespace Explorer.Tours.Core.UseCases
                     _tourReactionRepository.Exists(rating.Id, currentUserId);
 
                 rating.IsLocalGuide =
-                    _touristStatsRepository.GetByTourist(rating.UserId).IsLocalGuide;
+                    _touristStatsAdapter.IsLocalGuide(rating.UserId);
 
                 rating.Username = 
-                    _userRepository.Get(rating.UserId).Username;
+                    _userAdapter.GetUserById(rating.UserId).Username;
             }
         }
 

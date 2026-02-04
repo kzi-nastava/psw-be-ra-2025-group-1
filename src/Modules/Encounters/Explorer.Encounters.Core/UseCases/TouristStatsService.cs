@@ -41,5 +41,31 @@ namespace Explorer.Encounters.Core.UseCases
         {
             return _mapper.Map<TouristStatsDto>(_repository.Create(touristId));
         }
+
+        public void AddThumbsUp(long touristId)
+        {
+            _repository.AddThumbsUp(touristId);
+        }
+
+        public void RemoveThumbsUp(long touristId)
+        {
+            _repository.RemoveThumbsUp(touristId);
+        }
+
+        public bool IsLocalGuide(long touristId)
+        {
+            var stats = _repository.GetByTourist(touristId);
+            if (stats == null) return false;
+            return stats.IsLocalGuide;
+        }
+
+        public void AddRating(long touristId)
+        {
+            _repository.AddRating(touristId);
+        }
+        public void RemoveRating(long touristId)
+        {
+            _repository.RemoveRating(touristId);
+        }
     }
 }
