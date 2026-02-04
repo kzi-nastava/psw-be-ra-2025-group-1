@@ -77,7 +77,7 @@ public static class StakeholdersStartup
             options.ServerName = "Explorer";
             options.Origins = new HashSet<string>
             {
-                Environment.GetEnvironmentVariable("FIDO2_ORIGIN") ?? "https://localhost:4200"
+                Environment.GetEnvironmentVariable("FIDO2_ORIGIN") ?? "http://localhost:4200"
             };
         });
     }
