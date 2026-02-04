@@ -43,7 +43,7 @@ namespace Explorer.Tours.Core.UseCases
             var rating = _tourRatingRepository.Get(id);
             var dto = _mapper.Map<TourRatingDto>(rating);
 
-            ApplyExtraInfo((IEnumerable<TourRatingDto>)dto, userId);
+            ApplyExtraInfo(dto, userId);
 
             return dto;
         }
@@ -149,6 +149,12 @@ namespace Explorer.Tours.Core.UseCases
 
             _touristStatsAdapter.RemoveRating(userId);
         }
+
+        private void ApplyExtraInfo(TourRatingDto rating, long currentUserId)
+        {
+            ApplyExtraInfo(new[] { rating }, currentUserId);
+        }
+
 
         private void ApplyExtraInfo(
             IEnumerable<TourRatingDto> ratings,
