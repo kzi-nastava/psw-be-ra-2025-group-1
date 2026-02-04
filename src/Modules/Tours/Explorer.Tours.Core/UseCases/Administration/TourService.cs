@@ -184,7 +184,7 @@ public class TourService : ITourService
         var updatedTour = _tourRepository.Update(tour);
         
         // Get the fresh keypoint with the assigned ID from the db
-        var savedKeypoint = updatedTour.Keypoints.FirstOrDefault(k => k.EncounterId == encounterId);
+        var savedKeypoint = updatedTour.Keypoints.FirstOrDefault(k => k.Id == keypoint.Id);
         
         // and now FINALLY update the encounter with the keypoint ID (after keypoint.Id is assigned)
         if (encounterId.HasValue && savedKeypoint != null)
