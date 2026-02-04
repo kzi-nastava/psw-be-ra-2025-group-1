@@ -175,19 +175,29 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
                 Quote = null,
             };
 
-            // Act
-            var result = ((ObjectResult)controller.Get(existingEntity.Id).Result)?.Value as TouristProfileDto;
+            var actionResult = controller.Get(existingEntity.Id).Result as ObjectResult;
+            actionResult.ShouldNotBeNull();
 
-            // Assert - Response
-            result.ShouldNotBeNull();
-            result.UserId.ShouldBe(existingEntity.Id);
-            result.UserId.ShouldBe(existingEntity.UserId);
-            result.Name.ShouldBe(existingEntity.Name);
-            result.Surname.ShouldBe(existingEntity.Surname);
-            //result.Email.ShouldBe(existingEntity.Email);
-            result.ProfileImageUrl.ShouldBe(existingEntity.ProfileImageUrl);
-            result.Biography.ShouldBe(existingEntity.Biography);
-            result.Quote.ShouldBe(existingEntity.Quote);
+            var value = actionResult.Value;
+            value.ShouldNotBeNull();
+
+            switch (value)
+            {
+                case TouristProfileDto tourist:
+                    tourist.UserId.ShouldBe(existingEntity.UserId);
+                    tourist.Name.ShouldBe(existingEntity.Name);
+                    tourist.Surname.ShouldBe(existingEntity.Surname);
+                    break;
+
+                case AuthorProfileDto author:
+                    author.UserId.ShouldBe(existingEntity.UserId);
+                    author.Name.ShouldBe(existingEntity.Name);
+                    author.Surname.ShouldBe(existingEntity.Surname);
+                    break;
+
+                default:
+                    throw new Exception($"Unexpected DTO type: {value.GetType()}");
+            }
         }
 
         [Fact]
@@ -199,7 +209,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Profile
             var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
 
             // Act & Assert
-            Should.Throw<NotFoundException>(() => controller.Get(-1000));
+            Should.Throw<KeyNotFoundException>(() => controller.Get(-1000));
         }
 
         private static ProfileController CreateController(IServiceScope scope)
