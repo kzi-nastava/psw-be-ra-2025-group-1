@@ -12,6 +12,7 @@ public class Encounter : AggregateRoot
     public double Longitude { get; private set; }
     public double Latitude { get; private set; }
     public int Xp { get; private set; }
+    public bool Approved { get; private set; }
     public EncounterStatus Status { get; private set; }
     public EncounterType Type { get; private set; }
     public int? RequiredPeopleCount { get; private set; }
@@ -28,7 +29,7 @@ public class Encounter : AggregateRoot
         Requirements = new List<string>();
         Hints = new List<string>();
     }
-    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, long? keypointId = null, double? hidlong = null, double? hidlang = null) : this()
+    public Encounter(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> reqs, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, long? keypointId = null, double? hidlong = null, double? hidlang = null, bool approved = false) : this()
     {
         Title = title;
         Description = description;
@@ -45,6 +46,7 @@ public class Encounter : AggregateRoot
         HiddenLongitude = hidlong;
         HiddenLatitude = hidlang;
         KeypointId = keypointId;
+        Approved = approved;
 
         Validate();
     }
@@ -77,6 +79,13 @@ public class Encounter : AggregateRoot
         if (Status == EncounterStatus.Archived)
             throw new InvalidOperationException("Encounter is already archived.");
         Status = EncounterStatus.Archived;
+    }
+
+    public void Approve()
+    {
+        if (Approved)
+            throw new InvalidOperationException("Encounter is already approved.");
+        Approved = true;
     }
 
     public void Update(string title, string description, double longitude, double latitude, int xp, EncounterType type, List<string> requirements, int? requiredPeopleCount = null, double? range = null, string? imgPath = null, List<string>? hints = null, double? hidloc = null, double? hidlang = null)

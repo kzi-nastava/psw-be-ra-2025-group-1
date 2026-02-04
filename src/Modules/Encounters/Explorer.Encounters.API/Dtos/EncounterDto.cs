@@ -8,6 +8,7 @@ public class EncounterDto
     public double Longitude { get; set; }
     public double Latitude { get; set; }
     public int Xp { get; set; }
+    public bool Approved { get; set; }
     public string Status { get; set; } = "";
     public string Type { get; set; } = "";
     public int? RequiredPeopleCount { get; set; }

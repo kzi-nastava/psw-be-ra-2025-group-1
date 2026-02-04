@@ -11,6 +11,7 @@ public interface IEncounterService
     EncounterDto Update(long id, EncounterCreateDto dto);
     void Publish(long id);
     void Archive(long id);
+    void Approve(long id);
     void Delete(long id);
     
     // Tourist activation and location tracking
