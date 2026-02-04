@@ -51,6 +51,7 @@ public class LocalPlaceController : ControllerBase
         // Auto-set IsLocalPlace to true for authors
         facility.IsLocalPlace = true;
         facility.CreatorId = authorId;
+        facility.Role = UserRole.Author;
         
         return Ok(_facilityService.Create(facility));
     }

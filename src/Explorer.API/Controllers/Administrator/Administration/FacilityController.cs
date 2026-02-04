@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
@@ -30,6 +31,14 @@ public class FacilityController : ControllerBase
     public ActionResult<List<FacilityDto>> GetAllFacilities()
     {
         return Ok(_facilityService.GetAll());
+    }
+
+    [HttpGet("available")]
+    [Authorize]
+    public ActionResult<List<FacilityDto>> GetAvailable()
+    {
+        long authorId = User.UserId();
+        return Ok(_facilityService.GetAvailable(authorId));
     }
 
     [HttpGet("{id:long}")]
