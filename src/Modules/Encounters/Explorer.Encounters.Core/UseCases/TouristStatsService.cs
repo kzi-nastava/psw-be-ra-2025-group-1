@@ -24,14 +24,48 @@ namespace Explorer.Encounters.Core.UseCases
 
         public TouristStatsDto Update(TouristStatsDto statsDto)
         {
-            var stats = _mapper.Map<TouristStats>(statsDto);
-            var updatedStats = _repository.Update(stats);
+            var original = _repository.GetByTourist(statsDto.TouristId);
+
+            if (original == null)
+                throw new Exception($"TouristStats not found for tourist {statsDto.TouristId}");
+
+            // Map DTO → EXISTING entity
+            _mapper.Map(statsDto, original);
+
+            var updatedStats = _repository.Update(original);
             return _mapper.Map<TouristStatsDto>(updatedStats);
         }
+
 
         public TouristStatsDto Create(long touristId)
         {
             return _mapper.Map<TouristStatsDto>(_repository.Create(touristId));
+        }
+
+        public void AddThumbsUp(long touristId)
+        {
+            _repository.AddThumbsUp(touristId);
+        }
+
+        public void RemoveThumbsUp(long touristId)
+        {
+            _repository.RemoveThumbsUp(touristId);
+        }
+
+        public bool IsLocalGuide(long touristId)
+        {
+            var stats = _repository.GetByTourist(touristId);
+            if (stats == null) return false;
+            return stats.IsLocalGuide;
+        }
+
+        public void AddRating(long touristId)
+        {
+            _repository.AddRating(touristId);
+        }
+        public void RemoveRating(long touristId)
+        {
+            _repository.RemoveRating(touristId);
         }
     }
 }

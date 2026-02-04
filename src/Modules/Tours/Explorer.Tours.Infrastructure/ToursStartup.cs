@@ -45,7 +45,12 @@ public static class ToursStartup
         services.AddScoped<ITourRatingService, TourRatingService>();
         services.AddScoped<ITourRatingReactionService, TourRatingReactionService>();
         services.AddScoped<IRestaurantService, RestaurantService>();
+
+
+        // adapters
         services.AddScoped<IEncounterAdapter, EncounterAdapter>();
+        services.AddScoped<ITouristStatsAdapter, TouristStatsAdapter>();
+        services.AddScoped<IUserAdapter, UserAdapter>();
 
         services.AddScoped<IMapMarkerService, MapMarkerService>();
         services.AddScoped<ITouristMapMarkerService, TouristMapMarkerService>();

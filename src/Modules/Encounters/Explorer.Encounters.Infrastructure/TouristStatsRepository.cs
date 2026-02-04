@@ -49,5 +49,73 @@ namespace Explorer.Encounters.Infrastructure
             return _context.TouristStats.FirstOrDefault(ts => ts.TouristId == touristId)
                 ?? Create(touristId);
         }
+
+        public TouristStats AddThumbsUp(long touristId)
+        {
+            TouristStats stats;
+            try
+            {
+                stats = GetByTourist(touristId);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new KeyNotFoundException($"Cannot add ThumbsUp. Tourist ID {touristId} does not exist.");
+            }
+            stats.AddThumbsUpReceived();
+            _context.TouristStats.Update(stats);
+            _context.SaveChanges();
+            return stats;
+        }
+
+        public TouristStats RemoveThumbsUp(long touristId)
+        {
+            TouristStats stats;
+            try
+            {
+                stats = GetByTourist(touristId);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new KeyNotFoundException($"Cannot remove ThumbsUp. Tourist ID {touristId} does not exist.");
+            }
+            stats.RemoveThumbsUpReceived();
+            _context.TouristStats.Update(stats);
+            _context.SaveChanges();
+            return stats;
+        }
+
+        public TouristStats AddRating(long touristId)
+        {
+            TouristStats stats;
+            try
+            {
+                stats = GetByTourist(touristId);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new KeyNotFoundException($"Cannot add Rating. Tourist ID {touristId} does not exist.");
+            }
+            stats.AddRatingGiven();
+            _context.TouristStats.Update(stats);
+            _context.SaveChanges();
+            return stats;
+        }
+
+        public TouristStats RemoveRating(long touristId)
+        {
+            TouristStats stats;
+            try
+            {
+                stats = GetByTourist(touristId);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new KeyNotFoundException($"Cannot remove Rating. Tourist ID {touristId} does not exist.");
+            }
+            stats.RemoveRatingGiven();
+            _context.TouristStats.Update(stats);
+            _context.SaveChanges();
+            return stats;
+        }
     }
 }

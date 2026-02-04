@@ -77,7 +77,6 @@ namespace Explorer.Stakeholders.Core.UseCases
         {
             var user = _userRepository.Get(id);
             var person = _personRepository.GetByUserId(user.Id);
-
             AccountDto account = new AccountDto
             {
                 Id = user.Id,
@@ -88,9 +87,7 @@ namespace Explorer.Stakeholders.Core.UseCases
                 Role = (AccountRole)user.Role,
                 IsActive = user.IsActive
             };
-
             return account;
         }
-
     }
 }
