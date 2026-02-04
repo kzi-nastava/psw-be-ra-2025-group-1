@@ -19,28 +19,28 @@ public class FacilityController : ControllerBase
 
     
     [HttpGet]
-    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    [Authorize]
     public ActionResult<PagedResult<FacilityDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
     {
         return Ok(_facilityService.GetPaged(page, pageSize));
     }
 
     [HttpGet("all")]
-    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    [Authorize]
     public ActionResult<List<FacilityDto>> GetAllFacilities()
     {
         return Ok(_facilityService.GetAll());
     }
 
     [HttpGet("{id:long}")]
-    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    [Authorize]
     public ActionResult<FacilityDto> GetById(long id)
     {
         return Ok(_facilityService.GetById(id));
     }
 
     [HttpGet("category/{category}")]
-    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    [Authorize]
     public ActionResult<List<FacilityDto>> GetByCategory(FacilityCategory category)
     {
         return Ok(_facilityService.GetByCategory(category));
