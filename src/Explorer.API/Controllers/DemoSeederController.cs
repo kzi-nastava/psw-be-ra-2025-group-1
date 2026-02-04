@@ -26,6 +26,9 @@ namespace Explorer.API.Controllers
             Explorer.Payments.API.Public.Author.ISaleService saleService,
             IUserManagementService userManagementService,
             IWalletService walletService,
+            ITouristMapMarkerService touristMapMarkerService,
+            IShoppingCartService shoppingCartService,
+            IMapMarkerService mapMarkerService,
             ITouristStatsService touristStatsService)
         {
             _demoSeeder = new DemoSeeder(
@@ -40,6 +43,9 @@ namespace Explorer.API.Controllers
                 saleService,
                 userManagementService,
                 walletService,
+                touristMapMarkerService,
+                shoppingCartService,
+                mapMarkerService,
                 touristStatsService);
         }
 
