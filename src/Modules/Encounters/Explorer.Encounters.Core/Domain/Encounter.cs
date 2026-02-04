@@ -71,6 +71,8 @@ public class Encounter : AggregateRoot
     {
         if (Status != EncounterStatus.Draft)
             throw new InvalidOperationException("Only draft encounters can be published.");
+        if (!Approved)
+            throw new InvalidOperationException("Can only publish approved encounters.");
         Status = EncounterStatus.Active;
     }
 
