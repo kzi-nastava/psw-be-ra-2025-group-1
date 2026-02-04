@@ -24,7 +24,7 @@ public class MonumentCommandTests : BaseToursIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         var newEntity = new CreateMonumentDto
         {
-            Name = "TestMonument",
+            Name = "TestMonument" + Guid.NewGuid().ToString().Substring(0, 8),
             Description = "TestDescription",
             Longitude = 20.5,
             Latitude = 44.8
@@ -179,16 +179,26 @@ public class MonumentCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        
+        // First create a monument to delete
+        var monumentToDelete = new CreateMonumentDto
+        {
+            Name = "Monument to Delete " + Guid.NewGuid().ToString().Substring(0, 8),
+            Description = "This will be deleted",
+            Longitude = 20.5,
+            Latitude = 44.8
+        };
+        var created = ((ObjectResult)controller.Create(monumentToDelete).Result)?.Value as MonumentDto;
 
         // Act
-        var result = (OkResult)controller.Delete(-3);
+        var result = (OkResult)controller.Delete(created.Id);
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedEntity = dbContext.Monuments.FirstOrDefault(i => i.Id == -3);
+        var storedEntity = dbContext.Monuments.FirstOrDefault(i => i.Id == created.Id);
         storedEntity.ShouldBeNull();
     }
 

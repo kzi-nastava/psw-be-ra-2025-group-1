@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Explorer.ProjectAutopsy.Core.Domain;
 using Explorer.ProjectAutopsy.Core.Services;
 
 namespace Explorer.ProjectAutopsy.Infrastructure.ExternalClients;

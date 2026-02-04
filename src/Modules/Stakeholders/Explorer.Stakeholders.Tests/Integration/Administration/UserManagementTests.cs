@@ -9,13 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Explorer.Stakeholders.Tests.Integration.Administration
 {
@@ -39,10 +33,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Administration
                 Password = "admin",
             };
             var loginResponse = ((ObjectResult)authController.Login(existingAdmin).Result).Value as AuthenticationTokensDto;
-
-            // Dekodiramo Token da dobijemo userId
-            var decodedToken = new JwtSecurityTokenHandler().ReadJwtToken(loginResponse.AccessToken);
-            var userId = long.Parse(decodedToken.Claims.First(c => c.Type == "id").Value);
+            var userId = loginResponse.Id;
 
             controller.ControllerContext = new ControllerContext
             {
@@ -91,10 +82,7 @@ namespace Explorer.Stakeholders.Tests.Integration.Administration
                 Password = "admin",
             };
             var loginResponse = ((ObjectResult)authController.Login(existingAdmin).Result).Value as AuthenticationTokensDto;
-
-            // Dekodiramo Token da dobijemo userId
-            var decodedToken = new JwtSecurityTokenHandler().ReadJwtToken(loginResponse.AccessToken);
-            var userId = long.Parse(decodedToken.Claims.First(c => c.Type == "id").Value);
+            var userId = loginResponse.Id;
 
             controller.ControllerContext = new ControllerContext
             {

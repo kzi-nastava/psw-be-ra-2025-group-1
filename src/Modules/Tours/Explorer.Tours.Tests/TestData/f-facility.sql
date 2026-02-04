@@ -14,3 +14,6 @@ VALUES (-3, 'Parking Limanski Park', 45.2517, 19.8369, 2, -12, TRUE, '2024-01-20
 INSERT INTO tours."Facility"(
     "Id", "Name", "Latitude", "Longitude", "Category", "CreatorId", "IsLocalPlace", "CreatedAt", "UpdatedAt", "IsDeleted", "EstimatedPrice")
 VALUES (-4, 'Prodavnica Merkator', 45.2540, 19.8420, 1, -1, FALSE, '2024-01-25T11:00:00Z', NULL, FALSE, 1);
+
+-- Reset the sequence to avoid conflicts with auto-generated IDs
+SELECT setval('tours."Facility_Id_seq"', 10000, false);

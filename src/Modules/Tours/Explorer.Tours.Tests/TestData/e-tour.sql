@@ -610,3 +610,11 @@ VALUES (
     '2026-01-29T12:45:00Z', -- ArchivedAt
     -81003      -- MapMarkerId
 );
+
+-- Reset the sequence to avoid conflicts with auto-generated IDs
+-- Using 10000 with false so next ID starts at 10000
+SELECT setval('tours."Tour_Id_seq"', 10000, false);
+SELECT setval('tours."MapMarkers_Id_seq"', 10000, false);
+SELECT setval('tours."Keypoints_Id_seq"', 10000, false);
+SELECT setval('tours."TransportTime_Id_seq"', 10000, false);
+SELECT setval('tours."TouristMapMarkers_Id_seq"', 10000, false);

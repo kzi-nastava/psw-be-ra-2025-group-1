@@ -17,6 +17,7 @@ public class CheckoutWithSaleTests : BasePaymentsIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var cartService = scope.ServiceProvider.GetRequiredService<IShoppingCartService>();
         var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+        EnsureTourTestData(scope);
 
         long touristId = 100; // Test tourist ID
         long tourId = 1; // Tour that should be on sale based on seed data
@@ -49,6 +50,7 @@ public class CheckoutWithSaleTests : BasePaymentsIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var cartService = scope.ServiceProvider.GetRequiredService<IShoppingCartService>();
         var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+        EnsureTourTestData(scope);
 
         long touristId = 101; // Test tourist ID
         long tourId = 1; // Tour on sale
@@ -79,6 +81,7 @@ public class CheckoutWithSaleTests : BasePaymentsIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var cartService = scope.ServiceProvider.GetRequiredService<IShoppingCartService>();
         var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
+        EnsureTourTestData(scope);
 
         long touristId = 102;
         long tour1Id = 1; // On sale
