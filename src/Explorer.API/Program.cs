@@ -47,7 +47,7 @@ builder.Services.AddScoped<DemoSeeder>();
 builder.Services.AddScoped<ProfileViewService>();
 
 
-builder.Services.RegisterModules();
+builder.Services.RegisterModules(builder.Configuration);
 
 var app = builder.Build();
 
