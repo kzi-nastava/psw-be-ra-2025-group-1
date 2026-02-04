@@ -82,10 +82,11 @@ namespace Explorer.Tours.Core.UseCases
             // Check if trying to react to own post
             if (tourRating.UserId == userId) throw new InvalidOperationException("User cannot react to own rating.");
 
-            // Create the reaction
-            reaction = new TourRatingReaction(tourRatingId, userId);
-            Create(_mapper.Map<TourRatingReactionDto>(reaction));
-            // Increment the reactionCount on the TourRatin
+            // Create the reaction directly through repository
+            var newReaction = new TourRatingReaction(tourRatingId, userId);
+            _tourRatingReactionRepository.Create(newReaction);
+            
+            // Increment the reactionCount on the TourRating
             tourRating.IncrementThumbsUp();
             tourRating = _tourRatingRepository.Update(tourRating);
 

@@ -14,3 +14,6 @@ VALUES
     (-4, 100, 1000.0, '2024-01-15 00:00:00'),
     (-5, 101, 1000.0, '2024-01-15 00:00:00'),
     (-6, 102, 1000.0, '2024-01-15 00:00:00');
+
+-- Reset the sequence to avoid conflicts with auto-generated IDs
+SELECT setval('payments."Wallets_Id_seq"', 10000, false);

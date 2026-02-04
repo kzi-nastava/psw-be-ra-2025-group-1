@@ -32,34 +32,27 @@ namespace Explorer.Payments.Tests
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            base.ConfigureWebHost(builder);
+            // Create tours tables BEFORE base runs SQL scripts (f-tours.sql needs tours schema)
+            Environment.SetEnvironmentVariable("RUNNING_TESTS", "true");
 
-            // After base initialization, ensure Tours test data is also loaded
             builder.ConfigureServices(services =>
             {
-                using var scope = BuildServiceProvider(services).CreateScope();
+                using var scope = ReplaceNeededDbContexts(services).BuildServiceProvider().CreateScope();
                 var toursContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<PaymentsTestFactory>>();
 
                 try
                 {
-                    // The tours tables are already created by EnsureCreated() in BaseTestFactory
-                    // But we need to load the tour test data from the Payments TestData folder
-                    // The BaseTestFactory already loaded all SQL files from Explorer.Payments.Tests/TestData
-                    // which includes f-tours.sql
-                    logger.LogInformation("Tours context is ready and test data should be loaded from Payments TestData folder");
+                    toursContext.Database.EnsureCreated();
+                    var databaseCreator = toursContext.Database.GetService<IRelationalDatabaseCreator>();
+                    databaseCreator.CreateTables();
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    logger.LogError(ex, "Error during Tours context verification: {Message}", ex.Message);
+                    // Tables might already exist
                 }
             });
-        }
 
-        private ServiceProvider BuildServiceProvider(IServiceCollection services)
-        {
-            return ReplaceNeededDbContexts(services).BuildServiceProvider();
+            base.ConfigureWebHost(builder);
         }
-
     }
 }

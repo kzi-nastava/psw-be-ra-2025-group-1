@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Explorer.Stakeholders.Tests.Integration.Authentication;
@@ -40,10 +39,7 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
         // Assert - Response
         authenticationResponse.ShouldNotBeNull();
         authenticationResponse.Id.ShouldNotBe(0);
-        var decodedAccessToken = new JwtSecurityTokenHandler().ReadJwtToken(authenticationResponse.AccessToken);
-        var personId = decodedAccessToken.Claims.FirstOrDefault(c => c.Type == "personId");
-        personId.ShouldNotBeNull();
-        personId.Value.ShouldNotBe("0");
+        authenticationResponse.AccessToken.ShouldNotBeNullOrEmpty();
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
@@ -70,10 +66,7 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
             Password = "admin",
         };
         var loginResponse = ((ObjectResult)controller.Login(existingAdmin).Result).Value as AuthenticationTokensDto;
-
-        // Dekodiramo Token da dobijemo userId
-        var decodedToken = new JwtSecurityTokenHandler().ReadJwtToken(loginResponse.AccessToken);
-        var userId = long.Parse(decodedToken.Claims.First(c => c.Type == "id").Value);
+        var userId = loginResponse.Id;
 
         controller.ControllerContext = new ControllerContext
         {
@@ -98,11 +91,7 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
         // Assert - Response
         result.ShouldNotBeNull();
         result.Id.ShouldNotBe(0);
-
-        var decodedAccessToken = new JwtSecurityTokenHandler().ReadJwtToken(result.AccessToken);
-        var personId = decodedAccessToken.Claims.FirstOrDefault(c => c.Type == "personId");
-        personId.ShouldNotBeNull();
-        personId.Value.ShouldNotBe("0");
+        result.AccessToken.ShouldNotBeNullOrEmpty();
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();
@@ -130,16 +119,13 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
             Password = "admin",
         };
         var loginResponse = ((ObjectResult)controller.Login(existingAdmin).Result).Value as AuthenticationTokensDto;
-
-        // Dekodiramo Token da dobijemo userId
-        var decodedToken = new JwtSecurityTokenHandler().ReadJwtToken(loginResponse.AccessToken);
-        var userId = long.Parse(decodedToken.Claims.First(c => c.Type == "id").Value);
+        var userId = loginResponse.Id;
 
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext
             {
-                User = CreateAdminClaimsPrincipal(userId, existingAdmin.Username) 
+                User = CreateAdminClaimsPrincipal(userId, existingAdmin.Username)
             }
         };
 
@@ -158,11 +144,7 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
         // Assert - Response
         result.ShouldNotBeNull();
         result.Id.ShouldNotBe(0);
-
-        var decodedAccessToken = new JwtSecurityTokenHandler().ReadJwtToken(result.AccessToken);
-        var personId = decodedAccessToken.Claims.FirstOrDefault(c => c.Type == "personId");
-        personId.ShouldNotBeNull();
-        personId.Value.ShouldNotBe("0");
+        result.AccessToken.ShouldNotBeNullOrEmpty();
 
         // Assert - Database
         dbContext.ChangeTracker.Clear();

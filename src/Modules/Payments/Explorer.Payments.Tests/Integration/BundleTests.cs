@@ -51,8 +51,7 @@ public class BundleTests : BasePaymentsIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<IBundleService>();
         var dbContext = scope.ServiceProvider.GetRequiredService<PaymentsContext>();
-
-        // Bundle -1 has tours 1 and 2 (both published in f-tours.sql)
+        EnsureTourTestData(scope);
 
         // Act
         var result = service.Publish(-11, -1);
