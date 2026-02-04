@@ -27,6 +27,7 @@ namespace Explorer.API.Demo
         private readonly IMapMarkerService _mapMarkerService;
         private readonly IShoppingCartService _shoppingCartService;
         private readonly IBlogService _blogService;
+        private readonly IPersonService _personService;
 
         private readonly int predefinedMarkersNumber = 10;
         private readonly string imageRootUrl = "https://localhost:44333/images/";
@@ -46,7 +47,8 @@ namespace Explorer.API.Demo
             ITouristMapMarkerService touristMapMarkerService,
             IShoppingCartService shoppingCartService,
             IMapMarkerService mapMarkerService,
-            IBlogService blogService)
+            IBlogService blogService,
+            IPersonService personService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -63,6 +65,7 @@ namespace Explorer.API.Demo
             _shoppingCartService = shoppingCartService;
             _mapMarkerService = mapMarkerService;
             _blogService = blogService;
+            _personService = personService;
         }
 
         public void Seed()
@@ -403,10 +406,48 @@ namespace Explorer.API.Demo
                 Surname = "Peric"
             };
 
-            _authenticationService.RegisterTourist(tourist1);
-            _authenticationService.RegisterTourist(tourist2);
-            _authenticationService.RegisterTourist(tourist3);
+            var t1 = _authenticationService.RegisterTourist(tourist1);
+            var t2 = _authenticationService.RegisterTourist(tourist2);
+            var t3 = _authenticationService.RegisterTourist(tourist3);
+
+            var p1 = _personService.Get(t1.Id);
+            var p2 = _personService.Get(t2.Id);
+            var p3 = _personService.Get(t3.Id);
+
+            _personService.Update(p1.Id, new PersonDto()
+            {
+                UserId = p1.UserId,
+                Name = p1.Name,
+                Surname = p1.Surname,
+                Email = p1.Email,
+                ProfileImageUrl = "https://localhost:44333/images/marker1.png",
+                Biography = "Ljubitelj spontanih putovanja, dugih šetnji i skrivenih mesta koja ne pišu u vodičima.",
+                Quote = "Najlepša mesta su ona koja pronađeš slučajno."
+            });
+
+            _personService.Update(p2.Id, new PersonDto()
+            {
+                UserId = p2.UserId,
+                Name = p2.Name,
+                Surname = p2.Surname,
+                Email = p2.Email,
+                ProfileImageUrl = "https://localhost:44333/images/marker1.png",
+                Biography = "Uvek u potrazi za dobrom hranom, lokalnim pričama i autentičnim doživljajima.",
+                Quote = "Grad se najbolje upozna kroz njegove ulice i ljude."
+            });
+
+            _personService.Update(p3.Id, new PersonDto()
+            {
+                UserId = p3.UserId,
+                Name = p3.Name,
+                Surname = p3.Surname,
+                Email = p3.Email,
+                ProfileImageUrl = "https://localhost:44333/images/marker1.png",
+                Biography = "Volim prirodu, kratke izlete i mesta gde vreme sporije prolazi.",
+                Quote = "Nije bitno gde ideš, već kako doživljavaš put."
+            });
         }
+
 
         private void SeedWallets()
         {
@@ -427,8 +468,8 @@ namespace Explorer.API.Demo
                 Username = "author1",
                 Password = "author1",
                 Email = "author1@gmail.com",
-                Name = "Bosa",
-                Surname = "Boskovic"
+                Name = "Milana",
+                Surname = "Milic"
             };
             AccountRegistrationDto author2 = new AccountRegistrationDto()
             {
@@ -447,10 +488,48 @@ namespace Explorer.API.Demo
                 Surname = "Fifkovic"
             };
 
-            _authenticationService.RegisterAuthor(author1);
-            _authenticationService.RegisterAuthor(author2);
-            _authenticationService.RegisterAuthor(author3);
+            var a1 = _authenticationService.RegisterAuthor(author1);
+            var a2 = _authenticationService.RegisterAuthor(author2);
+            var a3 = _authenticationService.RegisterAuthor(author3);
+
+            var p1 = _personService.Get(a1.Id);
+            var p2 = _personService.Get(a2.Id);
+            var p3 = _personService.Get(a3.Id);
+
+            _personService.Update(p1.Id, new PersonDto()
+            {
+                UserId = p1.UserId,
+                Name = p1.Name,
+                Surname = p1.Surname,
+                Email = p1.Email,
+                ProfileImageUrl = "https://localhost:44333/images/marker2.png",
+                Biography = "Strastveni vodič kroz istorijske ture i lokalne legende, uvek sa osmehom.",
+                Quote = "Svaka tura priča svoju priču, samo je treba doživeti."
+            });
+
+            _personService.Update(p2.Id, new PersonDto()
+            {
+                UserId = p2.UserId,
+                Name = p2.Name,
+                Surname = p2.Surname,
+                Email = p2.Email,
+                ProfileImageUrl = "https://localhost:44333/images/marker2.png",
+                Biography = "Vodič avanturističkih tura, sa znanjem o skrivenim draguljima grada.",
+                Quote = "Najbolje ture su one koje pamtiš zauvek."
+            });
+
+            _personService.Update(p3.Id, new PersonDto()
+            {
+                UserId = p3.UserId,
+                Name = p3.Name,
+                Surname = p3.Surname,
+                Email = p3.Email,
+                ProfileImageUrl = "https://localhost:44333/images/marker2.png",
+                Biography = "Ekspert za gastronomske ture i autentična iskustva lokalnog života.",
+                Quote = "Hrana, priče i smeh – to je prava tura."
+            });
         }
+
 
         private void SeedEquipment()
         {

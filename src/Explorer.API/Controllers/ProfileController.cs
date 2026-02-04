@@ -41,8 +41,9 @@ namespace Explorer.API.Controllers
         public ActionResult<PersonDto> Update([FromBody] PersonDto personDto)
         {
             personDto.UserId = GetCurrentUserId();
-            personDto.Id = GetCurrentPersonId();
-            return Ok(_personService.Update(personDto));
+            //personDto.Id = GetCurrentPersonId();
+           var personId = GetCurrentPersonId();
+            return Ok(_personService.Update(personId, personDto));
         }
 
         private long GetCurrentUserId()

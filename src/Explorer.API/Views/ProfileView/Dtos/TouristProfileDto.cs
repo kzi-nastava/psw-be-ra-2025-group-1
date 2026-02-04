@@ -5,6 +5,8 @@ namespace Explorer.API.Views.ProfileView.Dtos
 {
     public class TouristProfileDto
     {
+        public string Role { get; private set; } = "Tourist";
+
         public long UserId { get; set; }
         public string Username { get; set; }
         public string Name { get; set; }
