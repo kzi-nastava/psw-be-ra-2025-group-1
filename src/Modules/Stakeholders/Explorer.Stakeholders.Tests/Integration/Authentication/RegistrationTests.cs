@@ -40,6 +40,10 @@ public class RegistrationTests : BaseStakeholdersIntegrationTest
         // Assert - Response
         authenticationResponse.ShouldNotBeNull();
         authenticationResponse.Id.ShouldNotBe(0);
+        
+        // Clear change tracker before decoding token
+        dbContext.ChangeTracker.Clear();
+        
         var decodedAccessToken = new JwtSecurityTokenHandler().ReadJwtToken(authenticationResponse.AccessToken);
         var personId = decodedAccessToken.Claims.FirstOrDefault(c => c.Type == "personId");
         personId.ShouldNotBeNull();

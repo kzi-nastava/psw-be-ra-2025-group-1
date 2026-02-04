@@ -3,9 +3,9 @@ namespace Explorer.Tours.API.Dtos;
 public enum FacilityCategory
 {
     WC,
-    Restaurant,
-    Parking,
     Store,
+    Parking,
+    Restaurant,
     Other
 }
 

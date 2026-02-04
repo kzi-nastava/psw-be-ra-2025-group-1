@@ -343,32 +343,53 @@ public class TourRatingTests : BaseToursIntegrationTest
         var controller2 = CreateController(scope, -12);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // Use existing reaction: User -12 has reacted to rating -10821 (reaction -10831)
-        var existingRatingId = -10821L;
-        var existingReactionId = -10831L;
+        // Create a rating first
+        var ratingDto = new TourRatingDto
+        {
+            TourExecutionId = -10815,
+            Stars = 4,
+            Comment = "Test rating for reaction",
+            CreatedAt = DateTime.UtcNow
+        };
+        var createResult = controller1.Create(ratingDto);
+        var created = ((ObjectResult)createResult.Result)?.Value as TourRatingDto;
+
+        // User -12 adds a thumbs up
+        var thumbsUpResult = controller2.ThumbsUp(created.Id);
+        thumbsUpResult.Result.ShouldBeOfType<OkObjectResult>();
+
+        // Force save and clear tracking
+        dbContext.SaveChanges();
+        dbContext.ChangeTracker.Clear();
 
         // Verify the reaction exists before removal
-        dbContext.ChangeTracker.Clear();
-        var reactionBefore = dbContext.TourRatingReactions.FirstOrDefault(r => r.Id == existingReactionId);
-        reactionBefore.ShouldNotBeNull();
+        var reactionBefore = dbContext.TourRatingReactions
+            .Where(r => r.TourRatingId == created.Id && r.UserId == -12)
+            .FirstOrDefault();
+        reactionBefore.ShouldNotBeNull("Reaction should exist after ThumbsUp");
 
-        // Act - User -12 removes thumbs up from rating -10821
-        var actionResult = controller2.RemoveThumbsUp(existingRatingId);
+        // Act - User -12 removes thumbs up
+        var actionResult = controller2.RemoveThumbsUp(created.Id);
 
         // Assert
         actionResult.Result.ShouldBeOfType<OkObjectResult>();
         var result = ((ObjectResult)actionResult.Result)?.Value as TourRatingDto;
 
         result.ShouldNotBeNull();
-        result.Id.ShouldBe(existingRatingId);
+        result.Id.ShouldBe(created.Id);
+
+        // Force save and clear tracking
+        dbContext.SaveChanges();
+        dbContext.ChangeTracker.Clear();
 
         // Verify reaction was removed from database
-        dbContext.ChangeTracker.Clear();
-        var reactionAfter = dbContext.TourRatingReactions.FirstOrDefault(r => r.Id == existingReactionId);
-        reactionAfter.ShouldBeNull();
+        var reactionAfter = dbContext.TourRatingReactions
+            .Where(r => r.TourRatingId == created.Id && r.UserId == -12)
+            .FirstOrDefault();
+        reactionAfter.ShouldBeNull("Reaction should be removed after RemoveThumbsUp");
 
-        // Cleanup - Add the reaction back for other tests
-        controller2.ThumbsUp(existingRatingId);
+        // Cleanup
+        controller1.Delete(created.Id);
     }
 
     [Fact]

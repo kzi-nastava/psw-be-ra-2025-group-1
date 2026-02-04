@@ -23,7 +23,7 @@ public class EquipmentCommandTests : BaseToursIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         var newEntity = new EquipmentDto
         {
-            Name = "Obuća za grub teren",
+            Name = "Obuća za grub teren " + Guid.NewGuid().ToString().Substring(0, 8),
             Description = "Patike sa tvrdim đonom i kramponima koje daju stabilnost na neravnom i rastresitom terenu."
         };
 
@@ -110,16 +110,24 @@ public class EquipmentCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        
+        // First create an equipment to delete
+        var equipmentToDelete = new EquipmentDto
+        {
+            Name = "Equipment to Delete " + Guid.NewGuid().ToString().Substring(0, 8),
+            Description = "This will be deleted"
+        };
+        var created = ((ObjectResult)controller.Create(equipmentToDelete).Result)?.Value as EquipmentDto;
 
         // Act
-        var result = (OkResult)controller.Delete(-3);
+        var result = (OkResult)controller.Delete(created.Id);
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedCourse = dbContext.Equipment.FirstOrDefault(i => i.Id == -3);
+        var storedCourse = dbContext.Equipment.FirstOrDefault(i => i.Id == created.Id);
         storedCourse.ShouldBeNull();
     }
     
