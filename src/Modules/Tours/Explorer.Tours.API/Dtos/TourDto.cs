@@ -24,6 +24,7 @@ public class TourDto
     public List<TransportTimeDto> TransportTimes { get; init; } = [];
     public List<KeypointDto> Keypoints { get; init; }
     public List<EquipmentDto> Equipment { get; init; }
+    public MapMarkerDto? MapMarker { get; init; }
     
     // Sale/Discount fields
     public double? OriginalPrice { get; set; }

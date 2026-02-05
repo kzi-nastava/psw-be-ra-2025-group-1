@@ -1,4 +1,3 @@
-using Explorer.API.Adapters.Tours;
 using Explorer.API.Demo;
 using Explorer.API.Middleware;
 using Explorer.API.Startup;
@@ -11,6 +10,7 @@ using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.UseCases;
 using Explorer.Tours.Core.Adapters;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.API.Views.ProfileView;
 
 // Create wwwroot for images
 var wwwroot = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
@@ -47,6 +47,7 @@ builder.Services.AddScoped<Explorer.Tours.Core.Domain.RepositoryInterfaces.IUser
 builder.Services.AddScoped<DemoSeeder>();
 builder.Services.AddScoped<ITourInfoService,TourInfoServiceAdapter>();
 
+builder.Services.AddScoped<ProfileViewService>();
 
 
 builder.Services.RegisterModules();

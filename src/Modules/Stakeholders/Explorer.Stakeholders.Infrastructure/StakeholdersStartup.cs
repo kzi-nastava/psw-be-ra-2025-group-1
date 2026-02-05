@@ -8,6 +8,7 @@ using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Stakeholders.Infrastructure.Database;
 using Explorer.Stakeholders.Infrastructure.Database.Repositories;
 using Explorer.Stakeholders.Infrastructure.Repositories;
+using Fido2NetLib;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
@@ -32,6 +33,8 @@ public static class StakeholdersStartup
         services.AddScoped<ITokenGenerator, JwtGenerator>();
         services.AddScoped<IMessageService, MessageService>();
         services.AddScoped<IJournalService, JournalService>();
+        services.AddScoped<IInternalUserService, InternalUserService>();
+        services.AddScoped<IInternalJournalService, InternalJournalService>();
 
         services.AddScoped<IRatingsService, RatingsService>();
         services.AddScoped<IUserManagementService, UserManagementService>();
@@ -40,6 +43,7 @@ public static class StakeholdersStartup
         services.AddScoped<IProblemService, ProblemService>();
         services.AddScoped<IProblemMessageService, ProblemMessageService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IPasskeyService, PasskeyService>();
     }
 
     private static void SetupInfrastructure(IServiceCollection services)
@@ -55,6 +59,7 @@ public static class StakeholdersStartup
         services.AddScoped<IProblemRepository, ProblemDbRepository>();
         services.AddScoped<IProblemMessageRepository, ProblemMessageDbRepository>();
         services.AddScoped<INotificationRepository, NotificationDbRepository>();
+        services.AddScoped<IPasskeyCredentialRepository, PasskeyCredentialRepository>();
 
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("stakeholders"));
         dataSourceBuilder.EnableDynamicJson();
@@ -63,5 +68,17 @@ public static class StakeholdersStartup
         services.AddDbContext<StakeholdersContext>(opt =>
             opt.UseNpgsql(dataSource,
                 x => x.MigrationsHistoryTable("__EFMigrationsHistory", "stakeholders")));
+
+        services.AddDistributedMemoryCache();
+
+        services.AddFido2(options =>
+        {
+            options.ServerDomain = Environment.GetEnvironmentVariable("FIDO2_SERVER_DOMAIN") ?? "localhost";
+            options.ServerName = "Explorer";
+            options.Origins = new HashSet<string>
+            {
+                Environment.GetEnvironmentVariable("FIDO2_ORIGIN") ?? "http://localhost:4200"
+            };
+        });
     }
 }

@@ -31,6 +31,9 @@ public class UserDbRepository : IUserRepository
 
     public long GetPersonId(long userId)
     {
+        // ✅ Clear change tracker to get fresh data
+        _dbContext.ChangeTracker.Clear();
+        
         var person = _dbContext.People.FirstOrDefault(i => i.UserId == userId);
         if (person == null) throw new KeyNotFoundException("Not found.");
         return person.Id;
@@ -53,5 +56,24 @@ public class UserDbRepository : IUserRepository
         _dbContext.Users.Update(user);
         _dbContext.SaveChanges();
         return user;
+    }
+
+
+    public User? FindByUsername(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username)) return null;
+
+        var normalized = username.Trim();
+
+        return _dbContext.Users.FirstOrDefault(u => u.Username.ToLower() == normalized.ToLower());
+    }
+    public List<User> GetByIds(IEnumerable<long> ids)
+    {
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0) return new List<User>();
+
+        return _dbContext.Users
+            .Where(u => idList.Contains(u.Id))
+            .ToList();
     }
 }

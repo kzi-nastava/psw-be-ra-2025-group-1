@@ -13,14 +13,14 @@ namespace Explorer.Tours.Core.Domain
         public long TourExecutionId { get; private set; }
         public int Stars { get; private set; }
         public string Comment { get; private set; }
-        public double CompletedProcentage { get; private set; }
+        public double CompletedPercentage { get; private set; }
         public int ThumbsUpCount { get; private set; }
         public DateTime CreatedAt { get; private set; }
 
         public TourRating() 
         {
             ThumbsUpCount = 0;
-            CompletedProcentage = 0;
+            CompletedPercentage = 0;
             CreatedAt = DateTime.UtcNow;
         }
 
@@ -30,7 +30,7 @@ namespace Explorer.Tours.Core.Domain
             TourExecutionId = tourExecutionId;
             Stars = stars;
             Comment = comment;
-            CompletedProcentage = procentage;
+            CompletedPercentage = procentage;
             Validate(); //Returns ArgumentException if num of Stars invalid
         }
 

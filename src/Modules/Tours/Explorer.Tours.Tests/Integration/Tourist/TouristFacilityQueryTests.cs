@@ -57,18 +57,33 @@ public class TouristFacilityQueryTests : BaseToursIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
-        var category = FacilityCategory.Restaurant;
+        var adminFacilityService = scope.ServiceProvider.GetRequiredService<IFacilityService>();
+        var category = FacilityCategory.Store;
+
+        // Ensure at least one Store facility exists
+        var existingStores = adminFacilityService.GetByCategory(category);
+        if (!existingStores.Any())
+        {
+            // Create a test facility
+            adminFacilityService.Create(new FacilityDto
+            {
+                Name = "Test Store " + Guid.NewGuid().ToString().Substring(0, 8),
+                Latitude = 45.2551,
+                Longitude = 19.8451,
+                Category = category,
+                CreatorId = -1,
+                IsLocalPlace = false
+            });
+        }
 
         // Act
         var result = ((ObjectResult)controller.GetByCategory(category).Result)?.Value as List<FacilityDto>;
 
         // Assert
         result.ShouldNotBeNull();
-        if (result.Any())
-        {
-            result.All(f => f.Category == category).ShouldBeTrue();
-            result.All(f => !f.IsDeleted).ShouldBeTrue();
-        }
+        result.ShouldNotBeEmpty(); // Now we ensure there's at least one
+        result.All(f => f.Category == category).ShouldBeTrue();
+        result.All(f => !f.IsDeleted).ShouldBeTrue();
     }
 
     private static TouristFacilityController CreateController(IServiceScope scope)
