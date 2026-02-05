@@ -1,9 +1,7 @@
-﻿using Explorer.Payments.Core.Domain.Coupons;
+﻿using Explorer.Payments.Core.Domain.Cupons;
 using Explorer.Payments.Core.Domain.RepositoryInterfaces;
-using Explorer.Payments.Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
 
-namespace Explorer.Payments.Infrastructure.Repositories
+namespace Explorer.Payments.Infrastructure.Database.Repositories
 {
     public class CouponRedemptionRepository : ICouponRedemptionRepository
     {

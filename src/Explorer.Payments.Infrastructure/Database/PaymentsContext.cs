@@ -1,4 +1,4 @@
-﻿using Explorer.Payments.Core.Domain;
+using Explorer.Payments.Core.Domain;
 using Explorer.Payments.Core.Domain.Bundles;
 using Explorer.Payments.Core.Domain.Coupons;
 using Explorer.Payments.Core.Domain.Sales;
@@ -13,7 +13,10 @@ namespace Explorer.Payments.Infrastructure.Database
         public DbSet<ShoppingCart> ShoppingCarts { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<TourPurchase> TourPurchases { get; set; }
+        public DbSet<Coupon> Coupons { get; set; }
+        public DbSet<CouponRedemption> CouponRedemptions { get; set; }
         public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
+        public DbSet<Sale> Sales { get; set; }
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<Bundle> Bundles { get; set; }
         public DbSet<BundlePurchase> BundlePurchases { get; set; }

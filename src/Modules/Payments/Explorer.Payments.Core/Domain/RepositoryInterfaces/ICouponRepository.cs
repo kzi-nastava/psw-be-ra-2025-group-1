@@ -1,4 +1,4 @@
-﻿using Explorer.Payments.Core.Domain.Coupons;
+﻿using Explorer.Payments.Core.Domain.Cupons;
 
 namespace Explorer.Payments.Core.Domain.RepositoryInterfaces
 {
