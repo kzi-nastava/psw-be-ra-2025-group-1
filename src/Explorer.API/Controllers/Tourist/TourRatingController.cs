@@ -26,7 +26,8 @@ namespace Explorer.API.Controllers.Tourist
         [HttpGet]
         public ActionResult<PagedResult<TourRatingDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
         {
-            return Ok(_tourRatingService.GetPaged(page, pageSize));
+            var userId = User.UserId();
+            return Ok(_tourRatingService.GetPaged(userId, page, pageSize));
         }
 
         [HttpGet("my-ratings")]
@@ -56,11 +57,27 @@ namespace Explorer.API.Controllers.Tourist
             }
         }
 
-        [HttpGet("tour/{tourExecutionId:int}")]
-        public ActionResult<PagedResult<TourRatingDto>> GetByTourExecution(int tourExecutionId, [FromQuery] int page, [FromQuery] int pageSize)
+        [HttpGet("tour/{tourId:int}")]
+        public ActionResult<PagedResult<TourRatingDto>> GetByTour(int tourId, [FromQuery] int page, [FromQuery] int pageSize)
         {
-            var result = _tourRatingService.GetPagedByTourExecution(tourExecutionId, page, pageSize);
-            return Ok(result);
+            try
+            {
+                var userId = User.UserId();
+                var result = _tourRatingService.GetPagedByTour(tourId, userId, page, pageSize);
+                return Ok(result);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "An error occurred while retrieving ratings.", details = ex.Message });
+            }
         }
 
         [HttpPost]

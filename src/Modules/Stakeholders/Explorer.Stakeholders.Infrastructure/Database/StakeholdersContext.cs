@@ -19,6 +19,7 @@ public class StakeholdersContext : DbContext
     public DbSet<Problem> Problems { get; set; }
     public DbSet<ProblemMessage> ProblemMessages { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<PasskeyCredential> PasskeyCredentials { get; set; }
 
     public StakeholdersContext(DbContextOptions<StakeholdersContext> options) : base(options) {}
 
@@ -81,6 +82,7 @@ public class StakeholdersContext : DbContext
         ConfigureProblems(modelBuilder);
         ConfigureProblemMessages(modelBuilder);
         ConfigureNotifications(modelBuilder);
+        ConfigurePasskeyCredentials(modelBuilder);
     }
 
     private static void ConfigureMessaging(ModelBuilder modelBuilder)
@@ -180,6 +182,35 @@ public class StakeholdersContext : DbContext
             cfg.HasIndex(n => n.UserId);
             cfg.HasIndex(n => n.IsRead);
             cfg.HasIndex(n => n.Timestamp);
+        });
+    }
+
+    private static void ConfigurePasskeyCredentials(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PasskeyCredential>(cfg =>
+        {
+            cfg.ToTable("PasskeyCredentials");
+            cfg.HasKey(p => p.Id);
+
+            cfg.Property(p => p.UserId).IsRequired();
+            cfg.Property(p => p.CredentialId).IsRequired();
+            cfg.Property(p => p.PublicKey).IsRequired();
+            cfg.Property(p => p.SignatureCounter).IsRequired();
+            cfg.Property(p => p.CredentialType).IsRequired().HasMaxLength(50);
+            cfg.Property(p => p.AaGuid).IsRequired();
+            cfg.Property(p => p.DeviceName).HasMaxLength(255);
+            cfg.Property(p => p.CreatedAt).IsRequired();
+            cfg.Property(p => p.LastUsedAt);
+            cfg.Property(p => p.IsActive).IsRequired();
+
+            cfg.HasIndex(p => p.UserId);
+            cfg.HasIndex(p => p.CredentialId).IsUnique();
+            cfg.HasIndex(p => p.IsActive);
+
+            cfg.HasOne<User>()
+               .WithMany()
+               .HasForeignKey(p => p.UserId)
+               .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

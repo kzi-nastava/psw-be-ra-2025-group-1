@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet list:*)",
+      "Bash(PGPASSWORD=root psql:*)",
+      "Bash(where:*)",
+      "Bash(\"C:/Program Files/PostgreSQL/18/bin/psql.exe\" -h localhost -U postgres -c \"DROP DATABASE IF EXISTS \"\"explorer-v1-test\"\";\")",
+      "Bash(PGPASSWORD=root \"C:/Program Files/PostgreSQL/18/bin/psql.exe\":*)",
+      "Bash(for i in 1 2 3)",
+      "Bash(do echo \"=== Run $i ===\")",
+      "Bash(done)",
+      "Bash(for i in 1 2 3 4 5)",
+      "Bash(dotnet --version:*)",
+      "Bash(for i in 6 7 8 9 10)"
+    ]
+  }
+}

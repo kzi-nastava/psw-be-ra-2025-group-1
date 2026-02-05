@@ -286,35 +286,57 @@ public class BlogControllerTests : BaseWebIntegrationTest<BlogTestFactory>
 
     private async Task<string> AuthenticateTestUser()
     {
-        // test user registration
-        var username = $"testuser_{Guid.NewGuid()}";
-        var registerDto = new
+        // Retry to handle transient failures when other test assemblies
+        // re-seed the shared database in parallel
+        for (var attempt = 0; attempt < 3; attempt++)
         {
-            username = username,
-            password = "Test123!",
-            email = $"{username}@example.com",
-            name = "Test",
-            surname = "User",
-            role = 0 // Tourist role
-        };
+            try
+            {
+                var username = $"testuser_{Guid.NewGuid()}";
+                var registerDto = new
+                {
+                    username = username,
+                    password = "Test123!",
+                    email = $"{username}@example.com",
+                    name = "Test",
+                    surname = "User",
+                    role = 0 // Tourist role
+                };
 
-        var registerJson = JsonSerializer.Serialize(registerDto);
-        var registerContent = new StringContent(registerJson, Encoding.UTF8, "application/json");
+                var registerJson = JsonSerializer.Serialize(registerDto);
+                var registerContent = new StringContent(registerJson, Encoding.UTF8, "application/json");
 
-        await TestClient.PostAsync("/api/users", registerContent);
+                var registerResponse = await TestClient.PostAsync("/api/users", registerContent);
+                if (!registerResponse.IsSuccessStatusCode)
+                {
+                    await Task.Delay(500);
+                    continue;
+                }
 
-        // Login
-        var loginDto = new { username = username, password = "Test123!" };
-        var loginJson = JsonSerializer.Serialize(loginDto);
-        var loginContent = new StringContent(loginJson, Encoding.UTF8, "application/json");
+                // Login
+                var loginDto = new { username = username, password = "Test123!" };
+                var loginJson = JsonSerializer.Serialize(loginDto);
+                var loginContent = new StringContent(loginJson, Encoding.UTF8, "application/json");
 
-        var loginResponse = await TestClient.PostAsync("/api/users/login", loginContent);
+                var loginResponse = await TestClient.PostAsync("/api/users/login", loginContent);
+                var loginResponseContent = await loginResponse.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var loginResult = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(loginResponseContent, options);
 
-        var loginResponseContent = await loginResponse.Content.ReadAsStringAsync();
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var loginResult = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(loginResponseContent, options);
+                if (loginResult != null && loginResult.ContainsKey("accessToken"))
+                {
+                    return loginResult["accessToken"].GetString()
+                           ?? throw new Exception("Access token was null");
+                }
 
-        var token = loginResult?["accessToken"].GetString();
-        return token ?? throw new Exception("Failed to get access token");
+                await Task.Delay(500);
+            }
+            catch (Exception) when (attempt < 2)
+            {
+                await Task.Delay(500);
+            }
+        }
+
+        throw new Exception("Failed to authenticate test user after 3 attempts");
     }
 }

@@ -12,5 +12,7 @@ namespace Explorer.Tours.API.Public
         void Delete(long id);
         TourRatingDto AddReaction(long tourRatingId, long userId);
         TourRatingDto RemoveReaction(long tourRatingId, long userId);
+        bool HasUserReacted(long tourRatingId, long userId);
+        bool IsUserLocalGuide(long userId);
     }
 }

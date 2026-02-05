@@ -31,6 +31,9 @@ public class UserDbRepository : IUserRepository
 
     public long GetPersonId(long userId)
     {
+        // ✅ Clear change tracker to get fresh data
+        _dbContext.ChangeTracker.Clear();
+        
         var person = _dbContext.People.FirstOrDefault(i => i.UserId == userId);
         if (person == null) throw new KeyNotFoundException("Not found.");
         return person.Id;
