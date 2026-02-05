@@ -1,5 +1,5 @@
 ﻿using Explorer.Tours.API.Dtos;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.API.Public;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 

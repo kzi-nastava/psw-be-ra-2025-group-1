@@ -1,6 +1,6 @@
 ﻿// Explorer.API/Controllers/Author/YouTubeController.cs
 using Explorer.Tours.API.Dtos;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
+using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

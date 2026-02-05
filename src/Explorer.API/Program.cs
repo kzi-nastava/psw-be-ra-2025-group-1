@@ -6,9 +6,7 @@ using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.UseCases;
 using Explorer.Stakeholders.Infrastructure.Repositories;
 using Explorer.Tours.API.Public;
-using Explorer.Tours.Core.UseCases;
 using Explorer.Tours.Core.Adapters;
-using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.API.Views.ProfileView;
 
 // Create wwwroot for images
