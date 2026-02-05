@@ -1,11 +1,12 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.API.Dtos;
 using Explorer.Encounters.API.Public;
-using System.Security.Claims;
-using Explorer.Stakeholders.Infrastructure.Authentication;
-using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.Encounters.Core.Domain;
+using Explorer.Stakeholders.Infrastructure.Authentication;
+using Explorer.Tours.Core.Domain;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Explorer.API.Controllers;
 [Route("api/[controller]")]
@@ -69,7 +70,7 @@ public class EncounterController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "administratorPolicy")]
+    [Authorize(Policy = "touristOrAdministratorPolicy")]
     public ActionResult<EncounterDto> Create([FromBody] EncounterCreateDto dto)
     {
         try
@@ -421,7 +422,7 @@ public class EncounterController : ControllerBase
 
     [HttpPut("stats/update/{touristId}")]
     [Authorize(Policy = "touristOrAdministratorPolicy")]
-    public ActionResult<TouristStatsDto> UpdateStatsForTourist([FromBody]TouristStatsDto stats, long touristId)
+    public ActionResult<TouristStatsDto> UpdateStatsForTourist([FromBody] TouristStatsDto stats, long touristId)
     {
         try
         {
@@ -488,6 +489,21 @@ public class EncounterController : ControllerBase
         try
         {
             return Ok(_encounterService.HasKeypointEncounter(keypointId));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    [HttpPut("{id}/approve")]
+    [Authorize(Policy = "administratorPolicy")]
+    public IActionResult ApproveEncounter(long id)
+    {
+        try
+        {
+            _encounterService.Approve(id);
+            return Ok();
         }
         catch (Exception ex)
         {

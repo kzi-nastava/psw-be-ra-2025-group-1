@@ -56,7 +56,8 @@ public class EncounterService : IEncounterService
             dto.Hints,
             dto.KeypointId,
             dto.HiddenLongitude,
-            dto.HiddenLatitude
+            dto.HiddenLatitude,
+            dto.Approved
         );
 
         var created = _repository.Create(encounter);
@@ -84,6 +85,13 @@ public class EncounterService : IEncounterService
     {
         var encounter = _repository.GetById(id);
         encounter.Archive();
+        _repository.Update(encounter);
+    }
+
+    public void Approve(long id)
+    {
+        var encounter = _repository.GetById(id);
+        encounter.Approve();
         _repository.Update(encounter);
     }
 
