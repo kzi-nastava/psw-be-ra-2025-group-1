@@ -11,5 +11,6 @@ namespace Explorer.Tours.Core.Domain.RepositoryInterfaces
         TourRatingReaction Create(TourRatingReaction entity);
         TourRatingReaction Update(TourRatingReaction entity);
         void Delete(long id);
+        bool Exists(long tourRatingId, long userId);
     }
 }

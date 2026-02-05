@@ -33,5 +33,7 @@ public class TourDto
     public int? SaleDiscountPercentage { get; set; }
     public long? SaleId { get; set; }
     public string? SaleName { get; set; }
+    public string? PlaylistId { get; set; }
+
 }
 

@@ -10,11 +10,14 @@ namespace Explorer.Tours.API.Dtos
     {
         public long Id { get; set; }
         public long UserId { get; set; }
+        public string? Username { get; set; }
         public long TourExecutionId { get; set; }
         public int Stars { get; set; }
         public string Comment { get; set; }
-        public double CompletedProcentage { get; set; }
+        public double CompletedPercentage { get; set; }
         public int ThumbsUpCount { get; set; }
+        public bool IsThumbedUpByCurrentUser { get; set; }
+        public bool IsLocalGuide { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

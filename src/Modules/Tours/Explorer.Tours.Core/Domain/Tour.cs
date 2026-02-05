@@ -35,6 +35,9 @@ public class Tour : AggregateRoot
     public List<TransportTime> TransportTimes { get; private set; }
     public MapMarker? MapMarker { get; set; }
 
+    public string? PlaylistId { get; private set; }
+
+
     public Tour()
     {
         Title = "";
@@ -69,7 +72,8 @@ public class Tour : AggregateRoot
         TransportTimes = [];
     }
 
-    public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
+    public void Update(long creatorId, string title, string description, int difficulty,
+                       string[] tags, TourStatus status, double price, string? playlistId = null)
     {
         CreatorId = creatorId;
         Title = title;
@@ -78,9 +82,9 @@ public class Tour : AggregateRoot
         Tags = tags;
         Status = status;
         Price = price;
+        PlaylistId = playlistId; 
         UpdatedAt = DateTime.UtcNow;
     }
-
     public bool Publish()
     {
         if (!ValidateToPublish()) return false;  
@@ -238,4 +242,10 @@ public class Tour : AggregateRoot
         if (TransportTimes.Count < 1) return false;
         return true;
     }
+    public void SetPlaylist(string? playlistId)
+    {
+        PlaylistId = playlistId;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
 }

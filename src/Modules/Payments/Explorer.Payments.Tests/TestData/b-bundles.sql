@@ -15,4 +15,4 @@ VALUES
     (-3, -11, 'Archived Bundle', 20.0, 'Archived', ARRAY[2, 6]::bigint[]);
 
 -- Reset sequence
-SELECT setval('payments."Bundles_Id_seq"', 100, false);
+SELECT setval('payments."Bundles_Id_seq"', 10000, false);

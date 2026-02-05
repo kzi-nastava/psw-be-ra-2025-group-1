@@ -70,5 +70,12 @@ namespace Explorer.Tours.Infrastructure.Database.Repositories
             _dbSet.Remove(entity);
             DbContext.SaveChanges();
         }
+
+        public bool Exists(long tourRatingId, long userId)
+        {
+            return _dbSet
+                .Any(r => r.TourRatingId == tourRatingId && r.UserId == userId);
+        }
+
     }
 }

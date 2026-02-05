@@ -25,7 +25,7 @@ public class MeetUpCommandTests : BaseToursIntegrationTest
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
         var newEntity = new MeetUpDto
         {
-            Name = "Test4",
+            Name = "Test" + Guid.NewGuid().ToString().Substring(0, 8),
             Description = "Test4",
             Longitude = 20,
             Latitude = 20,
@@ -130,16 +130,28 @@ public class MeetUpCommandTests : BaseToursIntegrationTest
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+        
+        // First create a meetup to delete
+        var meetupToDelete = new MeetUpDto
+        {
+            Name = "MeetUp to Delete " + Guid.NewGuid().ToString().Substring(0, 8),
+            Description = "This will be deleted",
+            Longitude = 20,
+            Latitude = 20,
+            UserId = 1,
+            Date = DateTime.UtcNow
+        };
+        var created = ((ObjectResult)controller.Create(meetupToDelete).Result)?.Value as MeetUpDto;
 
         // Act
-        var result = (OkResult)controller.Delete(-3);
+        var result = (OkResult)controller.Delete(created.Id);
 
         // Assert - Response
         result.ShouldNotBeNull();
         result.StatusCode.ShouldBe(200);
 
         // Assert - Database
-        var storedCourse = dbContext.MeetUp.FirstOrDefault(i => i.Id == -3);
+        var storedCourse = dbContext.MeetUp.FirstOrDefault(i => i.Id == created.Id);
         storedCourse.ShouldBeNull();
     }
 

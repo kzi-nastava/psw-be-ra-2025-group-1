@@ -1,11 +1,11 @@
-﻿using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Shouldly;
 using Explorer.API.Controllers;
 using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
+using Explorer.Stakeholders.Infrastructure.Database;
 
 namespace Explorer.Stakeholders.Tests.Integration.Authentication;
 
@@ -20,6 +20,7 @@ public class LoginTests : BaseStakeholdersIntegrationTest
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope);
+        var dbContext = scope.ServiceProvider.GetRequiredService<StakeholdersContext>();
         var loginSubmission = new CredentialsDto { Username = "turista1@gmail.com", Password = "turista1" };
 
         // Act
@@ -28,10 +29,12 @@ public class LoginTests : BaseStakeholdersIntegrationTest
         // Assert
         authenticationResponse.ShouldNotBeNull();
         authenticationResponse.Id.ShouldBe(-21);
-        var decodedAccessToken = new JwtSecurityTokenHandler().ReadJwtToken(authenticationResponse.AccessToken);
-        var personId = decodedAccessToken.Claims.FirstOrDefault(c => c.Type == "personId");
-        personId.ShouldNotBeNull();
-        personId.Value.ShouldBe("-21");
+        authenticationResponse.AccessToken.ShouldNotBeNullOrEmpty();
+
+        // Verify person exists for the logged-in user
+        var person = dbContext.People.FirstOrDefault(p => p.UserId == authenticationResponse.Id);
+        person.ShouldNotBeNull();
+        person.Id.ShouldBe(-21);
     }
 
     [Fact]

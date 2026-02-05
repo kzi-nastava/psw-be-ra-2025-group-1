@@ -23,7 +23,7 @@ VALUES
     (6, -11, 'Test Tour 6 - No Sale', 'Tour without sale', 1, ARRAY['test'], 1, 10.0, '2026-01-03', '2026-01-03', '2026-01-03', '-infinity');
 
 -- Reset sequence to avoid conflicts with future inserts
-SELECT setval('tours."Tour_Id_seq"', 100, false);
+SELECT setval('tours."Tour_Id_seq"', 10000, false);
 
 -- Note: Status 1 = Published (required for checkout)
 -- Tours must be published to be purchased

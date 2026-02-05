@@ -7,14 +7,14 @@ SET session_replication_role = 'replica';
 
 -- Delete from payments schema in any order (FK constraints disabled)
 DELETE FROM payments."Bundles";
-DELETE FROM payments."OrderItems" WHERE "Id" < 0 OR "ShoppingCartId" IN (SELECT "Id" FROM payments."ShoppingCarts" WHERE "Id" < 0 OR "TouristId" >= 100);
-DELETE FROM payments."CouponRedemptions" WHERE "CouponId" IN (SELECT "Id" FROM payments."Coupons" WHERE "Id" < 0);
-DELETE FROM payments."Coupons" WHERE "Id" < 0;
-DELETE FROM payments."TourPurchases" WHERE "Id" < 0 OR "TouristId" >= 100;
-DELETE FROM payments."TourPurchaseTokens" WHERE "Id" < 0 OR "UserId" >= 100;
-DELETE FROM payments."ShoppingCarts" WHERE "Id" < 0 OR "TouristId" >= 100;
-DELETE FROM payments."Sales" WHERE "Id" < 0;
-DELETE FROM payments."Wallets" WHERE "Id" < 0;
+DELETE FROM payments."OrderItems";
+DELETE FROM payments."CouponRedemptions";
+DELETE FROM payments."Coupons";
+DELETE FROM payments."TourPurchases";
+DELETE FROM payments."TourPurchaseTokens";
+DELETE FROM payments."ShoppingCarts";
+DELETE FROM payments."Sales";
+DELETE FROM payments."Wallets";
 
 -- Delete test tours from tours schema
 DELETE FROM tours."Keypoints" WHERE "TourId" IN (1, 2, 6);

@@ -12,6 +12,7 @@ using Explorer.Stakeholders.Core.Domain;
 
 namespace Explorer.Stakeholders.Tests.Integration.Journals;
 
+[Collection("Sequential")]
 public class JournalTests : BaseStakeholdersIntegrationTest
 {
     public JournalTests(StakeholdersTestFactory factory) : base(factory) { }
