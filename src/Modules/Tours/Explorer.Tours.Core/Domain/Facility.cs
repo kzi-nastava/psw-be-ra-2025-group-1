@@ -18,6 +18,12 @@ public enum EstimatedPrice
     Pricy
 }
 
+public enum UserRole
+{
+    Admin,
+    Author
+}
+
 public class Facility : Entity
 {
     public string Name { get; private set; }
@@ -25,13 +31,14 @@ public class Facility : Entity
     public double Longitude { get; private set; }
     public FacilityCategory Category { get; private set; }
     public long? CreatorId { get; private set; }    
+    public UserRole Role { get; private set; }
     public bool IsLocalPlace { get; private set; }    
     public EstimatedPrice EstimatedPrice { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
     public bool IsDeleted { get; private set; }
 
-    public Facility(string name, double latitude, double longitude, FacilityCategory category, EstimatedPrice estimatedPrice, long? creatorId = null, bool isLocalPlace = false)
+    public Facility(string name, double latitude, double longitude, FacilityCategory category, EstimatedPrice estimatedPrice, long? creatorId = null, bool isLocalPlace = false, UserRole role = UserRole.Admin)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name cannot be empty.");
         if (latitude < -90 || latitude > 90) throw new ArgumentException("Latitude must be between -90 and 90.");
@@ -46,6 +53,7 @@ public class Facility : Entity
         CreatedAt = DateTime.UtcNow;
         IsDeleted = false;
         EstimatedPrice = estimatedPrice;
+        Role = role;
     }
 
     // Private constructor for EF Core
@@ -61,6 +69,7 @@ public class Facility : Entity
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = null;
         IsDeleted = false;
+        Role = UserRole.Admin;
     }
 
     public void Update(string name, double latitude, double longitude, FacilityCategory category, EstimatedPrice estimatedPrice)

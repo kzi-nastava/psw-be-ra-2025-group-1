@@ -12,4 +12,5 @@ public interface IFacilityService
     FacilityDto Create(FacilityDto facility);
     FacilityDto Update(FacilityDto facility);
     void Delete(long id);
+    List<FacilityDto> GetAvailable(long authorId);
 }

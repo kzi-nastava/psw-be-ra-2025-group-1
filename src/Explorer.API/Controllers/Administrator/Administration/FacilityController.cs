@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.Infrastructure.Authentication;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
 using Microsoft.AspNetCore.Authorization;
@@ -19,28 +20,36 @@ public class FacilityController : ControllerBase
 
     
     [HttpGet]
-    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    [Authorize]
     public ActionResult<PagedResult<FacilityDto>> GetAll([FromQuery] int page, [FromQuery] int pageSize)
     {
         return Ok(_facilityService.GetPaged(page, pageSize));
     }
 
     [HttpGet("all")]
-    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    [Authorize]
     public ActionResult<List<FacilityDto>> GetAllFacilities()
     {
         return Ok(_facilityService.GetAll());
     }
 
+    [HttpGet("available")]
+    [Authorize]
+    public ActionResult<List<FacilityDto>> GetAvailable()
+    {
+        long authorId = User.UserId();
+        return Ok(_facilityService.GetAvailable(authorId));
+    }
+
     [HttpGet("{id:long}")]
-    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    [Authorize]
     public ActionResult<FacilityDto> GetById(long id)
     {
         return Ok(_facilityService.GetById(id));
     }
 
     [HttpGet("category/{category}")]
-    [Authorize(Policy = "touristOrAdministratorPolicy")]
+    [Authorize]
     public ActionResult<List<FacilityDto>> GetByCategory(FacilityCategory category)
     {
         return Ok(_facilityService.GetByCategory(category));

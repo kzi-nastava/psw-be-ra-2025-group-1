@@ -16,6 +16,12 @@ public enum EstimatedPrice
     Pricy
 }
 
+public enum UserRole
+{
+    Admin,
+    Author
+}
+
 public class FacilityDto
 {
     public long Id { get; set; }
@@ -29,4 +35,5 @@ public class FacilityDto
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public bool IsDeleted { get; set; }
+    public UserRole Role { get; set; }
 }

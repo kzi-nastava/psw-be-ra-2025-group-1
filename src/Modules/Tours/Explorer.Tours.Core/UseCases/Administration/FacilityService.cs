@@ -1,6 +1,7 @@
 using AutoMapper;
 using Explorer.BuildingBlocks.Core.Exceptions;
 using Explorer.BuildingBlocks.Core.UseCases;
+using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Core.Domain;
@@ -55,7 +56,7 @@ public class FacilityService : IFacilityService
 
     var facility = new Facility(facilityDto.Name, facilityDto.Latitude, facilityDto.Longitude,
     (DomainFacilityCategory)facilityDto.Category, (Domain.EstimatedPrice)facilityDto.EstimatedPrice, 
-    facilityDto.CreatorId, facilityDto.IsLocalPlace);
+    facilityDto.CreatorId, facilityDto.IsLocalPlace, (Domain.UserRole)facilityDto.Role);
         var result = _facilityRepository.Create(facility);
         return _mapper.Map<FacilityDto>(result);
     }
@@ -68,6 +69,18 @@ public class FacilityService : IFacilityService
         
         var result = _facilityRepository.Update(facility);
         return _mapper.Map<FacilityDto>(result);
+    }
+
+    public List<FacilityDto> GetAvailable(long authorId)
+    {
+        List<FacilityDto> result = [];
+        var facilities = _facilityRepository.GetAll();
+        foreach (Facility fac in facilities)
+        {
+            if (fac.CreatorId == authorId) result.Add(_mapper.Map<FacilityDto>(fac));
+            else if (fac.Role == Domain.UserRole.Admin) result.Add(_mapper.Map<FacilityDto>(fac));
+        }
+        return result;
     }
 
     public void Delete(long id)
