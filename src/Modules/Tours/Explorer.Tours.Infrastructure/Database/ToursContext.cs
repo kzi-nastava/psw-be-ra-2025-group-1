@@ -97,6 +97,14 @@ public class ToursContext : DbContext
             .HasFilter("\"IsActive\" = true")
             .IsUnique();
 
+        modelBuilder.Entity<Tour>(cfg =>
+        {
+            cfg.Property(t => t.PlaylistId)
+               .HasColumnName("PlaylistId")
+               .HasMaxLength(255)
+               .IsRequired(false);
+        });
+
 
         modelBuilder.Entity<Restaurant>(cfg =>
         {

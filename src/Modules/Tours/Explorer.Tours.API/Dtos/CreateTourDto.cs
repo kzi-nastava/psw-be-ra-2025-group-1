@@ -17,5 +17,6 @@ namespace Explorer.Tours.API.Dtos
         public string[] Tags { get; init; } = Array.Empty<string>();
         public TourStatusDto Status { get; init; } = TourStatusDto.Draft;
         public double Price { get; init; } = -1;
+        public string? PlaylistId { get; set; }
     }
 }

@@ -128,13 +128,16 @@ public class TourService : ITourService
 
         if (tour.CreatorId != authorId)
             throw new InvalidOperationException("Can't update someone else's tour");
+
+        // Ako playlistId nije poslat u DTO-u, zadrži postojeći
+        var playlistId = tourDto.PlaylistId ?? tour.PlaylistId;
+
         tour.Update(tourDto.CreatorId, tourDto.Title, tourDto.Description, tourDto.Difficulty,
-            tourDto.Tags, (TourStatus)tourDto.Status, tourDto.Price);
+            tourDto.Tags, (TourStatus)tourDto.Status, tourDto.Price, playlistId);
 
         var result = _tourRepository.Update(tour);
         return _mapper.Map<TourDto>(result);
     }
-
     public void ArchiveTour(long tourId)
     {
         var tour = _tourRepository.Get(tourId);
@@ -327,4 +330,20 @@ public class TourService : ITourService
         _tourRepository.DeleteMapMarker(marker);
         var result = _tourRepository.Update(tour);
     }
+    public TourDto UpdatePlaylist(long tourId, string? playlistId, long authorId)
+    {
+        var tour = _tourRepository.Get(tourId);
+        if (tour == null)
+            throw new NotFoundException($"Tour with ID {tourId} not found.");
+
+        if (tour.CreatorId != authorId)
+            throw new InvalidOperationException("Can't update someone else's tour");
+
+        tour.SetPlaylist(playlistId);
+        _tourRepository.Update(tour);
+
+        return _mapper.Map<TourDto>(tour);
+        
+    }
+
 }
