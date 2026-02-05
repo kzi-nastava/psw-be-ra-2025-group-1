@@ -28,6 +28,18 @@ public class Person : Entity
         Validate();
     }
 
+    public Person Update(string name, string surname, string email, string profileImageUrl, string biography, string quote)
+    {
+        Name = name;
+        Surname = surname;
+        Email = email; 
+        ProfileImageUrl = profileImageUrl;
+        Biography = biography;
+        Quote = quote;
+
+        return this;
+    }
+
     private void Validate()
     {
         if (UserId == 0) throw new ArgumentException("Invalid UserId");
