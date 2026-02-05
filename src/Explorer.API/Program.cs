@@ -2,6 +2,7 @@ using Explorer.API.Demo;
 using Explorer.API.Middleware;
 using Explorer.API.Startup;
 using Explorer.Payments.Core.Domain.External;
+using Explorer.Payments.Core.Adapters;
 using Explorer.Stakeholders.API.Public;
 using Explorer.Stakeholders.Core.Domain.RepositoryInterfaces;
 using Explorer.Stakeholders.Core.UseCases;
@@ -33,6 +34,25 @@ if (builder.Environment.IsDevelopment())
         Environment.SetEnvironmentVariable("DATABASE_USERNAME", "postgres");
         Environment.SetEnvironmentVariable("DATABASE_PASSWORD", "root");
     }
+    else
+    {
+        var cs = builder.Configuration.GetSection("ConnectionStrings");
+        SetIfMissing("DATABASE_HOST", cs["DATABASE_HOST"]);
+        SetIfMissing("DATABASE_PORT", cs["DATABASE_PORT"]);
+        SetIfMissing("DATABASE_SCHEMA", cs["DATABASE_SCHEMA"]);
+        SetIfMissing("DATABASE_SCHEMA_NAME", cs["DATABASE_SCHEMA_NAME"]);
+        SetIfMissing("DATABASE_USERNAME", cs["DATABASE_USERNAME"]);
+        SetIfMissing("DATABASE_PASSWORD", cs["DATABASE_PASSWORD"]);
+        SetIfMissing("DATABASE_POOLING", cs["DATABASE_POOLING"]);
+    }
+}
+
+static void SetIfMissing(string key, string? value)
+{
+    if (!string.IsNullOrWhiteSpace(value) && string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(key)))
+    {
+        Environment.SetEnvironmentVariable(key, value);
+    }
 }
 
 builder.Services.AddControllers();
@@ -50,7 +70,7 @@ builder.Services.AddScoped<ITourInfoService,TourInfoServiceAdapter>();
 builder.Services.AddScoped<ProfileViewService>();
 
 
-builder.Services.RegisterModules();
+builder.Services.RegisterModules(builder.Configuration);
 
 var app = builder.Build();
 
