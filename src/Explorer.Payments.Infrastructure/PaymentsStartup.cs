@@ -30,6 +30,7 @@ namespace Explorer.Payments.Infrastructure
             services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
             services.AddScoped<IShoppingCartService, ShoppingCartService>();
             services.AddScoped<ISaleRepository, SaleRepository>();
+            services.AddScoped<Explorer.Payments.API.Public.Author.ICouponService, CouponService>();
             services.AddScoped<Explorer.Payments.API.Public.Author.ISaleService, SaleService>();
             services.AddScoped<ISalePublicService, SalePublicService>();
             services.AddScoped<IWalletService, WalletService>();
