@@ -23,9 +23,23 @@ namespace Explorer.Stakeholders.Core.UseCases
             _mapper = mapper;
         }
 
-        public PersonDto Update(PersonDto entity)
+        public PersonDto Update(long personId, PersonDto entity)
         {
-            var result = _personRepository.Update(_mapper.Map<Person>(entity));
+            var person = _personRepository.Get(personId);
+            if (person == null)
+            {
+                throw new KeyNotFoundException($"Person with id {personId} not found.");
+            }
+
+            person.Update(
+                entity.Name,
+                entity.Surname,
+                entity.Email,
+                entity.ProfileImageUrl,
+                entity.Biography,
+                entity.Quote);
+
+            var result = _personRepository.Update(person);
             return _mapper.Map<PersonDto>(result);
         }
 

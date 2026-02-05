@@ -4,7 +4,7 @@ using Explorer.Tours.API.Dtos;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.Core.Domain;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
-using System;
+using Explorer.BuildingBlocks.Core.Services;
 
 namespace Explorer.Tours.Core.UseCases;
 
@@ -13,21 +13,24 @@ public class TourExecutionService : ITourExecutionService
     private readonly ITourExecutionRepository _tourExecutionRepository;
     private readonly ITourRepository _tourRepository;
     private readonly IUserLocationRepository _userLocationRepository;
-    private readonly ITourPurchaseTokenRepository _tourPurchaseTokenRepository;
+    private readonly ITouristMapMarkerService _touristMapMarkerService;
     private readonly IMapper _mapper;
+    private readonly IKeypointRepository _keypointRepository;
 
     public TourExecutionService(
         ITourExecutionRepository tourExecutionRepository,
         ITourRepository tourRepository,
-        ITourPurchaseTokenRepository tourPurchaseTokenRepository,
         IUserLocationRepository userLocationService,
+        IKeypointRepository keypointRepository,
+        ITouristMapMarkerService touristMapMarkerService,
         IMapper mapper)
     {
         _tourExecutionRepository = tourExecutionRepository;
         _tourRepository = tourRepository;
         _userLocationRepository = userLocationService;
-        _tourPurchaseTokenRepository = tourPurchaseTokenRepository;
+        _touristMapMarkerService = touristMapMarkerService;
         _mapper = mapper;
+        _keypointRepository = keypointRepository;
     }
 
     public TourExecutionDto StartTour(long touristId, StartTourDto startTourDto)
@@ -38,10 +41,6 @@ public class TourExecutionService : ITourExecutionService
 
         if (tour.Status != TourStatus.Published && tour.Status != TourStatus.Archived)
             throw new InvalidOperationException("Can only start published or archived tours");
-
-        // Check if tour has been purchased (using token repository)
-        if (!_tourPurchaseTokenRepository.ExistsForUserAndTour(touristId, startTourDto.TourId))
-            throw new InvalidOperationException("You must purchase the tour before starting it");
 
         var activeTour = _tourExecutionRepository.GetActiveTourByTourist(touristId);
         if (activeTour != null)
@@ -74,6 +73,14 @@ public class TourExecutionService : ITourExecutionService
         execution.Complete();
         var updated = _tourExecutionRepository.Update(execution);
 
+        var tour = _tourRepository.Get(execution.TourId);
+
+        // Automatically collect marker
+        if (tour.MapMarker != null)
+        {
+            _touristMapMarkerService.CollectFromTour(touristId, execution.TourId);
+        }
+
         return _mapper.Map<TourExecutionDto>(updated);
     }
 
@@ -96,15 +103,6 @@ public class TourExecutionService : ITourExecutionService
     {
         var executions = _tourExecutionRepository.GetByTourist(touristId);
         return executions.Select(_mapper.Map<TourExecutionDto>).ToList();
-    }
-
-    public bool CanLeaveReview(long touristId, long tourId)
-    {
-        var lastExecution = _tourExecutionRepository.GetLastExecutionForTour(touristId, tourId);
-        if (lastExecution == null)
-            return false;
-
-        return lastExecution.CanLeaveReview();
     }
 
     public bool TryReachKeypoint(long touristId, long executionId, long keypointId)
@@ -139,20 +137,32 @@ public class TourExecutionService : ITourExecutionService
         if (reached != null)
             return true; // Already reached
 
-        const double nearbyDistance = 0.00018; // approximately 20 meters
+        const double nearbyDistance = 0.00025; // approximately 20m
         double longDiff = Math.Abs(userLocation.Longitude - keypoint.Longitude);
         double latDiff = Math.Abs(userLocation.Latitude - keypoint.Latitude);
-
-        if (Math.Sqrt(longDiff * longDiff - latDiff * latDiff) < nearbyDistance)
+        if (Math.Sqrt(longDiff * longDiff + latDiff * latDiff) < nearbyDistance)
         {
             // Mark keypoint as reached and create a new Keypoint Progress for it
             execution.ReachKeypoint(keypoint.Id, tour.Keypoints.Count);
             _tourExecutionRepository.Update(execution);
+
+            // Check if tour is completed to collect marker, since TourExecutionService.Complete()
+            // never gets actually called
+            if(execution.Status == TourExecutionStatus.Completed)
+            {
+                // Automatically collect marker
+                if (tour.MapMarker != null)
+                {
+                    _touristMapMarkerService.CollectFromTour(touristId, execution.TourId);
+                }
+            }
             return true;
         }
 
         return false;   // Not close enough
     }
+
+
 
     public KeypointDto UnlockKeypoint(long executionId, long keypointId)
     {
@@ -225,4 +235,22 @@ public class TourExecutionService : ITourExecutionService
         var result = _tourExecutionRepository.Create(execution);
         return _mapper.Map<TourExecutionDto>(result);
     }
+    public List<KeypointDto> GetTourKeypoints(long touristId, long tourId)
+    {
+        var keypoints = _keypointRepository.GetByTourId(tourId);
+
+        return keypoints.Select(k => new KeypointDto
+        {
+            Id = k.Id,
+            Title = k.Title,
+            Description = k.Description,
+            ImageUrl = k.ImageUrl,
+            Secret = k.Secret,
+            Latitude = k.Latitude,
+            Longitude = k.Longitude,
+            SequenceNumber = k.SequenceNumber
+        }).ToList();
+    }
+
+
 }

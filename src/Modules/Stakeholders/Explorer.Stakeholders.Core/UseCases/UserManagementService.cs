@@ -53,5 +53,41 @@ namespace Explorer.Stakeholders.Core.UseCases
             user.IsActive = false;
             _userRepository.Update(user);
         }
+
+        public AccountDto GetByUsername(string username)
+        {
+            var user = _userRepository.GetActiveByName(username);
+            var person = _personRepository.GetByUserId(user.Id);
+
+            AccountDto account = new AccountDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = person?.Email ?? "",
+                Name = person?.Name ?? "",
+                Surname = person?.Surname ?? "",
+                Role = (AccountRole)user.Role,
+                IsActive = user.IsActive
+            };
+
+            return account;
+        }
+
+        public AccountDto GetById(long id)
+        {
+            var user = _userRepository.Get(id);
+            var person = _personRepository.GetByUserId(user.Id);
+            AccountDto account = new AccountDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = person?.Email ?? "",
+                Name = person?.Name ?? "",
+                Surname = person?.Surname ?? "",
+                Role = (AccountRole)user.Role,
+                IsActive = user.IsActive
+            };
+            return account;
+        }
     }
 }

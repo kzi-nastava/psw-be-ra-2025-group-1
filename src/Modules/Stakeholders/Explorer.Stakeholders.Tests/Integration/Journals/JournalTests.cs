@@ -12,6 +12,7 @@ using Explorer.Stakeholders.Core.Domain;
 
 namespace Explorer.Stakeholders.Tests.Integration.Journals;
 
+[Collection("Sequential")]
 public class JournalTests : BaseStakeholdersIntegrationTest
 {
     public JournalTests(StakeholdersTestFactory factory) : base(factory) { }
@@ -26,7 +27,7 @@ public class JournalTests : BaseStakeholdersIntegrationTest
         var dto = new JournalCreateDto
         {
             Content = "Sadržaj dnevnika",
-            Location = "Novi Sad",
+            LocationName = "Novi Sad",
             Title = "Novi journal"
         };
 
@@ -104,7 +105,9 @@ public class JournalTests : BaseStakeholdersIntegrationTest
             content:"test",
             userId: 23,
             title: "Test title",
-            location: "Test location"
+            lat: 45.0,
+            longit: 19.0,
+            locationName: "Test location"
         );
         db.Journals.Add(journal);
         db.SaveChanges();

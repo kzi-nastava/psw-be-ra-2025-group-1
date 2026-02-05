@@ -33,6 +33,10 @@ public class Tour : AggregateRoot
     public List<Keypoint> Keypoints { get; private set; }
     public List<Equipment> Equipment { get; private set; }
     public List<TransportTime> TransportTimes { get; private set; }
+    public MapMarker? MapMarker { get; set; }
+
+    public string? PlaylistId { get; private set; }
+
 
     public Tour()
     {
@@ -68,7 +72,8 @@ public class Tour : AggregateRoot
         TransportTimes = [];
     }
 
-    public void Update(long creatorId, string title, string description, int difficulty, string[] tags, TourStatus status, double price)
+    public void Update(long creatorId, string title, string description, int difficulty,
+                       string[] tags, TourStatus status, double price, string? playlistId = null)
     {
         CreatorId = creatorId;
         Title = title;
@@ -77,9 +82,9 @@ public class Tour : AggregateRoot
         Tags = tags;
         Status = status;
         Price = price;
+        PlaylistId = playlistId; 
         UpdatedAt = DateTime.UtcNow;
     }
-
     public bool Publish()
     {
         if (!ValidateToPublish()) return false;  
@@ -151,7 +156,7 @@ public class Tour : AggregateRoot
     public void AddEquipment(Equipment equipment)
     {
         if (Equipment.Any(e => e.Id == equipment.Id))
-            throw new InvalidOperationException("Equipment already added to the tour");
+            throw new ArgumentException("Equipment already added to the tour");
 
         if (Status == TourStatus.Archived)
             throw new InvalidOperationException("Cannot add equipment to an archived tour");
@@ -162,7 +167,7 @@ public class Tour : AggregateRoot
     public void RemoveEquipment(Equipment equipment)
     { 
         if (!Equipment.Any(e => e.Id == equipment.Id))
-            throw new InvalidOperationException("Equipment not found in the tour");
+            throw new ArgumentException("Equipment not found in the tour");
 
         if (Status == TourStatus.Archived)
             throw new InvalidOperationException("Cannot remove equipment from an archived tour");
@@ -203,6 +208,30 @@ public class Tour : AggregateRoot
         return tt;
     }
 
+    public MapMarker AddMapMarker(MapMarker mapMarker)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only add marker to tour in draft");
+        if (MapMarker != null)
+            throw new InvalidOperationException("Tour already has a marker");
+        MapMarker = mapMarker;
+        return MapMarker;
+    }
+
+    public MapMarker UpdateMapMarker(MapMarker mapMarker)
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only update marker in tour in draft");
+        return MapMarker.Update(mapMarker);
+    }
+
+    public void DeleteMapMarker()
+    {
+        if (Status != TourStatus.Draft)
+            throw new InvalidOperationException("Can only delete map marker from tour in draft status");
+        MapMarker = null;
+    }
+
     private bool ValidateToPublish()
     {
         if (Status == TourStatus.Published) return false;
@@ -213,4 +242,10 @@ public class Tour : AggregateRoot
         if (TransportTimes.Count < 1) return false;
         return true;
     }
+    public void SetPlaylist(string? playlistId)
+    {
+        PlaylistId = playlistId;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
 }

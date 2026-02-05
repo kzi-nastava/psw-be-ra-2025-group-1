@@ -1,6 +1,4 @@
 ﻿using Explorer.Tours.Core.Domain;
-using Explorer.Tours.Core.Domain.Shopping;
-using Explorer.Tours.Core.Domain.TourPurchaseTokens;
 using Microsoft.EntityFrameworkCore;
 
 namespace Explorer.Tours.Infrastructure.Database;
@@ -15,25 +13,19 @@ public class ToursContext : DbContext
     public DbSet<TransportTime> TransportTime { get; set; }
     public DbSet<TourExecution> TourExecutions { get; set; }
     public DbSet<KeypointProgress> KeypointProgress { get; set; }
-    public DbSet<ShoppingCart> ShoppingCarts { get; set; }
-    public DbSet<OrderItem> OrderItems { get; set; }
-    public DbSet<TourPurchase> TourPurchases { get; set; }
     public DbSet<Keypoint> Keypoints { get; set; }
-    public DbSet<TourPurchaseToken> TourPurchaseTokens { get; set; }
-
-    public DbSet<PersonEquipment> PersonEquipment { get; set; } //dodala sam
+    public DbSet<TourRating> TourRatings { get; set; }
+    public DbSet<TourRatingReaction> TourRatingReactions { get; set; }
+    public DbSet<PersonEquipment> PersonEquipment { get; set; }
+    public DbSet<Restaurant> Restaurants { get; set; }
+    public DbSet<MapMarker> MapMarkers { get; set; }
+    public DbSet<TouristMapMarker> TouristMapMarkers { get; set; }
 
     public ToursContext(DbContextOptions<ToursContext> options) : base(options) {}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("tours");
-        modelBuilder.Entity<TourPurchaseToken>(entity =>
-        {
-            entity.Property(t => t.Status)
-                .HasConversion<string>();
-        });
-
         // One-Many relationship between Tour and Keypoint
         modelBuilder.Entity<Tour>()
             .HasMany(e => e.Keypoints)
@@ -41,6 +33,16 @@ public class ToursContext : DbContext
             .HasForeignKey("TourId")
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);
+
+        // One-One relationship between Tour and MapMarker
+        modelBuilder.Entity<Tour>()
+            .HasOne(t => t.MapMarker)
+            .WithOne()
+            .HasForeignKey<Tour>("MapMarkerId")
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        
 
         // One-Many relationship between TourExecution and KeypointProgress
         modelBuilder.Entity<TourExecution>()
@@ -65,5 +67,58 @@ public class ToursContext : DbContext
             .IsRequired()
             .HasForeignKey("TourId")
             .OnDelete(DeleteBehavior.Cascade);
+
+        // One-Many relationship between TourRating and TourRatingReaction
+        modelBuilder.Entity<TourRating>()
+            .HasMany<TourRatingReaction>()
+            .WithOne()
+            .HasForeignKey(r => r.TourRatingId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Unique constraint: one reaction per user per rating
+        modelBuilder.Entity<TourRatingReaction>()
+            .HasIndex(r => new { r.TourRatingId, r.UserId })
+            .IsUnique();
+
+        // Unique constraint: one reaction per tour execution
+        modelBuilder.Entity<TourRating>()
+            .HasIndex(r => new { r.TourExecutionId, r.UserId })
+            .IsUnique();
+
+        // Tourist - map marker
+        modelBuilder.Entity<TouristMapMarker>()
+            .HasIndex(tm => new { tm.TouristId, tm.MapMarkerId })
+            .IsUnique();
+
+        // Tourist - one active map marker
+        modelBuilder.Entity<TouristMapMarker>()
+            .HasIndex(tm => tm.TouristId)
+            .HasFilter("\"IsActive\" = true")
+            .IsUnique();
+
+        modelBuilder.Entity<Tour>(cfg =>
+        {
+            cfg.Property(t => t.PlaylistId)
+               .HasColumnName("PlaylistId")
+               .HasMaxLength(255)
+               .IsRequired(false);
+        });
+
+
+        modelBuilder.Entity<Restaurant>(cfg =>
+        {
+            cfg.ToTable("Restaurants");
+            cfg.HasKey(r => r.Id);
+
+            cfg.Property(r => r.Name).IsRequired();
+            cfg.Property(r => r.Latitude).IsRequired();
+            cfg.Property(r => r.Longitude).IsRequired();
+
+            cfg.Property(r => r.AverageRating)
+                .HasColumnType("double precision");
+
+            cfg.Property(r => r.ReviewCount);
+        });
     }
 }

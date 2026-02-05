@@ -62,12 +62,12 @@ public class TourExecutionDbRepository : ITourExecutionRepository
             .ToList();
     }
 
-    public TourExecution? GetLastExecutionForTour(long touristId, long tourId)
+    public List<TourExecution> GetByTourId(long tourId)
     {
         return _dbSet
             .Include(te => te.KeypointProgresses)
-            .Where(te => te.TouristId == touristId && te.TourId == tourId)
+            .Where(te => te.TourId == tourId)
             .OrderByDescending(te => te.StartTime)
-            .FirstOrDefault();
+            .ToList();
     }
 }

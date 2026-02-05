@@ -1,4 +1,5 @@
 ﻿using Explorer.BuildingBlocks.Core.Domain;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Net.Mail;
 
 namespace Explorer.Stakeholders.Core.Domain;
@@ -9,6 +10,8 @@ public class Person : Entity
     public string Name { get; set; }
     public string Surname { get; set; }
     public string Email { get; set; }
+
+    [Column("ProfileImagePath")]
     public string? ProfileImageUrl { get; set; }
     public string? Biography { get; set; }
     public string? Quote { get; set; }
@@ -23,6 +26,18 @@ public class Person : Entity
         Biography = biography;
         Quote = quote;
         Validate();
+    }
+
+    public Person Update(string name, string surname, string email, string profileImageUrl, string biography, string quote)
+    {
+        Name = name;
+        Surname = surname;
+        Email = email; 
+        ProfileImageUrl = profileImageUrl;
+        Biography = biography;
+        Quote = quote;
+
+        return this;
     }
 
     private void Validate()

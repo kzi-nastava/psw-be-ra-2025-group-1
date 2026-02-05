@@ -10,3 +10,7 @@ VALUES (-3, 'Obična baterijska lampa', 'Baterijska lampa od 200 do 400 lumena.'
 INSERT INTO tours."Equipment"(
     "Id", "Name", "Description")
 VALUES (-4, 'Neobicna baterijska lampa', 'Baterijska lampa od 200000 do 40000000000 lumena.');
+
+-- Reset the sequence to avoid conflicts with auto-generated IDs
+-- Using 10000 to give plenty of room for test-generated entities
+SELECT setval('tours."Equipment_Id_seq"', 10000, false);

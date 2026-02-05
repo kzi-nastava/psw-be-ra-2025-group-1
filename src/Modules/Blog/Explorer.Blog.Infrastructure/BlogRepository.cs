@@ -23,7 +23,10 @@ public class BlogRepository : IBlogRepository
     
     public List<BlogEntity> GetByUserId(long userId)
     {
-        return _context.Blogs.Include(b => b.Comments).Include(b => b.Votes).Where(b => b.UserId == userId).ToList(); // LINQ query to filter by userId
+        return _context.Blogs
+            .Include(b => b.Collaborators)
+            .Include(b => b.Comments)
+            .Include(b => b.Votes).Where(b => b.UserId == userId).ToList(); // LINQ query to filter by userId
     }
 
     public BlogEntity Update(BlogEntity blog)
@@ -48,14 +51,26 @@ public class BlogRepository : IBlogRepository
         return blog;
     }
 
+    public void Delete(long blogId)
+    {
+        var blog = GetById(blogId); // ukljucuje Comments/Votes zbog Include
+        _context.Blogs.Remove(blog);
+        _context.SaveChanges();
+    }
+
+
     public BlogEntity GetById(long id)
     {
-        return _context.Blogs.Include(b => b.Comments).Include(b => b.Votes).FirstOrDefault(b => b.Id == id) ?? throw new KeyNotFoundException($"Blog with the ID {id} was not found.");
+        return _context.Blogs
+            .Include(b => b.Collaborators)
+            .Include(b => b.Comments)
+            .Include(b => b.Votes).FirstOrDefault(b => b.Id == id) ?? throw new KeyNotFoundException($"Blog with the ID {id} was not found.");
     }
 
     public List<BlogEntity> GetVisibleForUser(long userId)          //svi blogovi koji nisu draft + moji draftovi
     {
         return _context.Blogs
+            .Include(b => b.Collaborators)
             .Include(b => b.Comments)
             .Include(b => b.Votes)
             .Where(b => b.Status != BlogStatus.Draft || b.UserId == userId)

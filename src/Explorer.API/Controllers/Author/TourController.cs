@@ -5,10 +5,9 @@ using Explorer.Tours.API.Public.Administration;
 using Explorer.Tours.Core.Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
+using Explorer.BuildingBlocks.Core.Exceptions;
 
 namespace Explorer.API.Controllers.Author;
-
 
 [Authorize]
 [Route("api/author/tours")]
@@ -26,7 +25,8 @@ public class TourController : ControllerBase
     [HttpPost]
     public ActionResult<TourDto> Create([FromBody] CreateTourDto tour)
     {
-        return Ok(_tourService.Create(tour));
+        var result = _tourService.Create(tour);
+        return Ok(result);
     }
 
     [AllowAnonymous]
@@ -35,14 +35,16 @@ public class TourController : ControllerBase
     {
         return _tourService.GetById(id) is { } tour
             ? Ok(tour)
-            : NotFound();
+            : NotFound(new { message = $"Tour with ID {id} not found" });
     }
+    
 
     [Authorize(Policy = "authorPolicy")]
     [HttpGet("my")]
     public ActionResult<PagedResult<TourDto>> GetMyToursPaged([FromQuery] int page, [FromQuery] int pageSize)
     {
-        return Ok(_tourService.GetByCreator(User.PersonId(), page, pageSize));
+        var result = _tourService.GetByCreator(User.PersonId(), page, pageSize);
+        return Ok(result);
     }
 
     [AllowAnonymous]
@@ -56,55 +58,140 @@ public class TourController : ControllerBase
     [HttpPut("{id:long}")]
     public ActionResult<TourDto> Update(long id, [FromBody] TourDto tour)
     {
-        long authorId = User.PersonId();
-        return Ok(_tourService.Update(id, tour, authorId));
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.Update(id, tour, authorId);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = $"Tour with ID {id} not found" });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpDelete("{id:long}")]
-    public ActionResult<TourDto> Delete(long id)
+    public ActionResult Delete(long id)
     {
-        long authorId = User.PersonId();
-        _tourService.Delete(id, authorId);
-        return Ok();
+        try
+        {
+            long authorId = User.PersonId();
+            _tourService.Delete(id, authorId);
+            return Ok(new { message = "Tour successfully deleted" });
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { message = $"Tour with ID {id} not found" });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpPost("{tourId:long}/transport-times")]
     public ActionResult<TransportTimeDto> AddTransportTime(long tourId, [FromBody] TransportTimeDto transport)
     {
-        long authorId = User.PersonId();
-        return Ok(_tourService.AddTransportTime(tourId, transport, authorId));
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.AddTransportTime(tourId, transport, authorId);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpPut("{tourId:long}/transport-times/{transportId:long}")]
-    public ActionResult<TransportTimeDto> UpdateTransportTime(long tourId,long transportId,[FromBody] TransportTimeDto transport)
+    public ActionResult<TransportTimeDto> UpdateTransportTime(long tourId, long transportId, [FromBody] TransportTimeDto transport)
     {
-        transport.Id = transportId;
-        long authorId = User.PersonId();
-        return Ok(_tourService.UpdateTransportTime(tourId, transport, authorId));
+        try
+        {
+            transport.Id = transportId;
+            long authorId = User.PersonId();
+            var result = _tourService.UpdateTransportTime(tourId, transport, authorId);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpDelete("{tourId:long}/transport-times/{transportId:long}")]
     public ActionResult DeleteTransportTime(long tourId, long transportId)
     {
-        long authorId = User.PersonId();
-        _tourService.DeleteTransportTime(tourId, transportId, authorId);
-        return Ok();
+        try
+        {
+            long authorId = User.PersonId();
+            _tourService.DeleteTransportTime(tourId, transportId, authorId);
+            return Ok(new { message = "Transport time successfully deleted" });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpPut("{id:long}/archive")]
     public ActionResult Archive(long id)
     {
-        bool result = _tourService.Archive(id);
-        if (result)
+        try
         {
-            return Ok();
+            bool result = _tourService.Archive(id);
+            if (result)
+            {
+                return Ok(new { message = "Tour successfully archived" });
+            }
+            return BadRequest(new { message = "Tour could not be archived. It may already be archived or in an invalid state." });
         }
-        return BadRequest("Tour could not be archived.");
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
@@ -116,69 +203,239 @@ public class TourController : ControllerBase
             bool result = _tourService.Publish(id);
             if (result)
             {
-                return Ok();
+                return Ok(new { message = "Tour successfully published" });
             }
+            return BadRequest(new { message = "Tour could not be published. Ensure all required fields are complete and the tour has at least 2 keypoints and one transport time. Check that the tour isn't published already." });
         }
-        catch (Exception ex)
+        catch (NotFoundException ex)
         {
-            return BadRequest(ex.Message);
+            return NotFound(new { message = ex.Message });
         }
-        return BadRequest("Tour could not be published.");
-
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpPut("{id:long}/activate")]
     public ActionResult Activate(long id)
     {
-        bool result = _tourService.Activate(id);
-        if (result)
+        try
         {
-            return Ok();
+            bool result = _tourService.Activate(id);
+            return Ok(new { message = "Tour successfully activated" });
         }
-        return BadRequest("Tour could not be activated.");
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpPost("{tourId}/keypoints")]
     public ActionResult<KeypointDto> AddKeypoint(long tourId, [FromBody] KeypointDto keypoint)
     {
-        long authorId = User.PersonId();
-        return Ok(_tourService.AddKeypoint(tourId, keypoint, authorId));
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.AddKeypoint(tourId, keypoint, authorId);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
-
+    
     [Authorize(Policy = "authorPolicy")]
     [HttpPut("{tourId}/keypoints/{keypointId}")]
     public ActionResult<KeypointDto> UpdateKeypoint(long tourId, long keypointId, [FromBody] KeypointDto keypoint)
     {
-        keypoint.Id = keypointId;
-        long authorId = User.PersonId();
-        return Ok(_tourService.UpdateKeypoint(tourId, keypoint, authorId));
+        try
+        {
+            keypoint.Id = keypointId;
+            long authorId = User.PersonId();
+            var result = _tourService.UpdateKeypoint(tourId, keypoint, authorId);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     [Authorize(Policy = "authorPolicy")]
     [HttpDelete("{tourId}/keypoints/{keypointId}")]
     public ActionResult DeleteKeypoint(long tourId, long keypointId)
     {
-        long authorId = User.PersonId();
-        _tourService.DeleteKeypoint(tourId, keypointId, authorId);
-        return Ok();
+        try
+        {
+            long authorId = User.PersonId();
+            _tourService.DeleteKeypoint(tourId, keypointId, authorId);
+            return Ok(new { message = "Keypoint successfully deleted" });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
+
     [Authorize(Policy = "authorPolicy")]
     [HttpPost("{id:long}/equipment/{equipId:long}")]
     public ActionResult<TourDto> AddEquipment(long id, long equipId)
     {
-        long authorId = User.PersonId();
-        _tourService.AddEquipment(id, equipId, authorId);
-        return Ok();
+        try
+        {
+            long authorId = User.PersonId();
+            _tourService.AddEquipment(id, equipId, authorId);
+            return Ok(new { message = "Equipment successfully added to tour" });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
+
     [Authorize(Policy = "authorPolicy")]
     [HttpDelete("{id:long}/equipment/{equipId:long}")]
     public ActionResult<TourDto> RemoveEquipment(long id, long equipId)
     {
-        long authorId = User.PersonId();
-        _tourService.RemoveEquipment(id, equipId, authorId);
-        return Ok();
+        try
+        {
+            long authorId = User.PersonId();
+            _tourService.RemoveEquipment(id, equipId, authorId);
+            return Ok(new { message = "Equipment successfully removed from tour" });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    // Map marker
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPost("{tourId}/mapMarker")]
+    public ActionResult<MapMarkerDto> AddMapMarker(long tourId, [FromBody] MapMarkerDto mapMarkerDto)
+    {
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.AddMapMarker(tourId, mapMarkerDto, authorId);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPut("{tourId}/mapMarker")]
+    public ActionResult<KeypointDto> UpdateMapMarker(long tourId, [FromBody] MapMarkerDto mapMarkerDto)
+    {
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.UpdateMapMarker(tourId, mapMarkerDto, authorId);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpDelete("{tourId}/mapMarker")]
+    public ActionResult DeleteMapMarker(long tourId)
+    {
+        try
+        {
+            long authorId = User.PersonId();
+            _tourService.DeleteMapMarker(tourId, authorId);
+            return Ok(new { message = "Map marker successfully deleted" });
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    [Authorize(Policy = "authorPolicy")]
+    [HttpPut("{tourId:long}/playlist")]
+    public ActionResult<TourDto> UpdatePlaylist(long tourId, [FromBody] UpdatePlaylistDto dto)
+    {
+        try
+        {
+            long authorId = User.PersonId();
+            var result = _tourService.UpdatePlaylist(tourId, dto.PlaylistId, authorId);
+            return Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
 }

@@ -1,4 +1,5 @@
-﻿using Explorer.Stakeholders.API.Dtos;
+﻿using Explorer.API.Views.ProfileView;
+using Explorer.Stakeholders.API.Dtos;
 using Explorer.Stakeholders.API.Public;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,17 +12,28 @@ namespace Explorer.API.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly IPersonService _personService;
+        private readonly IUserManagementService _userManagementService;
+        private readonly ProfileViewService _profileViewService;
 
-        public ProfileController(IPersonService personService)
+        public ProfileController(IPersonService personService, IUserManagementService userManagementService, ProfileViewService profileViewService)
         {
             _personService = personService;
+            _userManagementService = userManagementService;
+            _profileViewService = profileViewService;
         }
 
         [HttpGet("{id:long}")]
         [AllowAnonymous]
-        public ActionResult<PersonDto> Get(long id)
+        public ActionResult<object> Get(long id)
         {
-            return Ok(_personService.Get(id));
+            var role = _userManagementService.GetById(id).Role;
+
+            var dto = _profileViewService.GetProfileByRole(id, role);
+
+            if (dto == null)
+                return NotFound();
+
+            return Ok(dto);
         }
 
         [HttpPut]
@@ -29,11 +41,11 @@ namespace Explorer.API.Controllers
         public ActionResult<PersonDto> Update([FromBody] PersonDto personDto)
         {
             personDto.UserId = GetCurrentUserId();
-            personDto.Id = GetCurrentPersonId();
-            return Ok(_personService.Update(personDto));
+            //personDto.Id = GetCurrentPersonId();
+           var personId = GetCurrentPersonId();
+            return Ok(_personService.Update(personId, personDto));
         }
 
-        // TODO: Make BaseController and have controllers inherit it with basic mehtods such as this
         private long GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst("id")?.Value;
@@ -51,6 +63,7 @@ namespace Explorer.API.Controllers
 
             return long.Parse(personIdClaim);
         }
+
 
     }
 }

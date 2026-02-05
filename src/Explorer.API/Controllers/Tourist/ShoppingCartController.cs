@@ -1,7 +1,8 @@
-﻿using Explorer.Tours.API.Public.Tourist;
+﻿using Explorer.Payments.API.Dtos;
+using Explorer.Payments.API.Dtos.Coupons;
+using Explorer.Payments.API.Public.Tourist;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Explorer.Tours.API.Dtos;
 
 namespace Explorer.API.Controllers.Tourist
 {
@@ -34,6 +35,15 @@ namespace Explorer.API.Controllers.Tourist
             return Ok(updatedCart);
         }
 
+        [HttpPost("add-bundle/{bundleId}")]
+        public IActionResult AddBundleToCart(long bundleId)
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            _service.AddBundleToCart(touristId, bundleId);
+            var updatedCart = _service.GetCart(touristId);
+            return Ok(updatedCart);
+        }
+
         [HttpDelete("remove/{tourId}")]
         public IActionResult RemoveFromCart(long tourId)
         {
@@ -41,6 +51,31 @@ namespace Explorer.API.Controllers.Tourist
             _service.RemoveFromCart(touristId, tourId);
             return Ok(new { message = "Tour removed from cart successfully" });
         }
+
+        [HttpDelete("remove-bundle/{bundleId}")]
+        public IActionResult RemoveBundleFromCart(long bundleId)
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            _service.RemoveBundleFromCart(touristId, bundleId);
+            return Ok(new { message = "Bundle removed from cart successfully" });
+        }
+        
+        [HttpPost("coupon")]
+        public IActionResult ApplyCoupon([FromBody] ApplyCouponRequestDto req)
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            _service.ApplyCoupon(touristId, req.Code);
+            return Ok();
+        }
+
+        [HttpDelete("coupon")]
+        public IActionResult RemoveCoupon()
+        {
+            long touristId = long.Parse(User.FindFirst("id")!.Value);
+            _service.RemoveCoupon(touristId);
+            return Ok();
+        }
+
 
         [HttpPost("checkout")]
         public ActionResult<List<TourPurchaseTokenDto>> Checkout()

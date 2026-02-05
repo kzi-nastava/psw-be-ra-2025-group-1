@@ -63,6 +63,26 @@ public class TourExecutionController : ControllerBase
             return Forbid();
         }
     }
+    
+    [HttpGet("tours/{tourId:long}/keypoints")]
+    public ActionResult<List<KeypointDto>> GetTourKeypoints(long tourId)
+    {
+        var touristId = GetTouristId();
+        try
+        {
+            var result = _tourExecutionService.GetTourKeypoints(touristId, tourId);
+            return Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+    }
+
 
     [HttpGet("active")]
     public ActionResult<TourExecutionDto> GetActiveTour()
@@ -123,14 +143,6 @@ public class TourExecutionController : ControllerBase
         var touristId = GetTouristId();
         var history = _tourExecutionService.GetTouristHistory(touristId);
         return Ok(history);
-    }
-
-    [HttpGet("can-review/{tourId:long}")]
-    public ActionResult<bool> CanLeaveReview(long tourId)
-    {
-        var touristId = GetTouristId();
-        var canReview = _tourExecutionService.CanLeaveReview(touristId, tourId);
-        return Ok(new { canReview });
     }
 
     private long GetTouristId()

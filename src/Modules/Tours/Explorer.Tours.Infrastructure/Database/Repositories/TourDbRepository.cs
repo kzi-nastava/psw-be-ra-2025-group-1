@@ -42,6 +42,7 @@ public class TourDbRepository : ITourRepository
             .Include(t => t.Keypoints)
             .Include(t => t.Equipment)
             .Include(t => t.TransportTimes)
+            .Include(t => t.MapMarker)
             .FirstOrDefault(t => t.Id == id)
             ?? throw new NotFoundException($"Tour {id} not found");
     }
@@ -52,11 +53,25 @@ public class TourDbRepository : ITourRepository
             .Include(t => t.Keypoints)
             .Include(t => t.Equipment)
             .Include(t => t.TransportTimes)
+            .Include(t => t.MapMarker)
             .Where(t => t.CreatorId == creatorId);
         var task = query.GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;
     }
+
+    public List<Tour> GetAllByCreatorId(long creatorId)
+    {
+        return _dbSet
+            .Include(t => t.Keypoints)
+            .Include(t => t.Equipment)
+            .Include(t => t.TransportTimes)
+            .Include(t => t.MapMarker)
+            .Where(t => t.CreatorId == creatorId)
+            .ToList()
+            ?? throw new NotFoundException($"Tours by author {creatorId} not found");
+    }
+
 
     public PagedResult<Tour> GetPaged(int page, int pageSize)
     {
@@ -64,6 +79,7 @@ public class TourDbRepository : ITourRepository
             .Include(t => t.Keypoints)
             .Include(t => t.Equipment)
             .Include(t => t.TransportTimes)
+            .Include(t => t.MapMarker)
             .GetPagedById(page, pageSize);
         task.Wait();
         return task.Result;
@@ -71,7 +87,12 @@ public class TourDbRepository : ITourRepository
 
     public Tour Update(Tour tour)
     {
-        _dbSet.Update(tour);
+        var existing = _dbSet
+            .Include(t => t.MapMarker)
+            .First(t => t.Id == tour.Id)
+            ?? throw new NotFoundException($"Tour {tour.Id} not found");
+
+        dbContext.Update(existing);
         dbContext.SaveChanges();
         return tour;
     }
@@ -91,6 +112,11 @@ public class TourDbRepository : ITourRepository
     {
         return _dbSet
             .FirstOrDefault(t => t.Id == id && t.Status == TourStatus.Published);
+    }
+
+    public void DeleteMapMarker(MapMarker marker)
+    {
+        dbContext.MapMarkers.Remove(marker);
     }
 
 }

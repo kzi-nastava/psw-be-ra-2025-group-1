@@ -69,12 +69,19 @@ public class TourCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        // Added logic to check if the object exists
-        // THis is usefull so that the test passes even when ran with other test or by it's own
         var stored = dbContext.Tour.FirstOrDefault(i => i.Title == "New Tour");
         if (stored == null)
         {
-            var newEntity = new CreateTourDto { CreatorId = 1, Title = "To Update", Description = "Will be updated", Difficulty = 2, Tags = new[] { "t1" }, Status = TourStatusDto.Draft, Price = 50.0 };
+            var newEntity = new CreateTourDto
+            {
+                CreatorId = 1,
+                Title = "To Update",
+                Description = "Will be updated",
+                Difficulty = 2,
+                Tags = new[] { "t1" },
+                Status = TourStatusDto.Draft,
+                Price = 50.0
+            };
 
             var created = ((ObjectResult)controller.Create(newEntity).Result)?.Value as TourDto;
             created.ShouldNotBeNull();
@@ -83,15 +90,25 @@ public class TourCommandTests : BaseToursIntegrationTest
         }
         var id = stored.Id;
 
-        var updatedDto = new TourDto { CreatorId = stored.CreatorId, Title = "Updated Title", Description = "Updated description", Difficulty = 5, Tags = new[] { "updated" }, Status = TourStatusDto.Published, Price = 150.0 };
+        var updatedDto = new TourDto
+        {
+            CreatorId = stored.CreatorId,
+            Title = "Updated Title",
+            Description = "Updated description",
+            Difficulty = 5,
+            Tags = new[] { "updated" },
+            Status = TourStatusDto.Published,
+            Price = 150.0,
+            PlaylistId = "PLtest123" // Dodaj ovo
+        };
 
         // Logging in fake user
         var identity = new ClaimsIdentity(new[]
-{
-                new Claim("id", "1"),
-                new Claim("personId", "1"),
-                new Claim(ClaimTypes.Role, "author")
-            }, "TestAuthentication");
+        {
+        new Claim("id", "1"),
+        new Claim("personId", "1"),
+        new Claim(ClaimTypes.Role, "author")
+    }, "TestAuthentication");
         controller.ControllerContext.HttpContext.User = new ClaimsPrincipal(identity);
 
         // Act
@@ -103,12 +120,14 @@ public class TourCommandTests : BaseToursIntegrationTest
         updateResult.Description.ShouldBe("Updated description");
         updateResult.Difficulty.ShouldBe(5);
         updateResult.Price.ShouldBe(150.0);
+        updateResult.PlaylistId.ShouldBe("PLtest123"); // Dodaj ovo
 
         // Assert - Database
         dbContext.Entry(stored).State = EntityState.Detached;
         var storedUpdated = dbContext.Tour.FirstOrDefault(i => i.Id == id);
         storedUpdated.ShouldNotBeNull();
         storedUpdated.Title.ShouldBe("Updated Title");
+        storedUpdated.PlaylistId.ShouldBe("PLtest123"); // Dodaj ovo
     }
 
     [Fact]
@@ -146,9 +165,9 @@ public class TourCommandTests : BaseToursIntegrationTest
 
     [Theory]
     [InlineData("-1", -15, "Title", 200)] // Valid
-    [InlineData("-1", -15, "", 400)] // Invalid, keypoint title not added
-    [InlineData("-1", -19, "Title", 403)] // Invalid, unauthorized
-    [InlineData("-1", -55, "Title", 404)] // Invalid, tour doesn't exist   
+    [InlineData("-1", -15, "", 400)] // Invalid title - Service throws ArgumentException, caught as BadRequest
+    [InlineData("-1", -19, "Title", 401)] // Unauthorized - Service throws InvalidOperationException, caught as Unauthorized
+    [InlineData("-1", -55, "Title", 404)] // Tour not found - Service throws KeyNotFoundException, caught as NotFound
     public void Adds_keypoint(string authorId, long tourId, string keypointTitle, int expectedStatus)
     {
         // Arrange
@@ -165,36 +184,43 @@ public class TourCommandTests : BaseToursIntegrationTest
             Longitude = 20.4
         };
 
-        // Act & Assert
+        // Act
+        var result = controller.AddKeypoint(tourId, newKeypoint);
+
+        // Assert
         if (expectedStatus == 200)
         {
-            var result = (ObjectResult)controller.AddKeypoint(tourId, newKeypoint).Result;
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldBe(200);
+            result.Result.ShouldBeOfType<OkObjectResult>();
+            var okResult = (OkObjectResult)result.Result;
+            okResult.StatusCode.ShouldBe(200);
 
             var storedTour = dbContext.Tour.First(t => t.Id == tourId);
             storedTour.Keypoints.ShouldContain(kp => kp.Title == newKeypoint.Title);
         }
-        else
+        else if (expectedStatus == 400)
         {
-            var ex = Should.Throw<Exception>(() => controller.AddKeypoint(tourId, newKeypoint));
-
-            if (expectedStatus == 400)
-                ex.ShouldBeOfType<ArgumentException>();   // invalid title / invalid lat/lon
-            else if (expectedStatus == 403)
-                ex.ShouldBeOfType<InvalidOperationException>(); // unauthorized
-            else if (expectedStatus == 404)
-                ex.ShouldBeOfType<NotFoundException>();   // tour not found
+            // Service throws ArgumentException for validation errors
+            result.Result.ShouldBeOfType<BadRequestObjectResult>();
+        }
+        else if (expectedStatus == 401)
+        {
+            // Service throws InvalidOperationException for authorization failures
+            result.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+        }
+        else if (expectedStatus == 404)
+        {
+            // Service throws KeyNotFoundException
+            result.Result.ShouldBeOfType<NotFoundObjectResult>();
         }
     }
 
 
     [Theory]
-    [InlineData("-1", -15, -2, "Updated OK", 200)] // Valid - using Draft tour -15 and keypoint -2
-    [InlineData("-1", -15, -2, "", 400)] // Invalid, empty title
-    [InlineData("-1", -19, -2, "Title", 403)] // Invalid, unauthorized
-    [InlineData("-1", -15, 77, "Title", 404)] // Invalid, keypoint not found
-    [InlineData("-1", -77, -2, "Title", 404)] // Invalid, tour not found
+    [InlineData("-1", -15, -2, "Updated OK", 200)] // Valid
+    [InlineData("-1", -15, -2, "", 400)] // Invalid title - Service throws ArgumentException, caught as BadRequest
+    [InlineData("-1", -19, -2, "Title", 401)] // Unauthorized - Service throws InvalidOperationException, caught as Unauthorized
+    [InlineData("-1", -15, 77, "Title", 404)] // Keypoint not found - Service throws KeyNotFoundException, caught as NotFound
+    [InlineData("-1", -77, -2, "Title", 404)] // Tour not found - Service throws KeyNotFoundException, caught as NotFound
     public void Updates_keypoint(
         string authorId,
         long tourId,
@@ -217,44 +243,43 @@ public class TourCommandTests : BaseToursIntegrationTest
             Longitude = 21.0
         };
 
+        // Act
+        var result = controller.UpdateKeypoint(tourId, keypointId, updated);
+
+        // Assert
         if (expectedStatus == 200)
         {
-            // Act
-            var result = (ObjectResult)controller.UpdateKeypoint(tourId, keypointId, updated).Result;
-
-            // Assert
-            result.ShouldNotBeNull();
-            result.StatusCode.ShouldBe(expectedStatus);
+            result.Result.ShouldBeOfType<OkObjectResult>();
+            var okResult = (OkObjectResult)result.Result;
+            okResult.StatusCode.ShouldBe(200);
 
             var storedTour = dbContext.Tour.First(t => t.Id == tourId);
             var kp = storedTour.Keypoints.FirstOrDefault(k => k.Id == keypointId);
             kp.ShouldNotBeNull();
             kp.Title.ShouldBe(newTitle);
         }
-        else
+        else if (expectedStatus == 400)
         {
-            var ex = Should.Throw<Exception>(() => controller.UpdateKeypoint(tourId, keypointId, updated));
-
-            if (expectedStatus == 400)
-            {
-                ex.ShouldBeOfType<ArgumentException>();
-            }
-            else if (expectedStatus == 403)
-            {
-                ex.ShouldBeOfType<InvalidOperationException>();
-            }
-            else if (expectedStatus == 404)
-            {
-                ex.ShouldBeOfType<NotFoundException>();
-            }
+            // Service throws ArgumentException for validation errors
+            result.Result.ShouldBeOfType<BadRequestObjectResult>();
+        }
+        else if (expectedStatus == 401)
+        {
+            // Service throws InvalidOperationException for authorization failures
+            result.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+        }
+        else if (expectedStatus == 404)
+        {
+            // Service throws KeyNotFoundException
+            result.Result.ShouldBeOfType<NotFoundObjectResult>();
         }
     }
 
     [Theory]
-    [InlineData("-1", -15, -2, 200)] // Valid - using Draft tour -15 and keypoint -2
-    [InlineData("-2", -15, -2, 403)] // Invalid, unauthorized
-    [InlineData("-1", -15, 77, 404)] // Invalid, keypoint not found
-    [InlineData("-1", -77, -2, 404)] // Invalid, tour not found
+    [InlineData("-1", -15, -2, 200)] // Valid
+    [InlineData("-2", -15, -2, 401)] // Unauthorized - tuđi korisnik pokušava da obriše
+    [InlineData("-1", -15, 77, 404)] // Keypoint not found - Service throws KeyNotFoundException, caught as NotFound
+    [InlineData("-1", -77, -2, 404)] // Tour not found - Service throws KeyNotFoundException, caught as NotFound
     public void Deletes_keypoint(string authorId, long tourId, long keypointId, int expectedStatus)
     {
         // Arrange
@@ -262,37 +287,44 @@ public class TourCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope, authorId);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        // Act
+        var result = controller.DeleteKeypoint(tourId, keypointId);
+
+        // Assert
         if (expectedStatus == 200)
         {
-            // Act
-            controller.DeleteKeypoint(tourId, keypointId);
+            result.ShouldBeOfType<OkObjectResult>();
 
             // Assert - database
-            var storedTour = dbContext.Tour.First(t => t.Id == tourId);
-            var kp = storedTour.Keypoints.FirstOrDefault(k => k.Id == keypointId);
-            kp.ShouldBeNull();
+            dbContext.ChangeTracker.Clear();
+            var storedTour = dbContext.Tour
+                .Include(t => t.Keypoints)
+                .FirstOrDefault(t => t.Id == tourId);
+            
+            if (storedTour != null)
+            {
+                var kp = storedTour.Keypoints.FirstOrDefault(k => k.Id == keypointId);
+                kp.ShouldBeNull();
+            }
         }
-        else
+        else if (expectedStatus == 401)
         {
-            var ex = Should.Throw<Exception>(() => controller.DeleteKeypoint(tourId, keypointId));
-
-            if (expectedStatus == 403)
-            {
-                ex.ShouldBeOfType<InvalidOperationException>();
-            }
-            else if (expectedStatus == 404)
-            {
-                ex.ShouldBeOfType<NotFoundException>();
-            }
+            // Service throws InvalidOperationException for authorization failures
+            result.ShouldBeOfType<UnauthorizedObjectResult>();
+        }
+        else if (expectedStatus == 404)
+        {
+            // Service throws KeyNotFoundException
+            result.ShouldBeOfType<NotFoundObjectResult>();
         }
     }
 
     [Theory]
     [InlineData("-1", -5, -2, 200)] // Valid
-    [InlineData("-2", -5, -3, 403)] // Invalid, unathorizted
-    [InlineData("-1", -5, -4, 403)] // Invalid, already exists
-    [InlineData("-1", -5, -9999999, 404)] // Invalid, equipment doesn't exist
-    [InlineData("-1", -9999999, -1, 404)] // Invalid, tour doesn't exist
+    [InlineData("-2", -5, -3, 401)] // Unauthorized - tuđi korisnik pokušava da doda opremu
+    [InlineData("-1", -5, -4, 400)] // Already exists - Service throws ArgumentException/InvalidOperationException, caught as BadRequest
+    [InlineData("-1", -5, -9999999, 404)] // Equipment not found - Service throws KeyNotFoundException, caught as NotFound
+    [InlineData("-1", -9999999, -1, 404)] // Tour not found - Service throws KeyNotFoundException, caught as NotFound
     public void Adds_equipment_to_tour(string authorId, long tourId, long equipmentId, int expectedStatus)
     {
         // Arrange
@@ -300,12 +332,13 @@ public class TourCommandTests : BaseToursIntegrationTest
         var controller = CreateController(scope, authorId);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
+        // Act
+        var response = controller.AddEquipment(tourId, equipmentId);
 
+        // Assert
         if (expectedStatus == 200)
         {
-            // Act
-            var response = controller.AddEquipment(tourId, equipmentId);
-
+            response.Result.ShouldBeOfType<OkObjectResult>();
 
             // Assert – Database
             var stored = dbContext.Tour
@@ -313,34 +346,36 @@ public class TourCommandTests : BaseToursIntegrationTest
                 .First(t => t.Id == tourId);
             stored.Equipment.ShouldContain(e => e.Id == equipmentId);
         }
-        else
+        else if (expectedStatus == 400)
         {
-            var ex = Should.Throw<Exception>(() => controller.AddEquipment(tourId, equipmentId));
-
-            if (expectedStatus == 403)
-            {
-                ex.ShouldBeOfType<InvalidOperationException>();
-            }
-            else if (expectedStatus == 404)
-            {
-                ex.ShouldBeOfType<NotFoundException>();
-            }
+            // Service throws ArgumentException for validation/business rule violations
+            response.Result.ShouldBeOfType<BadRequestObjectResult>();
+        }
+        else if (expectedStatus == 401)
+        {
+            // Service throws InvalidOperationException for authorization failures
+            response.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+        }
+        else if (expectedStatus == 404)
+        {
+            // Service throws KeyNotFoundException
+            response.Result.ShouldBeOfType<NotFoundObjectResult>();
         }
     }
 
     [Theory]
-    [InlineData("-1", -5, -1, 200)]        // Valid
-    [InlineData("-1", -5, -1, 403)]        // Invalid, equipment not on tour
-    [InlineData("-1", -5, -9999999, 404)]  // Invalid, equipment doesn't exist
-    [InlineData("-1", -9999999, -1, 404)]  // Invalid, tour doesn't exist
-    public void Removes_equipment_from_tour(string authorId, long tourId, long equipmentId, int expectedStatus)
+    [InlineData("-1", -5, -1, 200, true)]   // Valid - equipment exists on tour
+    [InlineData("-1", -5, -3, 400, false)]  // Equipment not on tour - Service throws ArgumentException/InvalidOperationException, caught as BadRequest
+    [InlineData("-1", -5, -9999999, 404, false)]  // Equipment doesn't exist - Service throws KeyNotFoundException, caught as NotFound
+    [InlineData("-1", -9999999, -1, 404, false)]  // Tour doesn't exist - Service throws KeyNotFoundException, caught as NotFound
+    public void Removes_equipment_from_tour(string authorId, long tourId, long equipmentId, int expectedStatus, bool shouldHaveEquipment)
     {
         // Arrange
         using var scope = Factory.Services.CreateScope();
         var controller = CreateController(scope, authorId);
         var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
 
-        if (expectedStatus == 200)
+        if (shouldHaveEquipment && expectedStatus == 200)
         {
             // Ensure the tour actually has the equipment before removing it
             var tour = dbContext.Tour
@@ -353,9 +388,15 @@ public class TourCommandTests : BaseToursIntegrationTest
                 tour.Equipment.Add(equipment);
                 dbContext.SaveChanges();
             }
+        }
 
-            // Act
-            var response = controller.RemoveEquipment(tourId, equipmentId);
+        // Act
+        var response = controller.RemoveEquipment(tourId, equipmentId);
+
+        // Assert
+        if (expectedStatus == 200)
+        {
+            response.Result.ShouldBeOfType<OkObjectResult>();
 
             // Assert – Database
             var stored = dbContext.Tour
@@ -364,19 +405,139 @@ public class TourCommandTests : BaseToursIntegrationTest
 
             stored.Equipment.ShouldNotContain(e => e.Id == equipmentId);
         }
-        else
+        else if (expectedStatus == 400)
         {
-            var ex = Should.Throw<Exception>(() => controller.RemoveEquipment(tourId, equipmentId));
-
-            if (expectedStatus == 403)
-            {
-                ex.ShouldBeOfType<InvalidOperationException>(); // trying to remove something not assigned
-            }
-            else if (expectedStatus == 404)
-            {
-                ex.ShouldBeOfType<NotFoundException>();
-            }
+            // Service throws ArgumentException or InvalidOperationException for business rule violations
+            response.Result.ShouldBeOfType<BadRequestObjectResult>();
+        }
+        else if (expectedStatus == 404)
+        {
+            // Service throws KeyNotFoundException
+            response.Result.ShouldBeOfType<NotFoundObjectResult>();
         }
     }
+
+    public static IEnumerable<object[]> AddMapMarkerData =>
+    new List<object[]>
+    {
+        new object[] { "-2", -81001, new MapMarkerDto { ImageUrl = "mm/mm" }, 403 }, // not author's tour
+        new object[] { "-2", -81000, new MapMarkerDto { ImageUrl = "mm/mm" }, 200 }, // good     
+    };
+
+    [Theory]
+    [MemberData(nameof(AddMapMarkerData))]
+    public void Adds_map_marker_to_tour(string authorId, long tourId, MapMarkerDto mapMarkerDto, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        // Act
+        var response = controller.AddMapMarker(tourId, mapMarkerDto);
+
+        // Assert
+        switch(expectedStatus)
+        {
+            case 200:
+                response.Result.ShouldBeOfType<OkObjectResult>();
+
+                var result = ((ObjectResult)response.Result)?.Value as MapMarkerDto;
+                var storedMarker = dbContext.MapMarkers.FirstOrDefault(i => i.Id == result.Id);
+                var storedTour = dbContext.Tour
+                    .Include(t => t.MapMarker)
+                    .FirstOrDefault(i => i.Id == tourId);
+
+                storedMarker.ShouldNotBeNull();
+                result.ImageUrl.ShouldBe(mapMarkerDto.ImageUrl);
+                storedMarker.ShouldNotBeNull();
+                storedTour.MapMarker.ShouldNotBeNull();
+                break;
+            case 403:
+                response.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+                break;
+        }
+    }
+
+    public static IEnumerable<object[]> UpdateMapMarkerData =>
+    new List<object[]>
+    {
+        new object[] { "-2", -81003, new MapMarkerDto { ImageUrl = "aa/aa" }, 403 }, // Unauthorized
+        new object[] { "-2", -81004, new MapMarkerDto { ImageUrl = "aa/aa" }, 200 }, // good     
+    };
+
+    [Theory]
+    [MemberData(nameof(UpdateMapMarkerData))]
+    public void Updates_map_marker_from_tour(string authorId, long tourId, MapMarkerDto mapMarkerDto, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        // Act
+        var response = controller.UpdateMapMarker(tourId, mapMarkerDto);
+
+        // Assert
+        switch (expectedStatus)
+        {
+            case 200:
+                response.Result.ShouldBeOfType<OkObjectResult>();
+
+                var result = ((ObjectResult)response.Result)?.Value as MapMarkerDto;
+                var storedMarker = dbContext.MapMarkers.FirstOrDefault(i => i.Id == result.Id);
+                var storedTour = dbContext.Tour
+                    .Include(t => t.MapMarker)
+                    .FirstOrDefault(i => i.Id == tourId);
+
+                storedMarker.ShouldNotBeNull();
+                result.ImageUrl.ShouldBe(mapMarkerDto.ImageUrl);
+                storedMarker.ShouldNotBeNull();
+                storedTour.MapMarker.ShouldNotBeNull();
+                break;
+            case 403:
+                response.Result.ShouldBeOfType<UnauthorizedObjectResult>();
+                break;
+        }
+    }
+
+    public static IEnumerable<object[]> DeleteMapMarkerData =>
+    new List<object[]>
+    {
+        new object[] { "-2", -81003, 403 }, // Unauthorized
+        new object[] { "-2", -81004, 200 }, // good     
+    };
+
+    [Theory]
+    [MemberData(nameof(DeleteMapMarkerData))]
+    public void Delete_map_marker_from_tour(string authorId, long tourId, int expectedStatus)
+    {
+        // Arrange
+        using var scope = Factory.Services.CreateScope();
+        var controller = CreateController(scope, authorId);
+        var dbContext = scope.ServiceProvider.GetRequiredService<ToursContext>();
+
+        // Act
+        var response = controller.DeleteMapMarker(tourId);
+
+        // Assert
+        switch (expectedStatus)
+        {
+            case 200:
+                response.ShouldBeOfType<OkObjectResult>();
+
+                var storedTour = dbContext.Tour
+                    .Include(t => t.MapMarker)
+                    .FirstOrDefault(i => i.Id == tourId);
+
+                storedTour.MapMarker.ShouldBeNull();
+                break;
+            case 403:
+                response.ShouldBeOfType<UnauthorizedObjectResult>();
+                break;
+        }
+    }
+
+
 
 }

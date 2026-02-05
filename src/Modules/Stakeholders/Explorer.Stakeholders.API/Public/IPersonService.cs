@@ -9,7 +9,7 @@ namespace Explorer.Stakeholders.API.Public
 {
     public interface IPersonService
     {
-        PersonDto Update(PersonDto person);
+        PersonDto Update(long personId, PersonDto person);
         PersonDto Get(long id);
     }
 }

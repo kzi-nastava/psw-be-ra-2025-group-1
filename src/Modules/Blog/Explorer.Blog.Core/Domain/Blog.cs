@@ -10,19 +10,24 @@ public class Blog : AggregateRoot
     public string Description {get; private set;}
     public DateTime CreationDate {get; private set;}
     public List<string> Images {get; private set;}
+    public List<string> Videos { get; private set; }
     public BlogStatus Status {get; private set;}
     public DateTime? LastModifiedDate {get; private set;}
     public List<Comment> Comments {get; private set;}
 
     public List<Vote> Votes { get; private set;} = new();
+    public List<BlogCollaborator> Collaborators { get; private set; } = new();
 
-    public Blog(long userId, string title, string description, List<string>? images = null)
+
+    public Blog(long userId, string title, string description, List<string>? images = null, List<string>? videos = null)
     {
         UserId = userId;
         Title = title ?? throw new ArgumentNullException(nameof(title));
         Description = description ?? throw new ArgumentNullException(nameof(description));
         CreationDate = DateTime.UtcNow;
         Images = images ?? new List<string>();
+        Videos = videos ?? new List<string>();
+
         Status = BlogStatus.Draft; // Kada korisnik kreira blog, on se nalazi u stanju pripreme.
         Comments = new List<Comment>();
         Validate();
@@ -34,7 +39,7 @@ public class Blog : AggregateRoot
         if (string.IsNullOrWhiteSpace(Description)) throw new ArgumentException("Description can't be empty");
     }
 
-    public void Update(string title, string description, List<string>? images) // Updated Update logic
+    public void Update(string title, string description, List<string>? images, List<string>? videos) // Updated Update logic
     {
         if (Status == BlogStatus.Archived || Status == BlogStatus.Closed)
         {
@@ -130,7 +135,7 @@ public class Blog : AggregateRoot
         UpdateStatusByEngagement();
     }
 
-    public Vote AddVote(long userId, VoteType voteType)  
+    public Vote? AddVote(long userId, VoteType voteType)  
     {
         if (!IsInteractive())
         {
@@ -140,12 +145,20 @@ public class Blog : AggregateRoot
         // Remove the previous vote if a user tries to vote again after already having a vote 
         // Can't both upvote and downvnote a blog
         var existingVote = Votes.FirstOrDefault(v => v.UserId == userId);
+        if (existingVote != null && existingVote.VoteType == voteType)
+        {
+            Votes.Remove(existingVote);
+            UpdateStatusByEngagement();
+            return null; // nema novog glasa
+        }
+
+        // 2) Ako postoji neki drugi glas -> zameni ga
         if (existingVote != null)
         {
             Votes.Remove(existingVote);
         }
 
-        var vote = new Vote(userId, voteType);
+        var vote = new Vote(this.Id, userId, voteType);
         Votes.Add(vote);
 
         UpdateStatusByEngagement();
@@ -155,7 +168,7 @@ public class Blog : AggregateRoot
 
     public void RemoveVote(long userId)
     {
-        if (IsReadOnly())
+        if (Status == BlogStatus.Draft || Status == BlogStatus.Archived)
         {
             throw new InvalidOperationException("Votes cannot be changed on a closed blog.");
         }
@@ -209,7 +222,7 @@ public class Blog : AggregateRoot
 
     private bool IsReadOnly()
     {
-        return Status == BlogStatus.Closed || Status == BlogStatus.Archived;
+        return Status == BlogStatus.Archived;
     }
 
     private bool IsInteractive()
@@ -217,6 +230,34 @@ public class Blog : AggregateRoot
         return Status == BlogStatus.Published
             || Status == BlogStatus.Active
             || Status == BlogStatus.Famous;
+    }
+
+    public bool IsOwner(long userId) => UserId == userId;
+    public bool IsCollaborator(long userId) => Collaborators.Any(c => c.UserId == userId);
+
+    public void AddCollaborator(long ownerId, long collaboratorUserId)
+    {
+        if (!IsOwner(ownerId))
+            throw new UnauthorizedAccessException("Only owner can add collaborators.");
+
+        if (collaboratorUserId == UserId)
+            throw new InvalidOperationException("Owner is already the owner.");
+
+        if (Collaborators.Any(c => c.UserId == collaboratorUserId))
+            throw new InvalidOperationException("User is already a collaborator.");
+
+        Collaborators.Add(new BlogCollaborator(this.Id, collaboratorUserId));
+    }
+
+    public void RemoveCollaborator(long ownerId, long collaboratorUserId)
+    {
+        if (!IsOwner(ownerId))
+            throw new UnauthorizedAccessException("Only owner can remove collaborators.");
+
+        var c = Collaborators.FirstOrDefault(x => x.UserId == collaboratorUserId);
+        if (c == null) return;
+
+        Collaborators.Remove(c);
     }
 
 }

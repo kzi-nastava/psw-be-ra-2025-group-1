@@ -1,9 +1,14 @@
 using Explorer.BuildingBlocks.Infrastructure.Database;
 using Explorer.Tours.API.Public;
 using Explorer.Tours.API.Public.Administration;
+using Explorer.Tours.API.Public.Tourist;
+using Explorer.Tours.Core.Adapters;
 using Explorer.Tours.Core.Domain.RepositoryInterfaces;
 using Explorer.Tours.Core.Mappers;
+using Explorer.Tours.Core.UseCases;
 using Explorer.Tours.Core.UseCases.Administration;
+using Explorer.Tours.Core.UseCases.Social;
+using Explorer.Tours.Core.UseCases.Tourist;
 using Explorer.Tours.Infrastructure.Database;
 using Explorer.Tours.Infrastructure.Database.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +17,7 @@ using Npgsql;
 using Explorer.Tours.Core.UseCases;
 using Explorer.Tours.API.Public.Tourist;
 using Explorer.Tours.Core.UseCases.Tourist;
+using Explorer.Tours.Core.UseCases.Social;
 
 namespace Explorer.Tours.Infrastructure;
 
@@ -34,10 +40,24 @@ public static class ToursStartup
         services.AddScoped<IMeetUpService, MeetUpService>();
         services.AddScoped<IPersonEquipmentService, PersonEquipmentService>();
         services.AddScoped<ITourBrowsingService, TourBrowsingService>();
-        services.AddScoped<ITourPurchaseTokenService, TourPurchaseTokenService>();
-        services.AddScoped<IShoppingCartService, ShoppingCartService>();
         services.AddScoped<ITourExecutionService, TourExecutionService>();
         services.AddScoped<IMonumentService, MonumentService>();
+        services.AddScoped<ITourRatingService, TourRatingService>();
+        services.AddScoped<ITourRatingReactionService, TourRatingReactionService>();
+        services.AddScoped<IRestaurantService, RestaurantService>();
+
+
+        // adapters
+        services.AddScoped<IEncounterAdapter, EncounterAdapter>();
+        services.AddScoped<ITouristStatsAdapter, TouristStatsAdapter>();
+        services.AddScoped<IUserAdapter, UserAdapter>();
+
+        services.AddScoped<IMapMarkerService, MapMarkerService>();
+        services.AddScoped<ITouristMapMarkerService, TouristMapMarkerService>();
+        
+        // Adapter for cross-module tour browsing
+        services.AddScoped<Explorer.BuildingBlocks.Core.Services.ITourBrowsingInfo, 
+            Explorer.Tours.Core.Services.TourBrowsingAdapter>();
     }
     
     private static void SetupInfrastructure(IServiceCollection services)
@@ -48,10 +68,20 @@ public static class ToursStartup
         services.AddScoped<IMeetUpRepository, MeetUpDbRepository>();
         services.AddScoped<ITourExecutionRepository, TourExecutionDbRepository>();
         services.AddScoped<IPersonEquipmentRepository, PersonEquipmentDbRepository>(); 
-        services.AddScoped<IShoppingCartRepository, ShoppingCartDbRepository>();
-        services.AddScoped<ITourPurchaseTokenRepository, TourPurchaseTokenDbRepository>();
         services.AddScoped<IMonumentRepository, MonumentDbRepository>();
+        services.AddScoped<ITourRatingRepository, TourRatingDbRepository>();
+        services.AddScoped<ITourRatingReactionRepository, TourRatingReactionDbRepository>();
+        services.AddScoped<IRestaurantRepository, RestaurantDbRepository>();
+        services.AddScoped<IKeypointRepository, KeypointDbRepository>();
+        services.AddScoped<IMapMarkerRepository, MapMarkerDbRepository>();
+        services.AddScoped<ITouristMapMarkerRepository,  TouristMapMarkerDbRepository>();
 
+        services.AddMemoryCache();
+        services.AddHttpClient<IWeatherForecastService, OpenMeteoWeatherForecastService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+        });
+        
         var dataSourceBuilder = new NpgsqlDataSourceBuilder(DbConnectionStringBuilder.Build("tours"));
         dataSourceBuilder.EnableDynamicJson();
         var dataSource = dataSourceBuilder.Build();
