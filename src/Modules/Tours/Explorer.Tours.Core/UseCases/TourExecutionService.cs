@@ -137,7 +137,8 @@ public class TourExecutionService : ITourExecutionService
         if (reached != null)
             return true; // Already reached
 
-        const double nearbyDistance = 0.00025; // approximately 20m
+        //const double nearbyDistance = 0.00025; // approximately 20m
+        const double nearbyDistance = 0.00125;
         double longDiff = Math.Abs(userLocation.Longitude - keypoint.Longitude);
         double latDiff = Math.Abs(userLocation.Latitude - keypoint.Latitude);
         if (Math.Sqrt(longDiff * longDiff + latDiff * latDiff) < nearbyDistance)
