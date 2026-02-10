@@ -46,6 +46,7 @@ namespace Explorer.Tours.Core.UseCases
             {
                 var collectedMarker = Collect(touristId, defaultMarker.Id);
                 SetMapMarkerAsActive(touristId, defaultMarker.Id);
+                SetMapMarkerAsActive(touristId, 4); // :DDD hleb :DDDDD
             }
         }
 

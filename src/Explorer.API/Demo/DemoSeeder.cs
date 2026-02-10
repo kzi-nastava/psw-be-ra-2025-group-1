@@ -32,7 +32,7 @@ namespace Explorer.API.Demo
         private readonly IBlogService _blogService;
         private readonly IPersonService _personService;
 
-        private readonly int predefinedMarkersNumber = 10;
+        private readonly int predefinedMarkersNumber = 14;
         private readonly string imageRootUrl = "https://localhost:44333/images/";
 
         public DemoSeeder(
@@ -360,6 +360,9 @@ namespace Explorer.API.Demo
             {
                 _touristMapMarkerService.Collect(tourist1Id, markerId);
             }
+
+            // tourist 1 activates bread
+            _touristMapMarkerService.SetMapMarkerAsActive(tourist1Id, 4);
         }
 
         private void SeedDefaultMarker()
@@ -947,6 +950,58 @@ namespace Explorer.API.Demo
             }, tour6.CreatorId);
 
             // not published
+
+
+            // ----- NOVI SAD DEMO TOUR
+            var noviSadTour = _tourService.Create(new CreateTourDto
+            {
+                CreatorId = author3Id,
+                Title = "Šetnja starim jezgrom Novog Sada",
+                Description = "Kratka pešačka tura kroz najlepše delove centra Novog Sada.",
+                Difficulty = 1,
+                Tags = ["grad", "šetnja", "novi sad"],
+                Price = 10,
+                PlaylistId = "PLtEmTmSiL_W0IjuStg2q0DxGXs55orRu5",
+            });
+
+            
+
+            // ----- Transport times -----
+            _tourService.AddTransportTime(
+                noviSadTour.Id,
+                new TransportTimeDto { Type = TransportTypeDto.Foot, Duration = 45 },
+                noviSadTour.CreatorId);
+
+            // ----- Keypoints -----
+            _tourService.AddKeypoint(noviSadTour.Id, new KeypointDto
+            {
+                Title = "Trg slobode",
+                Description = "Centralni gradski trg i srce Novog Sada.",
+                Secret = "Nazivan je i najvećim trgom u Srbiji.",
+                Latitude = 45.2550,
+                Longitude = 19.8450
+            }, noviSadTour.CreatorId);
+
+            _tourService.AddKeypoint(noviSadTour.Id, new KeypointDto
+            {
+                Title = "Dunavski park",
+                Description = "Najpoznatiji gradski park, idealan za odmor.",
+                Secret = "Nekada je ovde bila močvara povezana sa Dunavom.",
+                Latitude = 45.2555,
+                Longitude = 19.8480
+            }, noviSadTour.CreatorId);
+
+            // ----- Map marker -----
+            _tourService.AddMapMarker(
+                noviSadTour.Id,
+                new MapMarkerDto
+                {
+                    ImageUrl = imageRootUrl + "markerNoviSad.png"
+                },
+                noviSadTour.CreatorId);
+
+            // Publish
+            _tourService.Publish(noviSadTour.Id);
         }
 
         // Tourist 1 bought tour 1
