@@ -31,6 +31,7 @@ namespace Explorer.API.Demo
         private readonly IShoppingCartService _shoppingCartService;
         private readonly IBlogService _blogService;
         private readonly IPersonService _personService;
+        private readonly IProblemService _problemService;
 
         private readonly int predefinedMarkersNumber = 14;
         private readonly string imageRootUrl = "https://localhost:44333/images/";
@@ -52,7 +53,8 @@ namespace Explorer.API.Demo
             IMapMarkerService mapMarkerService,
             IBlogService blogService,
             IPersonService personService,
-            ITouristStatsService touristStatsService)
+            ITouristStatsService touristStatsService,
+            IProblemService problemService)
         {
             _authenticationService = authenticationService;
             _equipmentService = equipmentService;
@@ -71,6 +73,7 @@ namespace Explorer.API.Demo
             _blogService = blogService;
             _personService = personService;
             _touristStatsService = touristStatsService;
+            _problemService = problemService;
         }
 
         public void Seed()
@@ -91,6 +94,50 @@ namespace Explorer.API.Demo
             SeedRatings();
             SeedRestaurants();
             SeedTouristStats();
+            SeedProblems();
+        }
+
+        private void SeedProblems()
+        {
+            var tour1 = _tourService.GetById(1);
+            var tour2 = _tourService.GetById(2);
+            long touristId = 3;
+            long touristId2 = 4;
+
+            _problemService.Create(new ProblemDto()
+            {
+                TourId = tour1.Id,
+                CreatorId = touristId,
+                AuthorId = tour1.CreatorId,
+                Priority = 1,
+                Description = "Tura nije trajala onoliko koliko je navedeno...",
+                CreationTime = DateTime.UtcNow,
+                Category = ProblemCategory.Other,
+            });
+
+            _problemService.Create(new ProblemDto()
+            {
+                TourId = tour2.Id,
+                CreatorId = touristId,
+                AuthorId = tour2.CreatorId,
+                Priority = 2,
+                Description = "Previse hodanja.",
+                CreationTime = DateTime.UtcNow,
+                Category = ProblemCategory.Safety,
+            });
+
+            _problemService.Create(new ProblemDto()
+            {
+                TourId = tour2.Id,
+                CreatorId = touristId2,
+                AuthorId = tour2.CreatorId,
+                Priority = 2,
+                Description = "Premalo hodanja.",
+                CreationTime = DateTime.UtcNow,
+                Category = ProblemCategory.Safety,
+            });
+
+
         }
 
         private void SeedBlogs()
@@ -118,7 +165,7 @@ namespace Explorer.API.Demo
                     "Ako volite da istražujete bez pritiska i rasporeda, ovakvi delovi grada pružaju poseban doživljaj.",
                 Images = new List<string>
         {
-            "https://localhost:44333/images/marker1.png"
+            "https://localhost:44333/images/beograd.jpg"
         }
             });
 
@@ -157,8 +204,7 @@ namespace Explorer.API.Demo
                     "Savršeno mesto za predah bez većeg odstupanja od rute.",
                 Images = new List<string>
         {
-            "https://localhost:44333/images/marker2.png",
-            "https://localhost:44333/images/marker3.png"
+            "https://localhost:44333/images/njiva.jpg",
         }
             });
 
@@ -211,8 +257,8 @@ namespace Explorer.API.Demo
         }
             });
 
-            _blogService.PublishBlog(t2b1.Id, t2b1.UserId);
-            _blogService.PublishBlog(t2b2.Id, t2b2.UserId);
+            //_blogService.PublishBlog(t2b1.Id, t2b1.UserId);
+            //_blogService.PublishBlog(t2b2.Id, t2b2.UserId);
 
 
             // ====== AUTOR TURA 1 (5 blogova)
@@ -230,7 +276,11 @@ namespace Explorer.API.Demo
 
                     "## Savet\n\n" +
                     "Izbor termina zavisi od vaših navika i tolerancije na gužvu.",
-                Images = new List<string>()
+                Images = new List<string>
+                {
+            "https://localhost:44333/images/klupura.png"
+
+                }
             });
 
             var a1b2 = _blogService.CreateBlog(author1Id, new BlogCreateDto
@@ -309,10 +359,10 @@ namespace Explorer.API.Demo
             });
 
             _blogService.PublishBlog(a1b1.Id, a1b1.UserId);
-            _blogService.PublishBlog(a1b2.Id, a1b2.UserId);
-            _blogService.PublishBlog(a1b3.Id, a1b3.UserId);
-            _blogService.PublishBlog(a1b4.Id, a1b4.UserId);
-            _blogService.PublishBlog(a1b5.Id, a1b5.UserId);
+            //_blogService.PublishBlog(a1b2.Id, a1b2.UserId);
+            //_blogService.PublishBlog(a1b3.Id, a1b3.UserId);
+            //_blogService.PublishBlog(a1b4.Id, a1b4.UserId);
+            //_blogService.PublishBlog(a1b5.Id, a1b5.UserId);
 
 
             // ====== AUTOR TURA 3 (1 blog)
@@ -337,7 +387,7 @@ namespace Explorer.API.Demo
         }
             });
 
-            _blogService.PublishBlog(a3b1.Id, a3b1.UserId);
+            //_blogService.PublishBlog(a3b1.Id, a3b1.UserId);
         }
 
 
@@ -429,7 +479,7 @@ namespace Explorer.API.Demo
                 Name = p1.Name,
                 Surname = p1.Surname,
                 Email = p1.Email,
-                ProfileImageUrl = "https://localhost:44333/images/marker1.png",
+                ProfileImageUrl = "https://localhost:44333/images/profilePic.png",
                 Biography = "Ljubitelj spontanih putovanja, dugih šetnji i skrivenih mesta koja ne pišu u vodičima.",
                 Quote = "Najlepša mesta su ona koja pronađeš slučajno."
             });
@@ -728,7 +778,8 @@ namespace Explorer.API.Demo
                 Description = "Start ture.",
                 Secret = "Rimski kastrum.",
                 Latitude = 44.8231,
-                Longitude = 20.4519
+                Longitude = 20.4519,
+                ImageUrl = imageRootUrl + "beograd.jpg"
             }, tour1.CreatorId);
 
             _tourService.AddKeypoint(tour1.Id, new KeypointDto
@@ -855,7 +906,8 @@ namespace Explorer.API.Demo
                 Description = "Početna tačka.",
                 Secret = "Veštačko jezero.",
                 Latitude = 43.952,
-                Longitude = 19.522
+                Longitude = 19.522,
+                ImageUrl = imageRootUrl + "tour1.jpg"
             }, tour4.CreatorId);
 
             _tourService.AddKeypoint(tour4.Id, new KeypointDto
@@ -896,7 +948,8 @@ namespace Explorer.API.Demo
                 Description = "Vodopadi.",
                 Secret = "22m visine.",
                 Latitude = 43.6582,
-                Longitude = 19.9391
+                Longitude = 19.9391,
+                ImageUrl = imageRootUrl + "tour2.jpg"
             }, tour5.CreatorId);
 
             _tourService.AddKeypoint(tour5.Id, new KeypointDto
@@ -979,7 +1032,8 @@ namespace Explorer.API.Demo
                 Description = "Centralni gradski trg i srce Novog Sada.",
                 Secret = "Nazivan je i najvećim trgom u Srbiji.",
                 Latitude = 45.2550,
-                Longitude = 19.8450
+                Longitude = 19.8450,
+                ImageUrl = imageRootUrl + "noviSad.jpg"
             }, noviSadTour.CreatorId);
 
             _tourService.AddKeypoint(noviSadTour.Id, new KeypointDto
